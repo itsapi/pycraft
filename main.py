@@ -67,10 +67,10 @@ def check_map(map_obj, meta):
 
 
 def move_map(map_, edges):
+    # Create subset of slices from map_ between edges
     slices = {}
     for pos in range(*edges):
-        pos = str(pos)
-        slices[pos] = map_[pos]
+        slices[pos] = map_[str(pos)]
     return slices
 
 
@@ -160,27 +160,38 @@ def main():
     meta, map_ = load_map('map.blk')
 
     pos = meta['center']
-    width = 20
+    width = 40
 
     FPS = 20
 
+    old_edges = None
+    redraw = False
     last_out = time()
     with NonBlockingInput() as nbi:
         while True:
 
             pos += get_pos_d(nbi.char())
 
+            # Finds display boundaries
             edges = (pos - int(width / 2), pos + int(width / 2))
             
+            # Generates new terrain
             slices = detect_edges(map_, edges)
             for slice_pos in slices:
                 map_[str(slice_pos)] = gen_slice(slice_pos, meta)
+                redraw = True
 
-            chunk = move_map(map_, edges)
+            # Moving view
+            if not edges == old_edges:
+                redraw = True
+                old_edges = edges
+                view = move_map(map_, edges)
 
-            if time() > last_out + (1 / FPS):
+            # Draw view
+            if redraw and time() > last_out + (1 / FPS):
+                redraw = False
                 last_out = time()
-                render_map(chunk, blocks)
+                render_map(view, blocks)
 
 if __name__ == '__main__':
     main()

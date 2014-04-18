@@ -3,7 +3,7 @@
         "name": "my map",
         "seed": "minecraft_is_fun",
         "center": 10,
-        "height": 30,
+        "height": 40,
         "max_hill": 5,
         "ground_height": 7
     },
