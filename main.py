@@ -20,6 +20,13 @@ default_meta = {
 def load_map(filename):
     map_obj = json.load(open(filename))
     
+    meta = check_meta(map_obj)
+    map_ = check_map(map_obj, meta)
+
+    return meta, map_
+
+
+def check_meta(map_obj):
     try:
         meta = map_obj['meta']
 
@@ -34,9 +41,29 @@ def load_map(filename):
         # Create default meta if needed
         meta = default_meta
 
-    map_ = map_obj['slices']
+    return meta
 
-    return meta, map_
+
+def check_map(map_obj, meta):
+    try:
+        map_ = map_obj['slices']
+
+        for key, slice_ in map_.items():
+            if not len(slice_) == meta['height']:
+
+                if len(slice_) < meta['height']:
+                    # Extend slice height
+                    slice_ = [' '] * (meta['height'] - len(slice_)) + slice_
+                elif len(slice_) > meta['height']:
+                    # Truncate slice height
+                    slice_ = slice_[:meta['height']]
+
+                map_[key] = slice_
+
+    except KeyError:
+        map_ = {}
+
+    return map_
 
 
 def move_map(map_, edges):
