@@ -118,14 +118,16 @@ def gen_slice(pos, meta):
     return slice_
 
 
-def detect_edge(map_, pos, width, edges):
-    edge = False
-    if edges[0] < min(int(key) for key in map_.keys()):
-        edge = edges[0]
-    if edges[1] >= max(int(key) for key in map_.keys()):
-        edge = edges[1]
-
-    return edge
+def detect_edges(map_, edges):
+    slices = []
+    for pos in range(*edges):
+        try:
+            # If it doesn't exist add the pos to the list
+            map_[str(pos)]
+        except KeyError:
+            slices.append(pos)
+    
+    return slices
 
 
 def gen_blocks():
@@ -169,9 +171,10 @@ def main():
             pos += get_pos_d(nbi.char())
 
             edges = (pos - int(width / 2), pos + int(width / 2))
-            edge = detect_edge(map_, pos, width, edges)
-            if edge:
-                map_[str(edge)] = gen_slice(edge, meta)
+            
+            slices = detect_edges(map_, edges)
+            for slice_pos in slices:
+                map_[str(slice_pos)] = gen_slice(slice_pos, meta)
 
             chunk = move_map(map_, edges)
 
