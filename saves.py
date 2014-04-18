@@ -43,7 +43,7 @@ def load_map(save):
     except FileNotFoundError:
         map_ = {}
 
-    save_map(save, map_)
+    save_map(save, map_, 'w')
     save_meta(save, meta)
 
     return meta, map_, save
@@ -109,10 +109,10 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def save_map(save, map_):
+def save_map(save, map_, mode='a'):
 
     # Save map file
-    with open(os.path.join('maps', save, 'map.blk'), 'a') as f:
+    with open(os.path.join('maps', save, 'map.blk'), mode) as f:
         for key, slice_ in map_.items():
             f.write(key+'<sep>'+''.join(slice_)+'\n')
 
