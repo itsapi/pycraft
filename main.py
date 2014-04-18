@@ -23,6 +23,8 @@ def load_map(filename):
     meta = check_meta(map_obj)
     map_ = check_map(map_obj, meta)
 
+    save_map(filename, meta, map_)
+
     return meta, map_
 
 
@@ -64,6 +66,13 @@ def check_map(map_obj, meta):
         map_ = {}
 
     return map_
+
+
+def save_map(filename, meta, map_):
+    json.dump({
+        'meta': meta,
+        'slices': map_
+    }, open(filename, 'w'))
 
 
 def move_map(map_, edges):
@@ -154,10 +163,10 @@ def get_pos_d(char):
 
 
 def main():
-    global SEED, HEIGHT, MAX_HILL, GROUND_HEIGHT
+    filename = 'map.blk'
 
     blocks = gen_blocks()
-    meta, map_ = load_map('map.blk')
+    meta, map_ = load_map(filename)
 
     pos = meta['center']
     width = 40
@@ -180,6 +189,10 @@ def main():
             for slice_pos in slices:
                 map_[str(slice_pos)] = gen_slice(slice_pos, meta)
                 redraw = True
+            
+            # Save new terrain to file
+            if slices:
+                save_map(filename, meta, map_)
 
             # Moving view
             if not edges == old_edges:
