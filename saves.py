@@ -1,5 +1,8 @@
 import os
 import json
+import random
+
+from shutil import rmtree
 
 
 default_meta = {
@@ -31,7 +34,11 @@ def new_save(meta):
     return filename
 
 
-def load_map(save):
+def delete_save(save):
+    rmtree(os.path.join('maps', save))
+
+
+def load_save(save):
 
     try:
         meta = check_meta(get_meta(save))
@@ -71,6 +78,9 @@ def check_meta(meta):
             meta[key]
         except KeyError:
             meta[key] = default
+
+    if not meta['seed']:
+        meta['seed'] = hash(random.random())
 
     return meta
 

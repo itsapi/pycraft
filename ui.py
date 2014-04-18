@@ -1,7 +1,7 @@
 from nbinput import BlockingInput
 from console import CLEAR
 
-from saves import list_saves, new_save, load_map
+from saves import list_saves, new_save, load_save, delete_save
 
 
 def menu(name, options):
@@ -28,27 +28,42 @@ def menu(name, options):
                     selection += 1
                     break
             selection %= len(options)
-
+    print(options[selection][0])
     return options[selection][1]()
 
 
 def main():
-    return menu('Main menu', (
-        ('New Map', new),
-        ('Load Map', load)
-    ))
+    save = None
+    while not save:
+        save = menu('Main menu', (
+            ('New Save', new),
+            ('Load Save', load),
+            ('Delete Save', delete)
+        ))
+    return save
 
 
 def load():
     saves = list_saves()
-    return menu('Load save', [(save[1]['name'], lambda: load_map(save[0])) for save in saves])
+    return menu(
+        'Load save',
+        [(save[1]['name'], lambda: load_save(save[0])) for save in saves]
+    )
+
+
+def delete():
+    saves = list_saves()
+    return menu(
+        'Delete save',
+        [(save[1]['name'], lambda: delete_save(save[0])) for save in saves]
+    )
 
 
 def new():
     print(CLEAR + 'New save\n')
     meta = {
-        'name': input('Map name: '),
+        'name': input('Save name: '),
         'seed': input('Map seed: ')
     }
     save = new_save(meta)
-    return load_map(save)
+    return load_save(save)
