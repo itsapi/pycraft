@@ -1,6 +1,7 @@
 from nbinput import BlockingInput
+from console import CLEAR
 
-import saves
+from saves import list_saves, new_save, load_map
 
 
 def menu(options):
@@ -11,10 +12,10 @@ def menu(options):
         while not char == ' ':
 
             out = ''
-            for i, option in enumerate(options.items()):
+            for i, option in enumerate(options):
                 star = '*' if i == selection else ' '
                 out += star + option[0] + star + '\n'
-            print(chr(27) + '[2J' + out)
+            print(CLEAR + out)
 
             while True:
                 char = bi.char()
@@ -28,19 +29,26 @@ def menu(options):
                     break
             selection %= len(options)
 
+    return options[selection][1]()
+
 
 def main():
-    menu({
-        'New Map': new,
-        'Load Map': load
-    })
+    return menu((
+        ('New Map', new),
+        ('Load Map', load)
+    ))
 
 
 def load():
-
-    pass
+    saves = list_saves()
+    return menu([(save[1]['name'], lambda: load_map(save[0])) for save in saves])
 
 
 def new():
-
-    pass
+    print(CLEAR + 'New save\n')
+    meta = {
+        'name': input('Map name: '),
+        'seed': input('Map seed: ')
+    }
+    save = new_save(meta)
+    return load_map(save)

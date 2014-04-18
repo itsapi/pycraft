@@ -17,12 +17,18 @@ def new_save(meta):
     meta = check_meta(meta)
 
     # Find unique dir name
-    filename = meta['name'].replace(' ', '_').lower()
+    filename = meta['name'].lower()
+
+    bad_chars = (' /\\!"£$%^*()=.?><\'@#~;:]}[{|`¬')
+    for bad_char in bad_chars:
+        filename = filename.replace(bad_char, '_')
+
     while os.path.isdir(os.path.join('maps', filename)):
         filename += '-'
     os.mkdir(os.path.join('maps', filename))
 
     save_meta(filename, meta)
+    return filename
 
 
 def load_map(save):
@@ -40,7 +46,7 @@ def load_map(save):
     save_map(save, map_)
     save_meta(save, meta)
 
-    return meta, map_
+    return meta, map_, save
 
 
 def get_meta(save):

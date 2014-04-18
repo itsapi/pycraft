@@ -1,6 +1,5 @@
 from time import time
 
-from console import WIDTH, HEIGHT
 from nbinput import NonBlockingInput
 
 import saves, ui, terrain
@@ -19,9 +18,7 @@ def main():
 
     blocks = terrain.gen_blocks()
 
-    save = 'map2'
-    saves.new_save({'name':save})
-    meta, map_ = saves.load_map(save)
+    meta, map_, save = ui.main()
 
     pos = meta['center']
     width = 40
