@@ -21,3 +21,4 @@ def getTerminalSize():
     return int(cr[1]), int(cr[0])
 
 WIDTH, HEIGHT = getTerminalSize()
+CLEAR = chr(27) + '[2J'
