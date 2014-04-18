@@ -132,16 +132,19 @@ class _biGetchMacCarbon(_nbiGetchMacCarbon):
     pass
 
 
+def escape_code(bi):
+    # Blocking only
+    first = bi.char()
+    if first == chr(27) and bi.char() == '[':
+        return bi.char()
+    return first
+
+
 def main():
     import time
-    with NonBlockingInput() as nbi:
+    with BlockingInput() as bi:
         while True:
-
-            if nbi.char() == ' ':
-                print('A')
-            else:
-                print('B')
-            time.sleep(.1)
+            print(ord(escape_code(bi)))
 
 
 if __name__ == '__main__':
