@@ -4,7 +4,7 @@ from console import CLEAR
 from saves import list_saves, new_save, load_map
 
 
-def menu(options):
+def menu(name, options):
 
     selection = 0
     char = None
@@ -15,7 +15,7 @@ def menu(options):
             for i, option in enumerate(options):
                 star = '*' if i == selection else ' '
                 out += star + option[0] + star + '\n'
-            print(CLEAR + out)
+            print(CLEAR + name + '\n' + '=' * len(name) + '\n\n' + out)
 
             while True:
                 char = bi.char()
@@ -33,7 +33,7 @@ def menu(options):
 
 
 def main():
-    return menu((
+    return menu('Main menu', (
         ('New Map', new),
         ('Load Map', load)
     ))
@@ -41,7 +41,7 @@ def main():
 
 def load():
     saves = list_saves()
-    return menu([(save[1]['name'], lambda: load_map(save[0])) for save in saves])
+    return menu('Load save', [(save[1]['name'], lambda: load_map(save[0])) for save in saves])
 
 
 def new():
