@@ -1,6 +1,6 @@
 import sys
 
-from nbinput import BlockingInput
+from nbinput import BlockingInput, escape_code
 from console import CLEAR
 
 from saves import list_saves, new_save, load_save, delete_save
@@ -14,7 +14,7 @@ def menu(name, options):
     selection = 0
     char = None
     with BlockingInput() as bi:
-        while not char == ' ':
+        while not char == '\n':
 
             out = ''
             for i, option in enumerate(options):
@@ -23,13 +23,13 @@ def menu(name, options):
             print(CLEAR + name + '\n' + '=' * len(name) + '\n\n' + out)
 
             while True:
-                char = bi.char()
-                if char == ' ':
+                char = escape_code(bi)
+                if char == '\n':
                     break
-                if char == '-':
+                if char == 'A':
                     selection -= 1
                     break
-                if char == '=':
+                if char == 'B':
                     selection += 1
                     break
             selection %= len(options)
