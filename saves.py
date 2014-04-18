@@ -17,28 +17,23 @@ def new_save(meta):
     meta = check_meta(meta)
 
     # Find unique dir name
-    while os.path.isdir(os.path.join('maps', meta['name'])):
-        meta['name'] += '-'
-    os.mkdir(os.path.join('maps', meta['name']))
+    filename = meta['name'].replace(' ', '_').lower()
+    while os.path.isdir(os.path.join('maps', filename)):
+        filename += '-'
+    os.mkdir(os.path.join('maps', filename))
 
-    save_meta(meta['name'], meta)
+    save_meta(filename, meta)
 
 
 def load_map(save):
 
     try:
-        with open(os.path.join('maps', save, 'meta.json')) as f:
-            data = json.load(f)
-        meta = check_meta(data)
-
+        meta = check_meta(get_meta(save))
     except FileNotFoundError:
         meta = default_meta
 
     try:
-        with open(os.path.join('maps', save, 'map.blk')) as f:
-            data = f.readlines()
-        map_ = check_map(data, meta)
-
+        map_ = check_map(get_map(save), meta)
     except FileNotFoundError:
         map_ = {}
 
@@ -46,6 +41,20 @@ def load_map(save):
     save_meta(save, meta)
 
     return meta, map_
+
+
+def get_meta(save):
+    with open(os.path.join('maps', save, 'meta.json')) as f:
+        data = json.load(f)
+
+    return data
+
+
+def get_map(save):
+    with open(os.path.join('maps', save, 'map.blk')) as f:
+        data = f.readlines()
+
+    return data
 
 
 def check_meta(meta):
@@ -100,3 +109,9 @@ def save_map(save, map_):
     with open(os.path.join('maps', save, 'map.blk'), 'a') as f:
         for key, slice_ in map_.items():
             f.write(key+'<sep>'+''.join(slice_)+'\n')
+
+
+def list_saves():
+
+    return [(save, get_meta(save)) for save in os.listdir('maps')
+        if os.path.isdir(os.path.join('maps', save))]
