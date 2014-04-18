@@ -7,10 +7,33 @@ from console import WIDTH, HEIGHT
 from nbinput import NonBlockingInput
 
 
+default_meta = {
+    'name': 'Untitled',
+    'seed': '',
+    'center': 0,
+    'height': 30,
+    'max_hill': 5,
+    'ground_height': 10
+}
+
+
 def load_map(filename):
     map_obj = json.load(open(filename))
     
-    meta = map_obj['meta']
+    try:
+        meta = map_obj['meta']
+
+        # Create meta items if needed
+        for key, default in default_meta.items():
+            try:
+                meta[key]
+            except KeyError:
+                meta[key] = default
+    
+    except KeyError:
+        # Create default meta if needed
+        meta = default_meta
+
     map_ = map_obj['slices']
 
     return meta, map_
