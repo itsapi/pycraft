@@ -1,7 +1,12 @@
+import sys
+
 from nbinput import BlockingInput
 from console import CLEAR
 
 from saves import list_saves, new_save, load_save, delete_save
+
+
+back = ['Back...', lambda: None]
 
 
 def menu(name, options):
@@ -28,7 +33,7 @@ def menu(name, options):
                     selection += 1
                     break
             selection %= len(options)
-    print(options[selection][0])
+
     return options[selection][1]()
 
 
@@ -38,16 +43,22 @@ def main():
         save = menu('Main menu', (
             ('New Save', new),
             ('Load Save', load),
-            ('Delete Save', delete)
+            ('Delete Save', delete),
+            ('Exit', lambda: sys.exit())
         ))
     return save
+
+
+def lambda_gen(func, var):
+    return lambda: func(var)
 
 
 def load():
     saves = list_saves()
     return menu(
         'Load save',
-        [(save[1]['name'], lambda: load_save(save[0])) for save in saves]
+        ([(save[1]['name'], lambda_gen(load_save, save[0])) for save in saves]
+         + [back])
     )
 
 
@@ -55,7 +66,8 @@ def delete():
     saves = list_saves()
     return menu(
         'Delete save',
-        [(save[1]['name'], lambda: delete_save(save[0])) for save in saves]
+        ([(save[1]['name'], lambda_gen(delete_save, save[0])) for save in saves]
+         + [back])
     )
 
 

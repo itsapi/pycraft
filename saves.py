@@ -39,7 +39,7 @@ def delete_save(save):
 
 
 def load_save(save):
-
+    print(save)
     try:
         meta = check_meta(get_meta(save))
     except FileNotFoundError:
