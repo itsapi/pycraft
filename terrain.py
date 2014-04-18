@@ -23,7 +23,7 @@ def render_map(map_, blocks):
     # Orientates the data
     map_ = tuple(zip(*map_))
 
-    print('\n'.join(''.join(blocks[pixel] for pixel in row) for row in map_))
+    print(chr(27) + '[2J' + '\n'.join(''.join(blocks[pixel] for pixel in row) for row in map_))
 
 
 def slice_height(pos, meta):
