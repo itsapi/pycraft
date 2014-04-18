@@ -7,6 +7,7 @@ import saves, ui, terrain
 
 
 def get_pos_d(char):
+
     if char == ',':
         return -1
     if char == '.':
@@ -15,9 +16,11 @@ def get_pos_d(char):
 
 
 def main():
+
     blocks = terrain.gen_blocks()
 
-    save = 'map1'
+    save = 'map2'
+    saves.new_save({'name':save})
     meta, map_ = saves.load_map(save)
 
     pos = meta['center']
@@ -28,6 +31,7 @@ def main():
     old_edges = None
     redraw = False
     last_out = time()
+
     with NonBlockingInput() as nbi:
         while True:
 
@@ -35,7 +39,7 @@ def main():
 
             # Finds display boundaries
             edges = (pos - int(width / 2), pos + int(width / 2))
-            
+
             # Generates new terrain
             slices = {}
             slice_pos_list = terrain.detect_edges(map_, edges)

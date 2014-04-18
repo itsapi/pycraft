@@ -3,6 +3,7 @@ from colors import colorStr, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHI
 
 
 def move_map(map_, edges):
+
     # Create subset of slices from map_ between edges
     slices = {}
     for pos in range(*edges):
@@ -11,6 +12,7 @@ def move_map(map_, edges):
 
 
 def render_map(map_, blocks):
+
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
     map_.sort(key=lambda item: int(item[0]))
@@ -25,6 +27,7 @@ def render_map(map_, blocks):
 
 
 def slice_height(pos, meta):
+
     slice_height_ = meta['ground_height']
 
     # Check surrounding slices for a hill
@@ -45,6 +48,7 @@ def slice_height(pos, meta):
 
 
 def gen_slice(pos, meta):
+
     slice_height_ = slice_height(pos, meta)
 
     # Form slice of sky - ground - stone layers
@@ -55,6 +59,7 @@ def gen_slice(pos, meta):
 
 
 def detect_edges(map_, edges):
+
     slices = []
     for pos in range(*edges):
         try:
@@ -62,11 +67,12 @@ def detect_edges(map_, edges):
             map_[str(pos)]
         except KeyError:
             slices.append(pos)
-    
+
     return slices
 
 
 def gen_blocks():
+
     return {
         ' ': ' ', # Air
         '-': colorStr('-', GREEN), # Grass
