@@ -14,12 +14,12 @@ class NonBlockingInput:
     """
     def __init__(self):
         try:
-            self.impl = _GetchWindows()
+            self.impl = _nbiGetchWindows()
         except ImportError:
             try:
-                self.impl = _GetchMacCarbon()
+                self.impl = _nbiGetchMacCarbon()
             except (AttributeError, ImportError):
-                self.impl = _GetchUnix()
+                self.impl = _nbiGetchUnix()
 
     def char(self):
         return self.impl.char()
@@ -31,7 +31,7 @@ class NonBlockingInput:
         return self.impl.exit(type_, value, traceback)
 
 
-class _GetchUnix:
+class _nbiGetchUnix:
     def __init__(self):
         # Import termios now or else you'll get the Unix version on the Mac.
         import tty
@@ -54,7 +54,7 @@ class _GetchUnix:
         return None
 
 
-class _GetchWindows:
+class _nbiGetchWindows:
     def __init__(self):
         import msvcrt
         self.msvcrt = msvcrt
@@ -69,7 +69,7 @@ class _GetchWindows:
         return self.msvcrt.getch()
 
 
-class _GetchMacCarbon:
+class _nbiGetchMacCarbon:
     """
     A function which returns the current ASCII key that is down;
     if no ASCII key is down, the null string is returned.  The
@@ -102,6 +102,34 @@ class _GetchMacCarbon:
 
             _, msg, _, _, _ = self.Carbon.Evt.GetNextEvent(0x0008)[1]
             return chr(msg & 0x000000FF)
+
+
+class BlockingInput(NonBlockingInput):
+    """
+    Gets a single character from standard input. Does not echo to the
+        screen.
+    """
+    def __init__(self):
+        try:
+            self.impl = _biGetchWindows()
+        except ImportError:
+            try:
+                self.impl = _biGetchMacCarbon()
+            except (AttributeError, ImportError):
+                self.impl = _biGetchUnix()
+
+
+class _biGetchUnix(_nbiGetchUnix):
+    def char(self):
+        return sys.stdin.read(1)
+
+
+class _biGetchWindows(_nbiGetchWindows):
+    pass
+
+
+class _biGetchMacCarbon(_nbiGetchMacCarbon):
+    pass
 
 
 def main():
