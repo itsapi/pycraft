@@ -16,9 +16,9 @@ def load_map(filename):
     return meta, map_
 
 
-def move_map(map_, left_edge, right_edge):
+def move_map(map_, edges):
     slices = {}
-    for pos in range(left_edge, right_edge):
+    for pos in range(*edges):
         pos = str(pos)
         slices[pos] = map_[pos]
     return slices
@@ -38,23 +38,45 @@ def render_map(map_, blocks):
     print('\n'.join(''.join(blocks[pixel] for pixel in row) for row in map_))
 
 
-def slice_height(seed, pos, max_hill, ground_height):
-    slice_height_ = ground_height
-    for x in range(pos - max_hill, pos + max_hill):
-        random.seed(seed + str(x))
+def slice_height(pos, meta):
+    slice_height_ = meta['ground_height']
+
+    # Check surrounding slices for a hill
+    for x in range(pos - meta['max_hill'], pos + meta['max_hill']):
+        # Set seed for random numbers based on position
+        random.seed(meta['seed'] + str(x))
+
+        # Generate a hill with a 15% chance
         if random.randint(0, 100) < 15:
-            hill_height = ground_height + random.randint(0, max_hill) - abs(pos-x)
+            # Set height to height of hill minus distance from hill
+            hill_height = (meta['ground_height'] +
+                random.randint(0, meta['max_hill']) - abs(pos-x))
+
             if hill_height > slice_height_:
                 slice_height_ = hill_height
 
     return slice_height_
 
 
-def gen_slice(seed, pos, height, max_hill, ground_height):
-    slice_height_ = slice_height(seed, pos, max_hill, ground_height)
-    slice_ = [' '] * (height - slice_height_) + ['-'] + ['#'] * (slice_height_ - 1)
+def gen_slice(pos, meta):
+    slice_height_ = slice_height(pos, meta)
+
+    # Form slice of sky - ground - stone layers
+    slice_ = ([' '] * (meta['height'] - slice_height_) +
+        ['-'] + ['#'] * (slice_height_ - 1))
 
     return slice_
+
+
+def detect_edge(map_, pos, width, edges):
+    edge = False
+    if edges[0] < min(int(key) for key in map_.keys()):
+        edge = edges[0]
+    if edges[1] >= max(int(key) for key in map_.keys()):
+        edge = edges[1]
+
+    return edge
+
 
 def gen_blocks():
     return {
@@ -80,6 +102,8 @@ def get_pos_d(char):
 
 
 def main():
+    global SEED, HEIGHT, MAX_HILL, GROUND_HEIGHT
+
     blocks = gen_blocks()
     meta, map_ = load_map('map.blk')
 
@@ -87,10 +111,6 @@ def main():
     width = 20
 
     FPS = 20
-    SEED = meta['seed']
-    HEIGHT = len(map_['0'])
-    MAX_HILL = 5
-    GROUND_HEIGHT = 13
 
     last_out = time()
     with NonBlockingInput() as nbi:
@@ -98,16 +118,12 @@ def main():
 
             pos += get_pos_d(nbi.char())
 
-            edge = False
-            left_edge, right_edge = pos - int(width / 2), pos + int(width / 2)
-            if left_edge < 0:
-                edge = left_edge
-            if right_edge > len(map_) - 2:
-                edge = right_edge
+            edges = (pos - int(width / 2), pos + int(width / 2))
+            edge = detect_edge(map_, pos, width, edges)
             if edge:
-                map_[str(edge)] = gen_slice(SEED, edge, HEIGHT, MAX_HILL, GROUND_HEIGHT)
+                map_[str(edge)] = gen_slice(edge, meta)
 
-            chunk = move_map(map_, left_edge, right_edge)
+            chunk = move_map(map_, edges)
 
             if time() > last_out + (1 / FPS):
                 last_out = time()
