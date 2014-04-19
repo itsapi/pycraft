@@ -11,6 +11,17 @@ world_gen = {
     'ground_height': 10
 }
 
+trees = (
+    ((0, 1, 1),
+     (1, 1, 0),
+     (0, 1, 1)),
+    ((1, 1, 0, 0, 0, 1, 1),
+     (0, 1, 1, 0, 1, 1, 0),
+     (0, 0, 1, 1, 0, 0, 0),
+     (0, 1, 1, 1, 1, 0, 0),
+     (1, 1, 0, 0, 1, 1, 0))
+)
+
 
 def move_map(map_, edges):
 
@@ -58,7 +69,7 @@ def slice_height(pos, meta):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x))
 
-        # Generate a hill with a 15% chance
+        # Generate a hill with a 5% chance
         if random.randint(0, 100) < 5:
             # Make top of hill flat
             # Set height to height of hill minus distance from hill
@@ -72,13 +83,60 @@ def slice_height(pos, meta):
     return int(slice_height_)
 
 
-def gen_slice(pos, meta):
+def add_tree(slice_, pos, meta, blocks):
+    # Maximum width of half a tree
+    max_half_tree = int(len(max(trees, key=lambda tree: len(tree))) / 2)
+
+    for x in range(pos - max_half_tree, pos + max_half_tree + 1):
+        # Set seed for random numbers based on position
+        random.seed(str(meta['seed']) + str(x))
+
+        # Generate a tree with a 5% chance
+        if random.randint(0, 100) < 5:
+            tree = random.choice(trees)
+
+            # Get height above ground
+            air_height = world_gen['height'] - slice_height(x, meta)
+
+            # Center tree slice (contains trunk)
+            center_leaves = tree[int(len(tree)/2)]
+            trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
+                               if leaf)
+            tree_height = random.randint(2, air_height
+                          - len(center_leaves) + trunk_depth)
+
+            # Find leaves of current tree
+            for i, leaf_slice in enumerate(tree):
+                leaf_pos = x + (i - int(len(tree) / 2))
+                if leaf_pos == pos:
+                    leaf_height = air_height - tree_height - trunk_depth - 1
+
+                    # Add leaves to slice
+                    for j, leaf in enumerate(leaf_slice):
+                        if leaf:
+                            slice_[leaf_height + j] = '@'
+
+            if x == pos:
+                # Add trunk to slice
+                for i in range(air_height - tree_height,
+                               air_height):
+                    slice_[i] = '|'
+
+    return slice_
+
+
+def gen_slice(pos, meta, blocks):
 
     slice_height_ = slice_height(pos, meta)
 
     # Form slice of sky - ground - stone layers
-    slice_ = ([' '] * (world_gen['height'] - slice_height_) +
-        ['-'] + ['#'] * (slice_height_ - 1))
+    slice_ = (
+        [' '] * (world_gen['height'] - slice_height_) +
+        ['-'] +
+        ['#'] * (slice_height_ - 1)
+    )
+
+    slice_ = add_tree(slice_, pos, meta, blocks)
 
     return slice_
 
@@ -98,6 +156,10 @@ def detect_edges(map_, edges):
 
 def is_solid(blocks, block):
     return blocks[block][1]
+
+
+def ground_height(slice_, blocks):
+    return next(i for i, block in enumerate(slice_) if blocks[block][1])
 
 
 def gen_blocks():
