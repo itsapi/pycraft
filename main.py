@@ -1,22 +1,22 @@
 from time import time
 
-from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
+from nbinput import NonBlockingInput
 
 import saves, ui, terrain
 
 
 def get_x_delta(char):
 
-    if char == LEFT:
+    if char in 'aA':
         return -1
-    if char == RIGHT:
+    if char in 'dD':
         return 1
     return 0
 
 
 def get_y_delta(char):
 
-    if char == UP:
+    if char in 'wW':
         return -1
     return 0
 
@@ -32,13 +32,15 @@ def main():
         x = meta['center']
         y = meta['height'] - meta['ground_height'] - 1
         width = 40
+        FPS = 20
 
         old_edges = None
         redraw = False
+        last_out = time()
 
         # Game loop
         game = True
-        with BlockingInput() as bi:
+        with NonBlockingInput() as nbi:
             while game:
 
                 # Finds display boundaries
@@ -63,11 +65,13 @@ def main():
                     view = terrain.move_map(map_, edges)
 
                 # Draw view
-                if redraw:
+                if redraw and time() > 1/FPS + last_out:
                     redraw = False
+                    last_out = time()
                     terrain.render_map(view, y, blocks)
 
-                char = escape_code(bi)
+                # Take inputs and change pos accordingly
+                char = str(nbi.char())
 
                 x += get_x_delta(char)
                 dy = get_y_delta(char)
