@@ -86,6 +86,10 @@ def detect_edges(map_, edges):
     return slices
 
 
+def is_solid(blocks, block):
+    return blocks[block][1]
+
+
 def gen_blocks():
 
     # Block dict entries - (str char, bool solid)

@@ -5,19 +5,39 @@ from nbinput import NonBlockingInput
 import saves, ui, terrain
 
 
-def get_pos_delta(char, slice_, y, blocks, jump):
+def get_pos_delta(char, slices, y, blocks, jump):
+
+    player_slice = slices[1]
+    left_slice = slices[0]
+    right_slice = slices[2]
+
+    feet_y = y
+    head_y = y-1
+    below_y = y+1
+    above_y = y-2
+
+    is_solid = lambda block: terrain.is_solid(blocks, block)
+
     # Calculate change in x pos
-    if char in 'aA':
+    if (char in 'aA'
+        and not is_solid( left_slice[feet_y] )
+        and not is_solid( left_slice[head_y] )):
+
         dx = -1
-    elif char in 'dD':
+
+    elif (char in 'dD'
+          and not is_solid( right_slice[feet_y] )
+          and not is_solid( right_slice[head_y] )):
+
         dx = 1
+
     else:
         dx = 0
 
     # Jumps if up pressed, block below, no block above
     if (char in 'wW' and y > 1
-        and blocks[slice_[y+1]][1]
-        and not blocks[slice_[y-1]][1]):
+        and blocks[ player_slice[below_y] ][1]
+        and not blocks[ player_slice[above_y] ][1]):
 
         dy = -1
         jump = 5
@@ -106,7 +126,9 @@ def main():
                 if time() >= (1/TPS) + last_inp:
                     if inp:
                         dx, dy, jump = get_pos_delta(
-                            str(inp), map_[str(x)], y, blocks, jump
+                            str(inp),
+                            [map_[str(x + i)] for i in range(-1, 2)],
+                            y, blocks, jump
                         )
                         y += dy
                         x += dx
