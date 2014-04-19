@@ -1,8 +1,8 @@
 import random
 import copy
 
-from console import CLEAR
-from colors import colorStr, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+from console import CLS
+from colors import *
 
 
 def move_map(map_, edges):
@@ -38,7 +38,7 @@ def render_map(map_, player_x, player_y, blocks):
             out += blocks[pixel][0]
         out += '\n'
 
-    print(CLEAR + out, end='')
+    print(CLS + out, end='')
 
 
 def slice_height(pos, meta):
@@ -94,16 +94,16 @@ def gen_blocks():
 
     # Block dict entries - (str char, bool solid)
     return {
-        ' ': (' ', False), # Air
-        '-': (colorStr('-', GREEN), True), # Grass
-        '|': (colorStr('|', MAGENTA), True), # Wood
-        '@': (colorStr('@', GREEN), True), # Leaves
-        '#': (colorStr('#', WHITE), True), # Stone
-        'x': (colorStr('x', BLACK), True), # Coal
-        '+': (colorStr('+', RED), True), # Iron
-        ':': (colorStr(':', RED), True), # Redstone
-        '"': (colorStr('"', YELLOW), True), # Gold
-        'o': (colorStr('o', CYAN), True), # Diamond
-        '*': (colorStr('*', WHITE), True), # Player head
-        '^': (colorStr('^', WHITE), True) # Player legs
+        ' ': (colorStr(' ', bg=CYAN), False), # Air
+        '-': (colorStr('v', bg=GREEN, fg=GREEN, style=DARK), True), # Grass
+        '|': (colorStr('#', fg=BLACK, bg=MAGENTA, style=LIGHT), True), # Wood
+        '@': (colorStr('@', fg=GREEN, bg=GREEN, style=DARK), True), # Leaves
+        '#': (colorStr(' ', bg=BLACK), True), # Stone
+        'x': (colorStr('x', fg=BLACK, bg=BLACK, style=DARK), True), # Coal
+        '+': (colorStr('+', fg=RED, bg=BLACK, style=LIGHT), True), # Iron
+        ':': (colorStr(':', fg=RED, bg=BLACK, style=DARK), True), # Redstone
+        '"': (colorStr('"', fg=YELLOW, bg=BLACK), True), # Gold
+        'o': (colorStr('o', fg=BLUE, bg=BLACK, style=LIGHT), True), # Diamond
+        '*': (colorStr('*', fg=WHITE, bg=CYAN), True), # Player head
+        '^': (colorStr('^', fg=WHITE, bg=CYAN), True) # Player legs
     }

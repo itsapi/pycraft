@@ -1,7 +1,7 @@
 import sys
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
-from console import CLEAR
+from console import CLS, WIDTH, HEIGHT
 
 import saves
 
@@ -10,6 +10,7 @@ back = ['Back...', lambda: None]
 
 
 def menu(name, options):
+    print('\n' * HEIGHT)
 
     selection = 0
     char = None
@@ -20,7 +21,7 @@ def menu(name, options):
             for i, option in enumerate(options):
                 star = '*' if i == selection else ' '
                 out += star + option[0] + star + '\n'
-            print(CLEAR + name + '\n' + '=' * len(name) + '\n\n' + out)
+            print(CLS + name + '\n' + '=' * len(name) + '\n\n' + out)
 
             while True:
                 char = escape_code(bi)
@@ -72,7 +73,7 @@ def delete():
 
 
 def new():
-    print(CLEAR + 'New save\n')
+    print(CLS + 'New save\n')
     meta = {
         'name': input('Save name: '),
         'seed': input('Map seed: ')

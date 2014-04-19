@@ -62,7 +62,7 @@ def main():
         x = meta['center']
         y = meta['height'] - meta['ground_height'] - 1
         width = 40
-        FPS = 20
+        FPS = 10
         TPS = 10
 
         old_edges = None
