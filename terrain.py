@@ -53,7 +53,8 @@ def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 
     # Check surrounding slices for a hill
-    for x in range(pos - world_gen['max_hill'] * 2, pos + world_gen['max_hill'] * 2):
+    for x in range(pos - world_gen['max_hill'] * 2,
+                   pos + world_gen['max_hill'] * 2):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x))
 

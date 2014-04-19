@@ -14,7 +14,8 @@ def _has_colors(stream):
         return False
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = list(range(8))
-NORMAL, BOLD, DARK, ITALICS, UNDERLINE, _, _, INVERT, CLEAR, STRIKETHROUGH = list(range(10))
+NORMAL, BOLD, DARK, ITALICS, UNDERLINE,\
+    _, _, INVERT, CLEAR, STRIKETHROUGH = list(range(10))
 LIGHT = 'light'
 _has_colors = _has_colors(sys.stdout)
 
