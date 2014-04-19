@@ -20,9 +20,14 @@ def menu(name, options):
 
             out = ''
             for i, option in enumerate(options):
-                star = '*' if i == selection else ' '
-                out += star + option[0] + star + '\n'
-            print(CLS + name + '\n' + '=' * len(name) + '\n\n' + out)
+                if i == selection:
+                    star = colorStr('*', YELLOW)
+                    out += star + colorStr(option[0], style=BOLD) + star
+                else:
+                    out += ' ' + option[0]
+                out += '\n'
+
+            print(title(name) + out)
 
             while True:
                 char = escape_code(bi)
@@ -55,12 +60,22 @@ def lambda_gen(func, var):
     return lambda: func(var)
 
 
+def title(name):
+    return '{cls} {title}\n\n'.format(
+        cls = CLS,
+        title = colorStr('{name}\n {_}'.format(
+            name = name,
+            _ = ('=' * len(name))
+        ), style=BOLD)
+    )
+
+
 def load():
     saves_list = saves.list_saves()
     return menu(
         'Load save',
-        ([(save[1]['name'], lambda_gen(saves.load_save, save[0])) for save in saves_list]
-         + [back])
+        ([(save[1]['name'], lambda_gen(saves.load_save, save[0]))
+          for save in saves_list] + [back])
     )
 
 
@@ -68,18 +83,20 @@ def delete():
     saves_list = saves.list_saves()
     return menu(
         'Delete save',
-        ([(save[1]['name'], lambda_gen(saves.delete_save, save[0])) for save in saves_list]
-         + [back])
+        ([(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
+          for save in saves_list] + [back])
     )
 
 
 def new():
-    print(CLS + 'New save\n')
+    print(title('New save'), end='')
     meta = {}
-    meta['name'] = input('Save name (leave blank to cancel): ')
+    meta['name'] = input(colorStr(' Save name', style=BOLD)
+                         + ' (leave blank to cancel): ')
     if not meta['name']:
         return None
-    meta['seed'] = input('Map seed (leave blank to randomise): ')
+    meta['seed'] = input(colorStr(' Map seed', style=BOLD)
+                         + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
     return saves.load_save(save)
 
