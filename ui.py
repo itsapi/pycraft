@@ -2,6 +2,7 @@ import sys
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 from console import CLS, WIDTH, HEIGHT
+from colors import *
 
 import saves
 
@@ -74,10 +75,11 @@ def delete():
 
 def new():
     print(CLS + 'New save\n')
-    meta = {
-        'name': input('Save name: '),
-        'seed': input('Map seed: ')
-    }
+    meta = {}
+    meta['name'] = input('Save name (leave blank to cancel): ')
+    if not meta['name']:
+        return None
+    meta['seed'] = input('Map seed (leave blank to randomise): ')
     save = saves.new_save(meta)
     return saves.load_save(save)
 
