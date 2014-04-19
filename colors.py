@@ -25,8 +25,8 @@ def colorStr(text, fg=WHITE, bg=-40, style=NORMAL):
             fg += 60
             style = NORMAL
 
-        seq = '\x1b[{style};{bg};{fg}m{text}\x1b[0m'.format(
-            style = style,
+        seq = '\x1b[{bg}{style};{fg}m{text}\x1b[0m'.format(
+            style = (';' + str(style)) if style else '',
             bg = 40 + bg,
             fg = 30 + fg,
             text = text
@@ -36,6 +36,5 @@ def colorStr(text, fg=WHITE, bg=-40, style=NORMAL):
         return text
 
 if __name__ == '__main__':
-    print(colorStr('hello world', fg=RED, bg=WHITE, style=LIGHT))
-    print(colorStr('hello world', fg=RED, bg=WHITE))
-    print(colorStr('hello world', fg=RED, bg=WHITE, style=DARK))
+    for style in range(10):
+        print(colorStr('hello world', fg=GREEN, bg=RED, style=style))
