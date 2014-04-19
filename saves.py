@@ -4,6 +4,8 @@ import random
 
 from shutil import rmtree
 
+from terrain import world_gen
+
 
 default_meta = {
     'name': 'Untitled',
@@ -95,14 +97,14 @@ def check_map(data, meta):
         map_[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
 
     for key, slice_ in map_.items():
-        if not len(slice_) == meta['height']:
+        if not len(slice_) == world_gen['height']:
 
-            if len(slice_) < meta['height']:
+            if len(slice_) < world_gen['height']:
                 # Extend slice height
-                slice_ = [' '] * (meta['height'] - len(slice_)) + slice_
-            elif len(slice_) > meta['height']:
+                slice_ = [' '] * (world_gen['height'] - len(slice_)) + slice_
+            elif len(slice_) > world_gen['height']:
                 # Truncate slice height
-                slice_ = slice_[:meta['height']]
+                slice_ = slice_[:world_gen['height']]
 
             map_[key] = slice_
 
