@@ -5,12 +5,19 @@ from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 import saves, ui, terrain
 
 
-def get_pos_d(char):
+def get_x_delta(char):
 
     if char == LEFT:
         return -1
     if char == RIGHT:
         return 1
+    return 0
+
+
+def get_y_delta(char):
+
+    if char == UP:
+        return -1
     return 0
 
 
@@ -22,10 +29,9 @@ def main():
     while True:
         meta, map_, save = ui.main()
 
-        pos = meta['center']
+        x = meta['center']
+        y = meta['height'] - meta['ground_height'] - 1
         width = 40
-
-        FPS = 20
 
         old_edges = None
         redraw = False
@@ -36,14 +42,14 @@ def main():
             while game:
 
                 # Finds display boundaries
-                edges = (pos - int(width / 2), pos + int(width / 2))
+                edges = (x - int(width / 2), x + int(width / 2))
 
                 # Generates new terrain
                 slices = {}
-                slice_pos_list = terrain.detect_edges(map_, edges)
-                for slice_pos in slice_pos_list:
-                    slices[str(slice_pos)] = terrain.gen_slice(slice_pos, meta)
-                    map_[str(slice_pos)] = slices[str(slice_pos)]
+                slice_list = terrain.detect_edges(map_, edges)
+                for pos in slice_list:
+                    slices[str(pos)] = terrain.gen_slice(pos, meta)
+                    map_[str(pos)] = slices[str(pos)]
                     redraw = True
 
                 # Save new terrain to file
@@ -59,10 +65,16 @@ def main():
                 # Draw view
                 if redraw:
                     redraw = False
-                    terrain.render_map(view, blocks)
+                    terrain.render_map(view, y, blocks)
 
                 char = escape_code(bi)
-                pos += get_pos_d(char)
+
+                x += get_x_delta(char)
+                dy = get_y_delta(char)
+                y += dy
+                if dy:
+                    redraw = True
+
                 if char == ' ':
                     redraw = True
                     if ui.pause() == 'exit':

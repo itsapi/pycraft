@@ -1,4 +1,5 @@
 import random
+import copy
 
 from console import CLEAR
 from colors import colorStr, BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
@@ -13,7 +14,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, blocks):
+def render_map(map_, player_y, blocks):
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -25,7 +26,21 @@ def render_map(map_, blocks):
     # Orientates the data
     map_ = tuple(zip(*map_))
 
-    print(CLEAR + '\n'.join(''.join(blocks[pixel] for pixel in row) for row in map_))
+    player_x = int(len(map_) / 2)
+
+    # Output the map
+    out = ''
+    for y, row in enumerate(map_):
+        for x, pixel in enumerate(row):
+
+            # Add the player
+            if x == player_x and y in [player_y, player_y - 1]:
+                pixel = '^*'[y - player_y]
+
+            out += blocks[pixel]
+        out += '\n'
+
+    print(CLEAR + out, end='')
 
 
 def slice_height(pos, meta):
@@ -85,5 +100,7 @@ def gen_blocks():
         '+': colorStr('+', RED), # Iron
         ':': colorStr(':', RED), # Redstone
         '"': colorStr('"', YELLOW), # Gold
-        'o': colorStr('o', CYAN) # Diamond
+        'o': colorStr('o', CYAN), # Diamond
+        '*': colorStr('*', WHITE), # Player head
+        '^': colorStr('^', WHITE) # Player legs
     }
