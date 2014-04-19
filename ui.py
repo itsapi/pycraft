@@ -1,9 +1,9 @@
 import sys
 
-from nbinput import BlockingInput, escape_code
+from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 from console import CLEAR
 
-from saves import list_saves, new_save, load_save, delete_save
+import saves
 
 
 back = ['Back...', lambda: None]
@@ -26,10 +26,10 @@ def menu(name, options):
                 char = escape_code(bi)
                 if char == '\n':
                     break
-                if char == 'A':
+                if char == UP:
                     selection -= 1
                     break
-                if char == 'B':
+                if char == DOWN:
                     selection += 1
                     break
             selection %= len(options)
@@ -54,19 +54,19 @@ def lambda_gen(func, var):
 
 
 def load():
-    saves = list_saves()
+    saves_list = saves.list_saves()
     return menu(
         'Load save',
-        ([(save[1]['name'], lambda_gen(load_save, save[0])) for save in saves]
+        ([(save[1]['name'], lambda_gen(saves.load_save, save[0])) for save in saves_list]
          + [back])
     )
 
 
 def delete():
-    saves = list_saves()
+    saves_list = saves.list_saves()
     return menu(
         'Delete save',
-        ([(save[1]['name'], lambda_gen(delete_save, save[0])) for save in saves]
+        ([(save[1]['name'], lambda_gen(saves.delete_save, save[0])) for save in saves_list]
          + [back])
     )
 
@@ -77,5 +77,12 @@ def new():
         'name': input('Save name: '),
         'seed': input('Map seed: ')
     }
-    save = new_save(meta)
-    return load_save(save)
+    save = saves.new_save(meta)
+    return saves.load_save(save)
+
+
+def pause():
+    return menu('Paused', (
+        ('Resume', lambda: None),
+        ('Main Menu', lambda: 'exit')
+    ))

@@ -7,6 +7,9 @@ import sys
 import select
 
 
+UP, DOWN, RIGHT, LEFT = 'A', 'B', 'C', 'D'
+
+
 class NonBlockingInput:
     """
     Gets a single character from standard input. Does not echo to the
