@@ -43,18 +43,20 @@ def render_map(map_, player_x, player_y, blocks):
 
 def slice_height(pos, meta):
 
-    slice_height_ = meta['ground_height']
+    slice_height_ = world_gen['ground_height']
 
     # Check surrounding slices for a hill
-    for x in range(pos - meta['max_hill'] * 2, pos + meta['max_hill'] * 2):
+    for x in range(pos - world_gen['max_hill'] * 2, pos + world_gen['max_hill'] * 2):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x))
 
         # Generate a hill with a 15% chance
-        if random.randint(0, 100) < 15:
+        if random.randint(0, 100) < 5:
+            # Make top of hill flat
             # Set height to height of hill minus distance from hill
-            hill_height = (meta['ground_height'] +
-                random.randint(0, meta['max_hill']) - abs(pos-x)/2)
+            hill_height = (world_gen['ground_height'] +
+                random.randint(0, world_gen['max_hill']) - abs(pos-x)/2)
+            hill_height -= 1 if pos == x else 0
 
             if hill_height > slice_height_:
                 slice_height_ = hill_height
