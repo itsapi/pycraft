@@ -1,7 +1,7 @@
 import sys
 
 
-def has_colors(stream):
+def _has_colors(stream):
     if not hasattr(stream, 'isatty'):
         return False
     if not stream.isatty():
@@ -13,16 +13,20 @@ def has_colors(stream):
     except:
         return False
 
-BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = list(range(8))
-has_colors = has_colors(sys.stdout)
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, CLEAR = list(range(9))
+_has_colors = _has_colors(sys.stdout)
 
 
-def colorStr(text, color=WHITE):
-    if has_colors:
-        seq = '\x1b[1;%dm' % (30 + color) + text + '\x1b[0m'
+def colorStr(text, fg=WHITE, bg=CLEAR):
+    if _has_colors:
+        seq = '\x1b[{bg};{fg}m{text}\x1b[0m'.format(
+            bg = 40 + bg,
+            fg = 30 + fg,
+            text = text
+        )
         return seq
     else:
         return text
 
 if __name__ == '__main__':
-    print(colorStr('hi', CYAN))
+    print(colorStr('hi', fg=BLUE, bg=YELLOW))
