@@ -98,7 +98,7 @@ def gen_blocks():
         '-': (colorStr('v', bg=GREEN, fg=GREEN, style=DARK), True), # Grass
         '|': (colorStr('#', fg=BLACK, bg=MAGENTA, style=LIGHT), True), # Wood
         '@': (colorStr('@', fg=GREEN, bg=GREEN, style=DARK), True), # Leaves
-        '#': (colorStr(' ', bg=BLACK), True), # Stone
+        '#': (colorStr('~', bg=BLACK, style=CLEAR), True), # Stone
         'x': (colorStr('x', fg=BLACK, bg=BLACK, style=DARK), True), # Coal
         '+': (colorStr('+', fg=RED, bg=BLACK, style=LIGHT), True), # Iron
         ':': (colorStr(':', fg=RED, bg=BLACK, style=DARK), True), # Redstone
