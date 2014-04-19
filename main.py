@@ -5,25 +5,26 @@ from nbinput import NonBlockingInput
 import saves, ui, terrain
 
 
-def get_x_delta(char):
-
+def get_pos_delta(char, slice_, y, blocks, jump):
+    # Calculate change in x pos
     if char in 'aA':
-        return -1
-    if char in 'dD':
-        return 1
-    return 0
-
-
-def get_y_delta(char, slice_, y, blocks, jumped):
-
-    # Calculate change in y pos
-    if blocks[slice_[y+1]][1]:
-        if jumped and y > 1:
-            return -1
-        else:
-            return 0
+        dx = -1
+    elif char in 'dD':
+        dx = 1
     else:
-        return 1
+        dx = 0
+
+    # Jumps if up pressed, block below, no block above
+    if (char in 'wW' and y > 1
+        and blocks[slice_[y+1]][1]
+        and not blocks[slice_[y-1]][1]):
+
+        dy = -1
+        jump = 5
+    else:
+        dy = 0
+
+    return dx, dy, jump
 
 
 def main():
@@ -44,8 +45,10 @@ def main():
         redraw = False
         last_out = time()
         last_tick = time()
+        last_inp = time()
         tick = 0
-        jumped = False
+        inp = None
+        jump = 0
 
         # Game loop
         game = True
@@ -87,20 +90,30 @@ def main():
                 else:
                     dt = 0
 
+                # Player falls when no block below it
+                if dt and not blocks[map_[str(x)][y+1]][1]:
+                    if jump > 0:
+                        jump -= 1
+                    else:
+                        y += 1
+                        redraw = True
+
                 # Take inputs and change pos accordingly
                 char = str(nbi.char())
 
-                x += get_x_delta(char)
+                inp = char if char in 'wWaAdD' else None
 
-                if char in 'wW':
-                    jumped = True
-
-                if dt:
-                    dy = get_y_delta(char, map_[str(x)], y, blocks, jumped)
-                    y += dy
-                    if dy:
-                        redraw = True
-                    jumped = False
+                if time() >= (1/TPS) + last_inp:
+                    if inp:
+                        dx, dy, jump = get_pos_delta(
+                            str(inp), map_[str(x)], y, blocks, jump
+                        )
+                        y += dy
+                        x += dx
+                        if dy or dx:
+                            redraw = True
+                        last_inp = time()
+                        inp = None
 
                 # Pause game
                 if char == ' ':
