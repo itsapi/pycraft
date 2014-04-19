@@ -14,22 +14,28 @@ def get_pos_delta(char, slices, y, blocks, jump):
     feet_y = y
     head_y = y-1
     below_y = y+1
-    above_y = y-2
+    above_y = y-3
+
+    dy = 0
 
     is_solid = lambda block: terrain.is_solid(blocks, block)
 
     # Calculate change in x pos
     if (char in 'aA'
-        and not is_solid( left_slice[feet_y] )
         and not is_solid( left_slice[head_y] )):
 
         dx = -1
 
+        if is_solid( left_slice[feet_y] ):
+            dy = -1
+
     elif (char in 'dD'
-          and not is_solid( right_slice[feet_y] )
           and not is_solid( right_slice[head_y] )):
 
         dx = 1
+
+        if is_solid( right_slice[feet_y] ):
+            dy = -1
 
     else:
         dx = 0
@@ -39,10 +45,8 @@ def get_pos_delta(char, slices, y, blocks, jump):
         and blocks[ player_slice[below_y] ][1]
         and not blocks[ player_slice[above_y] ][1]):
 
-        dy = -1
+        dy = -2
         jump = 5
-    else:
-        dy = 0
 
     return dx, dy, jump
 
