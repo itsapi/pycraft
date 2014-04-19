@@ -8,10 +8,7 @@ from shutil import rmtree
 default_meta = {
     'name': 'Untitled',
     'seed': '',
-    'center': 0,
-    'height': 30,
-    'max_hill': 5,
-    'ground_height': 10
+    'center': 0
 }
 
 

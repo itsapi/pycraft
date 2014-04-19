@@ -5,6 +5,13 @@ from console import CLS
 from colors import *
 
 
+world_gen = {
+    'height': 30,
+    'max_hill': 15,
+    'ground_height': 10
+}
+
+
 def move_map(map_, edges):
 
     # Create subset of slices from map_ between edges
@@ -69,7 +76,7 @@ def gen_slice(pos, meta):
     slice_height_ = slice_height(pos, meta)
 
     # Form slice of sky - ground - stone layers
-    slice_ = ([' '] * (meta['height'] - slice_height_) +
+    slice_ = ([' '] * (world_gen['height'] - slice_height_) +
         ['-'] + ['#'] * (slice_height_ - 1))
 
     return slice_
