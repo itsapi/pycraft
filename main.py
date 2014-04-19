@@ -14,11 +14,16 @@ def get_x_delta(char):
     return 0
 
 
-def get_y_delta(char):
+def get_y_delta(char, slice_, y, blocks, jumped):
 
-    if char in 'wW':
-        return -1
-    return 0
+    # Calculate change in y pos
+    if blocks[slice_[y+1]][1]:
+        if jumped and y > 1:
+            return -1
+        else:
+            return 0
+    else:
+        return 1
 
 
 def main():
@@ -33,10 +38,14 @@ def main():
         y = meta['height'] - meta['ground_height'] - 1
         width = 40
         FPS = 20
+        TPS = 10
 
         old_edges = None
         redraw = False
         last_out = time()
+        last_tick = time()
+        tick = 0
+        jumped = False
 
         # Game loop
         game = True
@@ -65,20 +74,35 @@ def main():
                     view = terrain.move_map(map_, edges)
 
                 # Draw view
-                if redraw and time() > 1/FPS + last_out:
+                if redraw and time() >= 1/FPS + last_out:
                     redraw = False
                     last_out = time()
-                    terrain.render_map(view, y, blocks)
+                    terrain.render_map(view, int(width / 2), y, blocks)
+
+                # Increase tick
+                if time() >= (1/TPS) + last_tick:
+                    dt = 1
+                    tick += dt
+                    last_tick = time()
+                else:
+                    dt = 0
 
                 # Take inputs and change pos accordingly
                 char = str(nbi.char())
 
                 x += get_x_delta(char)
-                dy = get_y_delta(char)
-                y += dy
-                if dy:
-                    redraw = True
 
+                if char in 'wW':
+                    jumped = True
+
+                if dt:
+                    dy = get_y_delta(char, map_[str(x)], y, blocks, jumped)
+                    y += dy
+                    if dy:
+                        redraw = True
+                    jumped = False
+
+                # Pause game
                 if char == ' ':
                     redraw = True
                     if ui.pause() == 'exit':

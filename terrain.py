@@ -14,7 +14,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, player_y, blocks):
+def render_map(map_, player_x, player_y, blocks):
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -26,8 +26,6 @@ def render_map(map_, player_y, blocks):
     # Orientates the data
     map_ = tuple(zip(*map_))
 
-    player_x = int(len(map_) / 2)
-
     # Output the map
     out = ''
     for y, row in enumerate(map_):
@@ -37,7 +35,7 @@ def render_map(map_, player_y, blocks):
             if x == player_x and y in [player_y, player_y - 1]:
                 pixel = '^*'[y - player_y]
 
-            out += blocks[pixel]
+            out += blocks[pixel][0]
         out += '\n'
 
     print(CLEAR + out, end='')
@@ -90,17 +88,18 @@ def detect_edges(map_, edges):
 
 def gen_blocks():
 
+    # Block dict entries - (str char, bool solid)
     return {
-        ' ': ' ', # Air
-        '-': colorStr('-', GREEN), # Grass
-        '|': colorStr('|', MAGENTA), # Wood
-        '@': colorStr('@', GREEN), # Leaves
-        '#': colorStr('#', WHITE), # Stone
-        'x': colorStr('x', BLACK), # Coal
-        '+': colorStr('+', RED), # Iron
-        ':': colorStr(':', RED), # Redstone
-        '"': colorStr('"', YELLOW), # Gold
-        'o': colorStr('o', CYAN), # Diamond
-        '*': colorStr('*', WHITE), # Player head
-        '^': colorStr('^', WHITE) # Player legs
+        ' ': (' ', False), # Air
+        '-': (colorStr('-', GREEN), True), # Grass
+        '|': (colorStr('|', MAGENTA), True), # Wood
+        '@': (colorStr('@', GREEN), True), # Leaves
+        '#': (colorStr('#', WHITE), True), # Stone
+        'x': (colorStr('x', BLACK), True), # Coal
+        '+': (colorStr('+', RED), True), # Iron
+        ':': (colorStr(':', RED), True), # Redstone
+        '"': (colorStr('"', YELLOW), True), # Gold
+        'o': (colorStr('o', CYAN), True), # Diamond
+        '*': (colorStr('*', WHITE), True), # Player head
+        '^': (colorStr('^', WHITE), True) # Player legs
     }
