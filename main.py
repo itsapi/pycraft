@@ -60,7 +60,7 @@ def main():
         meta, map_, save = ui.main()
 
         x = meta['center']
-        y = meta['height'] - meta['ground_height'] - 1
+        y = 1
         width = 40
         FPS = 10
         TPS = 10
