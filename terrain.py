@@ -46,20 +46,20 @@ def slice_height(pos, meta):
     slice_height_ = meta['ground_height']
 
     # Check surrounding slices for a hill
-    for x in range(pos - meta['max_hill'], pos + meta['max_hill']):
+    for x in range(pos - meta['max_hill'] * 2, pos + meta['max_hill'] * 2):
         # Set seed for random numbers based on position
-        random.seed(meta['seed'] + str(x))
+        random.seed(str(meta['seed']) + str(x))
 
         # Generate a hill with a 15% chance
         if random.randint(0, 100) < 15:
             # Set height to height of hill minus distance from hill
             hill_height = (meta['ground_height'] +
-                random.randint(0, meta['max_hill']) - abs(pos-x))
+                random.randint(0, meta['max_hill']) - abs(pos-x)/2)
 
             if hill_height > slice_height_:
                 slice_height_ = hill_height
 
-    return slice_height_
+    return int(slice_height_)
 
 
 def gen_slice(pos, meta):

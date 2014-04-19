@@ -45,7 +45,7 @@ def get_pos_delta(char, slices, y, blocks, jump):
         and blocks[ player_slice[below_y] ][1]
         and not blocks[ player_slice[above_y] ][1]):
 
-        dy = -2
+        dy = -1
         jump = 5
 
     return dx, dy, jump
