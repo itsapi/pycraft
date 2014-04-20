@@ -61,7 +61,7 @@ def break_block(inp, map_, x, y, cursor, blocks):
 
 
 def respawn(meta):
-    return meta['center'], 1
+    return meta['spawn'], 1
 
 
 def move_cursor(inp):

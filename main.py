@@ -14,8 +14,8 @@ def main():
     while True:
         meta, map_, save = ui.main()
 
-        x = meta['center']
-        y = 1
+        x = meta['player_x']
+        y = meta['player_y']
         dx = 0
         dy = 0
         dt = 0
@@ -115,6 +115,10 @@ def main():
 
                         if dx or dy or dc:
                             redraw = True
+                        if dx or dy:
+                            meta['player_x'], meta['player_y'] = x, y
+                            saves.save_meta(save, meta)
+
                         last_inp = time()
                         inp = None
 

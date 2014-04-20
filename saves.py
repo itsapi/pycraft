@@ -10,7 +10,9 @@ from terrain import world_gen
 default_meta = {
     'name': 'Untitled',
     'seed': '',
-    'center': 0
+    'spawn': 0,
+    'player_x': 0,
+    'player_y': 1
 }
 
 SAVES_DIR = 'saves'
