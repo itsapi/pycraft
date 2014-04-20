@@ -46,6 +46,7 @@ def get_pos_delta(char, slices, y, blocks, jump):
 
 def main():
 
+    saves.check_map_dir()
     blocks = terrain.gen_blocks()
 
     # Menu loop

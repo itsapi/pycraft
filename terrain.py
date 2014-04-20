@@ -10,6 +10,7 @@ world_gen = {
     'height': 30,
     'max_hill': 15,
     'ground_height': 10,
+    'chunk_size': 16,
     'ores': {
         'coal': {
             'char': 'x',

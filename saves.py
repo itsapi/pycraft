@@ -17,6 +17,10 @@ save_path = lambda save, filename='': os.path.join('maps', save, filename)
 meta_path = lambda save: save_path(save, 'meta.json')
 
 
+def check_map_dir():
+    if not os.path.isdir('maps'): os.mkdir('maps')
+
+
 def new_save(meta):
 
     meta = check_meta(meta)
@@ -52,7 +56,7 @@ def load_save(save):
     except FileNotFoundError:
         map_ = {}
 
-    save_map(save, map_, 'w')
+    save_map(save, map_, True)
     save_meta(save, meta)
 
     return meta, map_, save
@@ -66,10 +70,18 @@ def get_meta(save):
 
 
 def get_map(save):
-    with open(os.path.join('maps', save, 'map.blk')) as f:
-        data = f.readlines()
+    map_ = []
 
-    return data
+    chunks = (file_ for file_ in os.listdir(save_path(save))
+              if file_.endswith('.chunk'))
+    for chunk in chunks:
+
+        with open(save_path(save, chunk)) as f:
+            data = f.readlines()
+
+        map_ += data
+
+    return map_
 
 
 def check_meta(meta):
@@ -121,11 +133,17 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def save_map(save, map_, mode='a'):
+def save_map(save, map_, rewrite=False):
+    if rewrite:
+        for file_ in os.listdir(save_path(save)):
+            if file_.endswith('.chunk'): os.remove(save_path(save, file_))
 
     # Save map file
-    with open(os.path.join('maps', save, 'map.blk'), mode) as f:
-        for key, slice_ in map_.items():
+    for key, slice_ in map_.items():
+
+        chunk = int(key) // world_gen['chunk_size']
+
+        with open(save_path(save, str(chunk) + '.chunk'), 'a') as f:
             f.write(key+'<sep>'+''.join(slice_)+'\n')
 
 
