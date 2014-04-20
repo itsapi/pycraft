@@ -79,6 +79,14 @@ def main():
                     alive = True
                     x, y = player.respawn(meta)
 
+                # Player falls when no solid block below it
+                if dt and not terrain.is_solid(blocks, map_[str(x)][y+1]):
+                    if jump > 0:
+                        jump -= 1
+                    else:
+                        y += 1
+                        redraw = True
+
                 # If no block below, kill player
                 try:
                     block = map_[str(x)][y+1]
@@ -86,14 +94,6 @@ def main():
                 except IndexError:
                     below_solid = False
                     alive = False
-
-                # Player falls when no solid block below it
-                if dt and not below_solid:
-                    if jump > 0:
-                        jump -= 1
-                    else:
-                        y += 1
-                        redraw = True
 
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
@@ -107,7 +107,7 @@ def main():
                         y += dy
                         x += dx
 
-                        new_slices = player.break_block(str(inp),
+                        new_slices = player.cursor_func(str(inp),
                                      map_, x, y, cursor, blocks)
                         map_.update(new_slices)
 

@@ -148,16 +148,6 @@ blocks = {
         },
         'solid': False,
         'breakable': False
-    },
-    '_': { # Clear block
-        'char': clear_bg,
-        'colors': {
-            'fg': None,
-            'bg': None,
-            'style': CLEAR
-        },
-        'solid': False,
-        'breakable': False
     }
 }
 

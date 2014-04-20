@@ -45,17 +45,23 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def break_block(inp, map_, x, y, cursor, blocks):
+def cursor_func(inp, map_, x, y, cursor, blocks):
     block_x = str(x + cursor_x(cursor))
     block_y = y + cursor_y(cursor)
 
     new_slices = {}
 
-    # If pressing x and block is breakable
-    if inp in 'k' and blocks[ map_[block_x][block_y] ]['breakable']:
-        new_slices[block_x] = map_[block_x]
-        new_slices[block_x][block_y] = ' '
-        redraw = True
+    if inp in 'k' and block_y >= 0:
+        # If pressing k and block is air
+        if map_[block_x][block_y] == ' ':
+            new_slices[block_x] = map_[block_x]
+            new_slices[block_x][block_y] = '#'
+            redraw = True
+        # If pressing k and block is not air and breakable
+        elif blocks[ map_[block_x][block_y] ]['breakable']:
+            new_slices[block_x] = map_[block_x]
+            new_slices[block_x][block_y] = ' '
+            redraw = True
 
     return new_slices
 
@@ -88,7 +94,7 @@ def render_player(x, y, cursor, c_hidden):
     cursor = {
         'x': x + cursor_x(cursor),
         'y': y + cursor_y(cursor),
-        'char': '_' if c_hidden else 'X'
+        'char': 'X'
     }
 
-    return head, feet, cursor
+    return (head, feet) if c_hidden else (head, feet, cursor)
