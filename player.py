@@ -18,7 +18,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     is_solid = lambda block: terrain.is_solid(blocks, block)
 
     # Calculate change in x pos for left and right movement
-    for test_char, dir_, func in (('aA', -1, left_slice), ('dD', 1, right_slice)):
+    for test_char, dir_, func in (('a', -1, left_slice), ('d', 1, right_slice)):
         if (char in test_char
             and not is_solid( func[head_y] )):
 
@@ -30,7 +30,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
                 dx = dir_
 
     # Jumps if up pressed, block below, no block above
-    if (char in 'wW' and y > 1
+    if (char in 'w' and y > 1
         and blocks[ player_slice[below_y] ][1]
         and not blocks[ player_slice[above_y] ][1]):
 
@@ -47,7 +47,7 @@ def break_block(inp, map_, x, y, blocks):
     new_slices = {}
 
     # If pressing x and block is breakable
-    if inp in 'fF' and blocks[ map_[block_x][block_y] ][2]:
+    if inp in 'f' and blocks[ map_[block_x][block_y] ][2]:
         new_slices[block_x] = map_[block_x]
         new_slices[block_x][block_y] = ' '
         redraw = True
@@ -57,3 +57,33 @@ def break_block(inp, map_, x, y, blocks):
 
 def respawn(meta):
     return meta['center'], 1
+
+
+def move_cursor(inp):
+    try:
+        return {'q': -1, 'e': 1}[inp]
+    except KeyError:
+        return 0
+
+
+def render_player(x, y, cursor):
+
+    head = {
+        'x': x,
+        'y': y - 1,
+        'char': '*'
+    }
+
+    feet = {
+        'x': x,
+        'y': y,
+        'char': '^'
+    }
+
+    cursor = {
+        'x': x + {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor],
+        'y': y + {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}[cursor],
+        'char': 'X'
+    }
+
+    return head, feet, cursor

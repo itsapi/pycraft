@@ -20,6 +20,7 @@ def main():
         dy = 0
         dt = 0
         df = 0
+        dc = 0
         width = 40
         FPS = 10
         TPS = 10
@@ -32,6 +33,7 @@ def main():
         tick = 0
         inp = None
         jump = 0
+        cursor = 0
         new_slices = {}
         alive = True
 
@@ -66,7 +68,8 @@ def main():
                     df = 1
                     redraw = False
                     last_out = time()
-                    terrain.render_map(view, int(width / 2), y, blocks)
+                    objects = player.render_player(int(width / 2), y, cursor)
+                    terrain.render_map(view, objects, blocks)
                 else:
                     df = 0
 
@@ -92,9 +95,9 @@ def main():
                         redraw = True
 
                 # Take inputs and change pos accordingly
-                char = str(nbi.char())
+                char = str(nbi.char()).lower()
 
-                inp = char if char in 'wWaAdDfF' else None
+                inp = char if char in 'wadfqe' else None
 
                 if time() >= (1/TPS) + last_inp and alive:
                     if inp:
@@ -106,7 +109,10 @@ def main():
                         new_slices = player.break_block(str(inp), map_, x, y, blocks)
                         map_.update(new_slices)
 
-                        if dx or dy:
+                        dc = player.move_cursor(inp)
+                        cursor = (cursor + dc) % 6
+
+                        if dx or dy or dc:
                             redraw = True
                         last_inp = time()
                         inp = None

@@ -78,7 +78,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, player_x, player_y, blocks):
+def render_map(map_, objects, blocks):
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -96,8 +96,9 @@ def render_map(map_, player_x, player_y, blocks):
         for x, pixel in enumerate(row):
 
             # Add the player
-            if x == player_x and y in [player_y, player_y - 1]:
-                pixel = '^*'[y - player_y]
+            for object_ in objects:
+                if object_['x'] == x and object_['y'] == y:
+                    pixel = object_['char']
 
             out += blocks[pixel][0]
         out += '\n'
@@ -248,6 +249,7 @@ def gen_blocks():
         '"': (colorStr('"', fg=YELLOW, bg=BLACK),                True,  True),  # Gold
         'o': (colorStr('o', fg=BLUE,   bg=BLACK,   style=LIGHT), True,  True),  # Diamond
         'o': (colorStr('o', fg=GREEN,  bg=BLACK,   style=DARK),  True,  True),  # Emerald
-        '*': (colorStr('*', fg=WHITE,  bg=CYAN),                 True,  True),  # Player head
-        '^': (colorStr('^', fg=WHITE,  bg=CYAN),                 True,  True)   # Player legs
+        '*': (colorStr('*', fg=WHITE,  bg=CYAN),                 False, False), # Player head
+        '^': (colorStr('^', fg=WHITE,  bg=CYAN),                 False, False), # Player legs
+        'X': (colorStr('X', fg=WHITE,  bg=RED),                  False, False)  # Cursor
     }
