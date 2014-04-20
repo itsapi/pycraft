@@ -20,22 +20,21 @@ LIGHT = 'light'
 _has_colors = _has_colors(sys.stdout)
 
 
-def colorStr(text, fg=WHITE, bg=-40, style=NORMAL):
+def colorStr(text, fg=None, bg=None, style=None):
     if _has_colors:
         if style == LIGHT:
             fg += 60
-            style = NORMAL
+            style = None
 
-        seq = '\x1b[{bg}{style};{fg}m{text}\x1b[0m'.format(
-            style = (';' + str(style)) if style else '',
-            bg = 40 + bg,
-            fg = 30 + fg,
-            text = text
-        )
+        seq = '\x1b['
+        seq += str(0 if bg is None else (bg + 40)) + ';'
+        seq += (str(style) + ';') if style is not None else ''
+        seq += str((WHITE if fg is None else fg) + 30)
+        seq += 'm{}\x1b[0m'.format(text)
         return seq
     else:
         return text
 
 if __name__ == '__main__':
     for style in range(10):
-        print(colorStr('hello world', fg=GREEN, bg=RED, style=style))
+        print(colorStr('hello world', fg=RED, style=style))
