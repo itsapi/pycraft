@@ -3,70 +3,9 @@ import copy
 from math import ceil
 
 from console import CLS
-from colors import *
+from colors import colorStr
 
-
-world_gen = {
-    'height': 30,
-    'max_hill': 15,
-    'ground_height': 10,
-    'chunk_size': 16,
-    'ores': {
-        'coal': {
-            'char': 'x',
-            'vain_size': 4,
-            'chance': 0.05,
-            'upper': 30,
-            'lower': 0
-        },
-        'iron': {
-            'char': '+',
-            'vain_size': 3,
-            'chance': 0.03,
-            'upper': 15,
-            'lower': 0
-        },
-        'redstone': {
-            'char': ':',
-            'vain_size': 4,
-            'chance': 0.03,
-            'upper': 7,
-            'lower': 0
-        },
-        'gold': {
-            'char': '"',
-            'vain_size': 2,
-            'chance': 0.02,
-            'upper': 10,
-            'lower': 0
-        },
-        'diamond': {
-            'char': 'o',
-            'vain_size': 1,
-            'chance': 0.01,
-            'upper': 5,
-            'lower': 0
-        },
-        'emerald': {
-            'char': 'o',
-            'vain_size': 1,
-            'chance': 0.002,
-            'upper': 7,
-            'lower': 0
-        },
-    }
-}
-
-trees = (
-    ((0, 1, 1),
-     (1, 1, 0),
-     (0, 1, 1)),
-    ((1, 1, 0, 0, 0, 1, 1),
-     (0, 1, 1, 0, 1, 1, 0),
-     (0, 0, 1, 1, 0, 0, 0),
-     (0, 1, 1, 1, 1, 0, 0),
-     (1, 1, 0, 0, 1, 1, 0))
-)
+from data import world_gen, blocks
 
 
 def move_map(map_, edges):
@@ -132,7 +71,7 @@ def slice_height(pos, meta):
 
 def add_tree(slice_, pos, meta):
     # Maximum width of half a tree
-    max_half_tree = int(len(max(trees, key=lambda tree: len(tree))) / 2)
+    max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
         # Set seed for random numbers based on position
@@ -140,7 +79,7 @@ def add_tree(slice_, pos, meta):
 
         # Generate a tree with a 5% chance
         if random.random() <= 0.05:
-            tree = random.choice(trees)
+            tree = random.choice(world_gen['trees'])
 
             # Get height above ground
             air_height = world_gen['height'] - slice_height(x, meta)

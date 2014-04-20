@@ -36,8 +36,8 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
     # Jumps if up pressed, block below, no block above
     if (char in 'w' and y > 1
-        and blocks[ player_slice[below_y] ][1]
-        and not blocks[ player_slice[above_y] ][1]):
+        and blocks[ player_slice[below_y] ]['solid']
+        and not blocks[ player_slice[above_y] ]['solid']):
 
         dy = -1
         jump = 5
@@ -52,7 +52,7 @@ def break_block(inp, map_, x, y, cursor, blocks):
     new_slices = {}
 
     # If pressing x and block is breakable
-    if inp in 'k' and blocks[ map_[block_x][block_y] ][2]:
+    if inp in 'k' and blocks[ map_[block_x][block_y] ]['breakable']:
         new_slices[block_x] = map_[block_x]
         new_slices[block_x][block_y] = ' '
         redraw = True
