@@ -235,19 +235,19 @@ def ground_height(slice_, blocks):
 
 def gen_blocks():
 
-    # Block dict entries - (str char, bool solid)
+    # Block dict entries: (str char, bool solid, bool breakable)
     return {
-        ' ': (colorStr(' ', bg=CYAN), False), # Air
-        '-': (colorStr('v', bg=GREEN, fg=GREEN, style=DARK), True), # Grass
-        '|': (colorStr('#', fg=BLACK, bg=MAGENTA, style=LIGHT), True), # Wood
-        '@': (colorStr('@', fg=GREEN, bg=GREEN, style=DARK), True), # Leaves
-        '#': (colorStr('~', bg=BLACK, style=CLEAR), True), # Stone
-        'x': (colorStr('x', fg=BLACK, bg=BLACK, style=DARK), True), # Coal
-        '+': (colorStr('+', fg=RED, bg=BLACK, style=LIGHT), True), # Iron
-        ':': (colorStr(':', fg=RED, bg=BLACK, style=DARK), True), # Redstone
-        '"': (colorStr('"', fg=YELLOW, bg=BLACK), True), # Gold
-        'o': (colorStr('o', fg=BLUE, bg=BLACK, style=LIGHT), True), # Diamond
-        'o': (colorStr('o', fg=GREEN, bg=BLACK, style=DARK), True), # Emerald
-        '*': (colorStr('*', fg=WHITE, bg=CYAN), True), # Player head
-        '^': (colorStr('^', fg=WHITE, bg=CYAN), True) # Player legs
+        ' ': (colorStr(' ', bg=CYAN),                            False, False), # Air
+        '-': (colorStr('v', fg=GREEN,  bg=GREEN,   style=DARK),  True,  True),  # Grass
+        '|': (colorStr('#', fg=BLACK,  bg=MAGENTA, style=LIGHT), True,  True),  # Wood
+        '@': (colorStr('@', fg=GREEN,  bg=GREEN,   style=DARK),  True,  True),  # Leaves
+        '#': (colorStr('~',            bg=BLACK,   style=CLEAR), True,  True),  # Stone
+        'x': (colorStr('x', fg=BLACK,  bg=BLACK,   style=DARK),  True,  True),  # Coal
+        '+': (colorStr('+', fg=RED,    bg=BLACK,   style=LIGHT), True,  True),  # Iron
+        ':': (colorStr(':', fg=RED,    bg=BLACK,   style=DARK),  True,  True),  # Redstone
+        '"': (colorStr('"', fg=YELLOW, bg=BLACK),                True,  True),  # Gold
+        'o': (colorStr('o', fg=BLUE,   bg=BLACK,   style=LIGHT), True,  True),  # Diamond
+        'o': (colorStr('o', fg=GREEN,  bg=BLACK,   style=DARK),  True,  True),  # Emerald
+        '*': (colorStr('*', fg=WHITE,  bg=CYAN),                 True,  True),  # Player head
+        '^': (colorStr('^', fg=WHITE,  bg=CYAN),                 True,  True)   # Player legs
     }
