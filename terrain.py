@@ -42,7 +42,7 @@ def render_map(map_, objects, blocks):
                     pixel = object_['char']
 
             try:
-                out += blocks[pixel]['char'](char, blocks)
+                out += blocks[pixel]['char'](pixel, char, blocks)
             except TypeError:
                 out += blocks[pixel]['char']
 

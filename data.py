@@ -1,5 +1,13 @@
 from colors import *
 
+
+clear_bg = lambda char, bg, blocks_: colorStr(
+    char,
+    bg = blocks_[bg]['colors']['bg'],
+    fg = blocks_[char]['colors']['fg'],
+    style = blocks_[char]['colors']['style']
+)
+
 blocks = {
     ' ': { # Air
         'char': ' ',
@@ -132,16 +140,21 @@ blocks = {
         'breakable': False
     },
     'X': { # Cursor
-        'char': lambda char, blocks_: colorStr(
-            'X',
-            bg = blocks_[char]['colors']['bg'],
-            fg = blocks_['X']['colors']['fg'],
-            style = blocks_['X']['colors']['style']
-        ),
+        'char': clear_bg,
         'colors': {
-            'fg': WHITE,
-            'bg': RED,
+            'fg': RED,
+            'bg': None,
             'style': None
+        },
+        'solid': False,
+        'breakable': False
+    },
+    '_': { # Clear block
+        'char': clear_bg,
+        'colors': {
+            'fg': None,
+            'bg': None,
+            'style': CLEAR
         },
         'solid': False,
         'breakable': False
