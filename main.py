@@ -97,7 +97,7 @@ def main():
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
 
-                inp = char if char in 'wadfqe' else None
+                inp = char if char in 'wadkjl' else None
 
                 if time() >= (1/TPS) + last_inp and alive:
                     if inp:
@@ -106,7 +106,8 @@ def main():
                         y += dy
                         x += dx
 
-                        new_slices = player.break_block(str(inp), map_, x, y, blocks)
+                        new_slices = player.break_block(str(inp),
+                                     map_, x, y, cursor, blocks)
                         map_.update(new_slices)
 
                         dc = player.move_cursor(inp)

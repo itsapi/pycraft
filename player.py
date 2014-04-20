@@ -1,6 +1,10 @@
 import terrain
 
 
+cursor_x = lambda cursor: {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor]
+cursor_y = lambda cursor: {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}[cursor]
+
+
 def get_pos_delta(char, map_, x, y, blocks, jump):
 
     left_slice = map_[str(x - 1)]
@@ -40,14 +44,14 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def break_block(inp, map_, x, y, blocks):
-    block_x = str(x)
-    block_y = y + 1
+def break_block(inp, map_, x, y, cursor, blocks):
+    block_x = str(x + cursor_x(cursor))
+    block_y = y + cursor_y(cursor)
 
     new_slices = {}
 
     # If pressing x and block is breakable
-    if inp in 'f' and blocks[ map_[block_x][block_y] ][2]:
+    if inp in 'k' and blocks[ map_[block_x][block_y] ][2]:
         new_slices[block_x] = map_[block_x]
         new_slices[block_x][block_y] = ' '
         redraw = True
@@ -61,7 +65,7 @@ def respawn(meta):
 
 def move_cursor(inp):
     try:
-        return {'q': -1, 'e': 1}[inp]
+        return {'j': -1, 'l': 1}[inp]
     except KeyError:
         return 0
 
@@ -81,8 +85,8 @@ def render_player(x, y, cursor):
     }
 
     cursor = {
-        'x': x + {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor],
-        'y': y + {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}[cursor],
+        'x': x + cursor_x(cursor),
+        'y': y + cursor_y(cursor),
         'char': 'X'
     }
 
