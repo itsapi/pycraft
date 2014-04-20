@@ -27,7 +27,8 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
             and not is_solid( func[head_y] )):
 
             if is_solid( func[feet_y] ):
-                if not is_solid( func[above_y] ):
+                if (not is_solid( func[above_y] )
+                    and not is_solid( player_slice[above_y] )):
                     dy = -1
                     dx = dir_
             else:
