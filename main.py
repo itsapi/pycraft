@@ -79,7 +79,7 @@ def main():
                 slices = {}
                 slice_list = terrain.detect_edges(map_, edges)
                 for pos in slice_list:
-                    slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
+                    slices[str(pos)] = terrain.gen_slice(pos, meta)
                     map_[str(pos)] = slices[str(pos)]
                     redraw = True
 

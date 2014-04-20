@@ -8,7 +8,51 @@ from colors import *
 world_gen = {
     'height': 30,
     'max_hill': 15,
-    'ground_height': 10
+    'ground_height': 10,
+    'ores': {
+        'coal': {
+            'char': 'x',
+            'vain_size': 4,
+            'chance': 0.05,
+            'upper': 30,
+            'lower': 0
+        },
+        'iron': {
+            'char': '+',
+            'vain_size': 3,
+            'chance': 0.03,
+            'upper': 15,
+            'lower': 0
+        },
+        'redstone': {
+            'char': ':',
+            'vain_size': 4,
+            'chance': 0.03,
+            'upper': 7,
+            'lower': 0
+        },
+        'gold': {
+            'char': '"',
+            'vain_size': 2,
+            'chance': 0.02,
+            'upper': 10,
+            'lower': 0
+        },
+        'diamond': {
+            'char': 'o',
+            'vain_size': 2,
+            'chance': 0.01,
+            'upper': 5,
+            'lower': 0
+        },
+        'emerald': {
+            'char': 'o',
+            'vain_size': 1,
+            'chance': 0.002,
+            'upper': 7,
+            'lower': 0
+        },
+    }
 }
 
 trees = (
@@ -67,10 +111,10 @@ def slice_height(pos, meta):
     for x in range(pos - world_gen['max_hill'] * 2,
                    pos + world_gen['max_hill'] * 2):
         # Set seed for random numbers based on position
-        random.seed(str(meta['seed']) + str(x))
+        random.seed(str(meta['seed']) + str(x) + 'hill')
 
         # Generate a hill with a 5% chance
-        if random.randint(0, 100) < 5:
+        if random.random() <= 0.05:
             # Make top of hill flat
             # Set height to height of hill minus distance from hill
             hill_height = (world_gen['ground_height'] +
@@ -83,16 +127,16 @@ def slice_height(pos, meta):
     return int(slice_height_)
 
 
-def add_tree(slice_, pos, meta, blocks):
+def add_tree(slice_, pos, meta):
     # Maximum width of half a tree
     max_half_tree = int(len(max(trees, key=lambda tree: len(tree))) / 2)
 
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
         # Set seed for random numbers based on position
-        random.seed(str(meta['seed']) + str(x))
+        random.seed(str(meta['seed']) + str(x) + 'tree')
 
         # Generate a tree with a 5% chance
-        if random.randint(0, 100) < 5:
+        if random.random() <= 0.05:
             tree = random.choice(trees)
 
             # Get height above ground
@@ -125,7 +169,29 @@ def add_tree(slice_, pos, meta, blocks):
     return slice_
 
 
-def gen_slice(pos, meta, blocks):
+def add_ores(slice_, pos, meta):
+    for ore in world_gen['ores'].values():
+        for x in range(pos - ore['vain_size'],
+                       pos + ore['vain_size']):
+            # Set seed for random numbers based on position and ore
+            random.seed(str(meta['seed']) + str(x) + ore['char'])
+
+            # Gernerate a ore with a probability
+            if random.random() <= ore['chance']:
+                root_ore_height = random.randint(ore['lower'], ore['upper'])
+
+                # Generates ore at random position around root ore
+                random.seed(str(meta['seed']) + str(pos) + ore['char'])
+                ore_height = root_ore_height + random.randint(-ore['vain_size'], ore['vain_size'])
+
+                # Won't allow ore above surface
+                if 0 < ore_height < slice_height(pos, meta):
+                    slice_[world_gen['height'] - ore_height] = ore['char']
+
+    return slice_
+
+
+def gen_slice(pos, meta):
 
     slice_height_ = slice_height(pos, meta)
 
@@ -136,7 +202,8 @@ def gen_slice(pos, meta, blocks):
         ['#'] * (slice_height_ - 1)
     )
 
-    slice_ = add_tree(slice_, pos, meta, blocks)
+    slice_ = add_tree(slice_, pos, meta)
+    slice_ = add_ores(slice_, pos, meta)
 
     return slice_
 
@@ -176,6 +243,7 @@ def gen_blocks():
         ':': (colorStr(':', fg=RED, bg=BLACK, style=DARK), True), # Redstone
         '"': (colorStr('"', fg=YELLOW, bg=BLACK), True), # Gold
         'o': (colorStr('o', fg=BLUE, bg=BLACK, style=LIGHT), True), # Diamond
+        'o': (colorStr('o', fg=GREEN, bg=BLACK, style=DARK), True), # Emerald
         '*': (colorStr('*', fg=WHITE, bg=CYAN), True), # Player head
         '^': (colorStr('^', fg=WHITE, bg=CYAN), True) # Player legs
     }
