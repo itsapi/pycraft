@@ -5,16 +5,16 @@ from nbinput import NonBlockingInput
 import saves, ui, terrain
 
 
-def get_pos_delta(char, slices, y, blocks, jump):
+def get_pos_delta(char, map_, x, y, blocks, jump):
 
-    player_slice = slices[1]
-    left_slice = slices[0]
-    right_slice = slices[2]
+    left_slice = map_[str(x - 1)]
+    player_slice = map_[str(x)]
+    right_slice = map_[str(x + 1)]
 
     feet_y = y
-    head_y = y-1
-    below_y = y+1
-    above_y = y-2
+    head_y = y - 1
+    below_y = y + 1
+    above_y = y - 2
 
     dy = 0
     dx = 0
@@ -44,6 +44,20 @@ def get_pos_delta(char, slices, y, blocks, jump):
     return dx, dy, jump
 
 
+def break_block(inp, map_, x, y, blocks):
+    block_x = str(x)
+    block_y = y + 1
+
+    new_slices = {}
+
+    # If pressing x and block is breakable
+    if inp in 'fF' and blocks[ map_[block_x][block_y] ][2]:
+        new_slices[block_x] = map_[block_x]
+        new_slices[block_x][block_y] = ' '
+
+    return new_slices
+
+
 def main():
 
     saves.check_map_dir()
@@ -67,6 +81,7 @@ def main():
         tick = 0
         inp = None
         jump = 0
+        new_slices = {}
 
         # Game loop
         game = True
@@ -77,16 +92,16 @@ def main():
                 edges = (x - int(width / 2), x + int(width / 2))
 
                 # Generates new terrain
-                slices = {}
                 slice_list = terrain.detect_edges(map_, edges)
                 for pos in slice_list:
-                    slices[str(pos)] = terrain.gen_slice(pos, meta)
-                    map_[str(pos)] = slices[str(pos)]
+                    new_slices[str(pos)] = terrain.gen_slice(pos, meta)
+                    map_[str(pos)] = new_slices[str(pos)]
                     redraw = True
 
                 # Save new terrain to file
-                if slices:
-                    saves.save_map(save, slices)
+                if new_slices:
+                    saves.save_map(save, new_slices)
+                    new_slices = {}
 
                 # Moving view
                 if not edges == old_edges:
@@ -119,18 +134,19 @@ def main():
                 # Take inputs and change pos accordingly
                 char = str(nbi.char())
 
-                inp = char if char in 'wWaAdD' else None
+                inp = char if char in 'wWaAdDfF' else None
 
                 if time() >= (1/TPS) + last_inp:
                     if inp:
                         dx, dy, jump = get_pos_delta(
-                            str(inp),
-                            [map_[str(x + i)] for i in range(-1, 2)],
-                            y, blocks, jump
-                        )
+                            str(inp), map_, x, y, blocks, jump)
                         y += dy
                         x += dx
-                        if dy or dx:
+
+                        new_slices = break_block(str(inp), map_, x, y, blocks)
+                        map_.update(new_slices)
+
+                        if dx or dy or break_block:
                             redraw = True
                         last_inp = time()
                         inp = None
