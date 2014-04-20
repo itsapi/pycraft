@@ -15,6 +15,7 @@ default_meta = {
 
 save_path = lambda save, filename='': os.path.join('maps', save, filename)
 meta_path = lambda save: save_path(save, 'meta.json')
+chunk_num = lambda x: int(x) // world_gen['chunk_size']
 
 
 def check_map_dir():
@@ -56,7 +57,7 @@ def load_save(save):
     except FileNotFoundError:
         map_ = {}
 
-    save_map(save, map_, True)
+    save_map(save, map_)
     save_meta(save, meta)
 
     return meta, map_, save
@@ -101,15 +102,7 @@ def check_meta(meta):
 
 def check_map(data, meta):
 
-    map_ = {}
-
-    for line in data:
-        # Parses map file
-        key, slice_ = line.split('<sep>')
-        slice_ = list(slice_)
-
-        # Removes new line char if it exists
-        map_[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
+    map_ = parse_slices(data)
 
     for key, slice_ in map_.items():
         if not len(slice_) == world_gen['height']:
@@ -119,11 +112,26 @@ def check_map(data, meta):
                 slice_ = [' '] * (world_gen['height'] - len(slice_)) + slice_
             elif len(slice_) > world_gen['height']:
                 # Truncate slice height
-                slice_ = slice_[:world_gen['height']]
+                slice_ = slice_[len(slice_) - world_gen['height']:]
 
             map_[key] = slice_
 
     return map_
+
+
+def parse_slices(data):
+
+    slices = {}
+
+    for line in data:
+        # Parses map file
+        key, slice_ = line.split('<sep>')
+        slice_ = list(slice_)
+
+        # Removes new line char if it exists
+        slices[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
+
+    return slices
 
 
 def save_meta(save, meta):
@@ -133,18 +141,30 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def save_map(save, map_, rewrite=False):
-    if rewrite:
-        for file_ in os.listdir(save_path(save)):
-            if file_.endswith('.chunk'): os.remove(save_path(save, file_))
+def save_map(save, slices):
 
-    # Save map file
-    for key, slice_ in map_.items():
+    # Group slices by chunk
+    chunks = {}
+    for pos, slice_ in slices.items():
+        try:
+            chunks[chunk_num(pos)].update({pos: slice_})
+        except KeyError:
+            chunks[chunk_num(pos)] = {pos: slice_}
 
-        chunk = int(key) // world_gen['chunk_size']
+    # Update chunk files
+    for num, chunk in chunks.items():
+        # Update slices in chunk file with new slices
+        try:
+            with open(save_path(save, str(num) + '.chunk')) as f:
+                slices = parse_slices(f.readlines())
+        except FileNotFoundError:
+            slices = {}
+        slices.update(chunk)
 
-        with open(save_path(save, str(chunk) + '.chunk'), 'a') as f:
-            f.write(key+'<sep>'+''.join(slice_)+'\n')
+        # Write slices back to file
+        with open(save_path(save, str(num) + '.chunk'), 'w') as f:
+            for pos, slice_ in slices.items():
+                f.write(str(pos) + '<sep>' + ''.join(slice_) + '\n')
 
 
 def list_saves():
