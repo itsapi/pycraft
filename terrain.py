@@ -1,5 +1,6 @@
 import random
 import copy
+from math import ceil
 
 from console import CLS
 from colors import *
@@ -40,7 +41,7 @@ world_gen = {
         },
         'diamond': {
             'char': 'o',
-            'vain_size': 2,
+            'vain_size': 1,
             'chance': 0.01,
             'upper': 5,
             'lower': 0
@@ -171,8 +172,8 @@ def add_tree(slice_, pos, meta):
 
 def add_ores(slice_, pos, meta):
     for ore in world_gen['ores'].values():
-        for x in range(pos - ore['vain_size'],
-                       pos + ore['vain_size']):
+        for x in range(pos - int(ore['vain_size'] / 2),
+                       pos + ceil(ore['vain_size'] / 2)):
             # Set seed for random numbers based on position and ore
             random.seed(str(meta['seed']) + str(x) + ore['char'])
 
@@ -182,7 +183,9 @@ def add_ores(slice_, pos, meta):
 
                 # Generates ore at random position around root ore
                 random.seed(str(meta['seed']) + str(pos) + ore['char'])
-                ore_height = root_ore_height + random.randint(-ore['vain_size'], ore['vain_size'])
+                ore_height = (root_ore_height +
+                              random.randint(-int(ore['vain_size'] / 2),
+                                             ceil(ore['vain_size'] / 2)))
 
                 # Won't allow ore above surface
                 if 0 < ore_height < slice_height(pos, meta):
