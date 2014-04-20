@@ -13,28 +13,31 @@ default_meta = {
     'center': 0
 }
 
+save_path = lambda save, filename='': os.path.join('maps', save, filename)
+meta_path = lambda save: save_path(save, 'meta.json')
+
 
 def new_save(meta):
 
     meta = check_meta(meta)
 
     # Find unique dir name
-    filename = meta['name'].lower()
+    save = meta['name'].lower()
 
     bad_chars = (' /\\!"£$%^*()=.?><\'@#~;:]}[{|`¬')
     for bad_char in bad_chars:
-        filename = filename.replace(bad_char, '_')
+        save = save.replace(bad_char, '_')
 
-    while os.path.isdir(os.path.join('maps', filename)):
-        filename += '-'
-    os.mkdir(os.path.join('maps', filename))
+    while os.path.isdir(save_path(save)):
+        save += '-'
+    os.mkdir(save_path(save))
 
-    save_meta(filename, meta)
-    return filename
+    save_meta(save, meta)
+    return save
 
 
 def delete_save(save):
-    rmtree(os.path.join('maps', save))
+    rmtree(save_path(save))
 
 
 def load_save(save):
@@ -56,7 +59,7 @@ def load_save(save):
 
 
 def get_meta(save):
-    with open(os.path.join('maps', save, 'meta.json')) as f:
+    with open(meta_path(save)) as f:
         data = json.load(f)
 
     return data
@@ -114,7 +117,7 @@ def check_map(data, meta):
 def save_meta(save, meta):
 
     # Save meta file
-    with open(os.path.join('maps', save, 'meta.json'), 'w') as f:
+    with open(meta_path(save), 'w') as f:
         json.dump(meta, f)
 
 
@@ -129,4 +132,4 @@ def save_map(save, map_, mode='a'):
 def list_saves():
 
     return [(save, get_meta(save)) for save in os.listdir('maps')
-        if os.path.isdir(os.path.join('maps', save))]
+        if os.path.isdir(save_path(save))]
