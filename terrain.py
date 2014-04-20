@@ -34,12 +34,18 @@ def render_map(map_, objects, blocks):
     for y, row in enumerate(map_):
         for x, pixel in enumerate(row):
 
+            char = pixel
+
             # Add the player
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
                     pixel = object_['char']
 
-            out += blocks[pixel][0]
+            try:
+                out += blocks[pixel]['char'](char, blocks)
+            except TypeError:
+                out += blocks[pixel]['char']
+
         out += '\n'
 
     print(CLS + out, end='')
@@ -166,29 +172,30 @@ def detect_edges(map_, edges):
 
 
 def is_solid(blocks, block):
-    return blocks[block][1]
+    return blocks[block]['solid']
 
 
 def ground_height(slice_, blocks):
-    return next(i for i, block in enumerate(slice_) if blocks[block][1])
+    return next(i for i, block in enumerate(slice_) if blocks[block]['solid'])
 
 
 def gen_blocks():
 
-    # Block dict entries: (str char, bool solid, bool breakable)
-    return {
-        ' ': (colorStr(' ', bg=CYAN),                            False, False), # Air
-        '-': (colorStr('v', fg=GREEN,  bg=GREEN,   style=DARK),  True,  True),  # Grass
-        '|': (colorStr('#', fg=BLACK,  bg=MAGENTA, style=LIGHT), True,  True),  # Wood
-        '@': (colorStr('@', fg=GREEN,  bg=GREEN,   style=DARK),  True,  True),  # Leaves
-        '#': (colorStr('~',            bg=BLACK,   style=CLEAR), True,  True),  # Stone
-        'x': (colorStr('x', fg=BLACK,  bg=BLACK,   style=DARK),  True,  True),  # Coal
-        '+': (colorStr('+', fg=RED,    bg=BLACK,   style=LIGHT), True,  True),  # Iron
-        ':': (colorStr(':', fg=RED,    bg=BLACK,   style=DARK),  True,  True),  # Redstone
-        '"': (colorStr('"', fg=YELLOW, bg=BLACK),                True,  True),  # Gold
-        'o': (colorStr('o', fg=BLUE,   bg=BLACK,   style=LIGHT), True,  True),  # Diamond
-        'o': (colorStr('o', fg=GREEN,  bg=BLACK,   style=DARK),  True,  True),  # Emerald
-        '*': (colorStr('*', fg=WHITE,  bg=CYAN),                 False, False), # Player head
-        '^': (colorStr('^', fg=WHITE,  bg=CYAN),                 False, False), # Player legs
-        'X': (colorStr('X', fg=WHITE,  bg=RED),                  False, False)  # Cursor
-    }
+    # Convert the characters to their colored form
+    for key, block in blocks.items():
+        try:
+            # Make sure it is a string
+            blocks[key]['char'] + ''
+            string = True
+        except TypeError:
+            string = False
+
+        if string:
+            blocks[key]['char'] = colorStr(
+                block['char'],
+                block['colors']['fg'],
+                block['colors']['bg'],
+                block['colors']['style']
+            )
+
+    return blocks
