@@ -13,13 +13,17 @@ default_meta = {
     'center': 0
 }
 
-save_path = lambda save, filename='': os.path.join('maps', save, filename)
+SAVES_DIR = 'saves'
+CHUNK_EXT = '.chunk'
+SLICE_SEP = '<sep>'
+
+save_path = lambda save, filename='': os.path.join(SAVES_DIR, save, filename)
 meta_path = lambda save: save_path(save, 'meta.json')
 chunk_num = lambda x: int(x) // world_gen['chunk_size']
 
 
 def check_map_dir():
-    if not os.path.isdir('maps'): os.mkdir('maps')
+    if not os.path.isdir(SAVES_DIR): os.mkdir(SAVES_DIR)
 
 
 def new_save(meta):
@@ -74,7 +78,7 @@ def get_map(save):
     map_ = []
 
     chunks = (file_ for file_ in os.listdir(save_path(save))
-              if file_.endswith('.chunk'))
+              if file_.endswith(CHUNK_EXT))
     for chunk in chunks:
 
         with open(save_path(save, chunk)) as f:
@@ -125,7 +129,7 @@ def parse_slices(data):
 
     for line in data:
         # Parses map file
-        key, slice_ = line.split('<sep>')
+        key, slice_ = line.split(SLICE_SEP)
         slice_ = list(slice_)
 
         # Removes new line char if it exists
@@ -155,19 +159,19 @@ def save_map(save, slices):
     for num, chunk in chunks.items():
         # Update slices in chunk file with new slices
         try:
-            with open(save_path(save, str(num) + '.chunk')) as f:
+            with open(save_path(save, str(num) + CHUNK_EXT)) as f:
                 slices = parse_slices(f.readlines())
         except FileNotFoundError:
             slices = {}
         slices.update(chunk)
 
         # Write slices back to file
-        with open(save_path(save, str(num) + '.chunk'), 'w') as f:
+        with open(save_path(save, str(num) + CHUNK_EXT), 'w') as f:
             for pos, slice_ in slices.items():
-                f.write(str(pos) + '<sep>' + ''.join(slice_) + '\n')
+                f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
 
 
 def list_saves():
 
-    return [(save, get_meta(save)) for save in os.listdir('maps')
+    return [(save, get_meta(save)) for save in os.listdir(SAVES_DIR)
         if os.path.isdir(save_path(save))]
