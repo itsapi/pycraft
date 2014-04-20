@@ -71,7 +71,7 @@ def move_cursor(inp):
         return 0
 
 
-def render_player(x, y, cursor):
+def render_player(x, y, cursor, c_hidden):
 
     head = {
         'x': x,
@@ -88,7 +88,7 @@ def render_player(x, y, cursor):
     cursor = {
         'x': x + cursor_x(cursor),
         'y': y + cursor_y(cursor),
-        'char': 'X'
+        'char': '_' if c_hidden else 'X'
     }
 
     return head, feet, cursor

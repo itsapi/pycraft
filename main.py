@@ -34,6 +34,7 @@ def main():
         inp = None
         jump = 0
         cursor = 0
+        c_hidden = True
         new_slices = {}
         alive = True
 
@@ -68,7 +69,7 @@ def main():
                     df = 1
                     redraw = False
                     last_out = time()
-                    objects = player.render_player(int(width / 2), y, cursor)
+                    objects = player.render_player(int(width / 2), y, cursor, c_hidden)
                     terrain.render_map(view, objects, blocks)
                 else:
                     df = 0
@@ -118,6 +119,9 @@ def main():
                         if dx or dy:
                             meta['player_x'], meta['player_y'] = x, y
                             saves.save_meta(save, meta)
+                            c_hidden = True
+                        if dc:
+                            c_hidden = False
 
                         last_inp = time()
                         inp = None
