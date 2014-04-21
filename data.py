@@ -109,7 +109,7 @@ blocks = {
         'solid': True,
         'breakable': True
     },
-    'o': { # Emerald
+    '.': { # Emerald
         'char': 'o',
         'colors': {
             'fg': GREEN,
