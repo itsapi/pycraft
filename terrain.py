@@ -154,7 +154,8 @@ def gen_slice(pos, meta):
     slice_ = (
         [' '] * (world_gen['height'] - slice_height_) +
         ['-'] +
-        ['#'] * (slice_height_ - 1)
+        ['#'] * (slice_height_ - 2) + # 2 for grass and bedrock
+        ['_']
     )
 
     slice_ = add_tree(slice_, pos, meta)

@@ -119,6 +119,16 @@ blocks = {
         'solid': True,
         'breakable': True
     },
+    '_': { # Bedrock
+        'char': '#',
+        'colors': {
+            'fg': BLACK,
+            'bg': BLACK,
+            'style': DARK
+        },
+        'solid': True,
+        'breakable': False
+    },
     '*': { # Player head
         'char': '*',
         'colors': {
@@ -162,42 +172,42 @@ world_gen = {
             'vain_size': 4,
             'chance': 0.05,
             'upper': 30,
-            'lower': 0
+            'lower': 1
         },
         'iron': {
             'char': '+',
             'vain_size': 3,
             'chance': 0.03,
             'upper': 15,
-            'lower': 0
+            'lower': 1
         },
         'redstone': {
             'char': ':',
             'vain_size': 4,
             'chance': 0.03,
             'upper': 7,
-            'lower': 0
+            'lower': 1
         },
         'gold': {
             'char': '"',
             'vain_size': 2,
             'chance': 0.02,
             'upper': 10,
-            'lower': 0
+            'lower': 1
         },
         'diamond': {
             'char': 'o',
             'vain_size': 1,
             'chance': 0.01,
             'upper': 5,
-            'lower': 0
+            'lower': 1
         },
         'emerald': {
-            'char': 'o',
+            'char': '.',
             'vain_size': 1,
             'chance': 0.002,
             'upper': 7,
-            'lower': 0
+            'lower': 1
         }
     },
     'trees': (
