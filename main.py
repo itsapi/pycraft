@@ -124,8 +124,6 @@ def main():
                         if dx or dy or dc or di:
                             redraw = True
                         if dx or dy:
-                            meta['player_x'], meta['player_y'] = x, y
-                            saves.save_meta(save, meta)
                             c_hidden = True
                         if dc:
                             c_hidden = False
@@ -135,6 +133,8 @@ def main():
 
                 # Pause game
                 if char == ' ':
+                    meta['player_x'], meta['player_y'] = x, y
+                    saves.save_meta(save, meta)
                     redraw = True
                     if ui.pause() == 'exit':
                         game = False
