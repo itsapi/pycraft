@@ -131,15 +131,23 @@ def render_inv(inv_sel, inv, blocks):
 
 
 def add_inv(inv, item):
-    for num in range(INV_SLOTS):
+    found = False
+    for num, slot in inv.items():
         try:
-            slot = inv[str(num)]
             if slot[0] == item and slot[1] < MAX_ITEM:
                 inv[str(num)][1] += 1
+                found = True
                 break
-        except (KeyError, TypeError):
-            inv[str(num)] = [item, 1]
-            break
+        except TypeError:
+            pass
+
+    if not found:
+        for num in range(INV_SLOTS):
+            try:
+                slot = inv[str(num)]
+            except (KeyError, TypeError):
+                inv[str(num)] = [item, 1]
+                break
     return inv
 
 
