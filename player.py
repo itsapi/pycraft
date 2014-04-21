@@ -72,7 +72,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, blocks):
             inv = add_inv(inv, block)
             redraw = True
 
-    return new_slices, inv
+    return new_slices, inv, bool(new_slices)
 
 
 def respawn(meta):

@@ -18,10 +18,11 @@ def main():
         y = meta['player_y']
         dx = 0
         dy = 0
-        dt = 0
-        df = 0
-        dc = 0
-        di = 0
+        dt = 0 # Tick
+        df = 0 # Frame
+        dc = 0 # Cursor
+        di = 0 # Inventory Selector
+        db = False # Block
         width = 40
         FPS = 10
         TPS = 10
@@ -110,7 +111,7 @@ def main():
                         y += dy
                         x += dx
 
-                        new_slices, meta['inv'] = player.cursor_func(
+                        new_slices, meta['inv'], db = player.cursor_func(
                             str(inp), map_, x, y, cursor, inv_sel, meta['inv'], blocks
                         )
                         map_.update(new_slices)
@@ -121,7 +122,9 @@ def main():
                         di = player.move_inv_sel(inp)
                         inv_sel = (inv_sel + di) % player.INV_SLOTS
 
-                        if dx or dy or dc or di:
+                        if dx or dy or dc or di or db:
+                            meta['player_x'], meta['player_y'] = x, y
+                            saves.save_meta(save, meta)
                             redraw = True
                         if dx or dy:
                             c_hidden = True
