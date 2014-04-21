@@ -17,7 +17,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, blocks):
+def render_map(map_, objects, inv, blocks):
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -45,6 +45,11 @@ def render_map(map_, objects, blocks):
                 out += blocks[pixel]['char'](pixel, char, blocks)
             except TypeError:
                 out += blocks[pixel]['char']
+
+        try:
+            out += ' ' + inv[y]
+        except IndexError:
+            pass
 
         out += '\n'
 

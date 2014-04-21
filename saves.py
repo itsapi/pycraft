@@ -12,7 +12,8 @@ default_meta = {
     'seed': '',
     'spawn': 0,
     'player_x': 0,
-    'player_y': 1
+    'player_y': 1,
+    'inv': {}
 }
 
 SAVES_DIR = 'saves'

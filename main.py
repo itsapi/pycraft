@@ -21,6 +21,7 @@ def main():
         dt = 0
         df = 0
         dc = 0
+        di = 0
         width = 40
         FPS = 10
         TPS = 10
@@ -34,6 +35,7 @@ def main():
         inp = None
         jump = 0
         cursor = 0
+        inv_sel = 0
         c_hidden = True
         new_slices = {}
         alive = True
@@ -70,7 +72,8 @@ def main():
                     redraw = False
                     last_out = time()
                     objects = player.render_player(int(width / 2), y, cursor, c_hidden)
-                    terrain.render_map(view, objects, blocks)
+                    inv = player.render_inv(inv_sel, meta['inv'], blocks)
+                    terrain.render_map(view, objects, inv, blocks)
                 else:
                     df = 0
 
@@ -98,7 +101,7 @@ def main():
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
 
-                inp = char if char in 'wadkjl' else None
+                inp = char if char in 'wadkjlnm' else None
 
                 if time() >= (1/TPS) + last_inp and alive:
                     if inp:
@@ -107,14 +110,18 @@ def main():
                         y += dy
                         x += dx
 
-                        new_slices = player.cursor_func(str(inp),
-                                     map_, x, y, cursor, blocks)
+                        new_slices, meta['inv'] = player.cursor_func(
+                            str(inp), map_, x, y, cursor, inv_sel, meta['inv'], blocks
+                        )
                         map_.update(new_slices)
 
                         dc = player.move_cursor(inp)
                         cursor = (cursor + dc) % 6
 
-                        if dx or dy or dc:
+                        di = player.move_inv_sel(inp)
+                        inv_sel = (inv_sel + di) % player.INV_SLOTS
+
+                        if dx or dy or dc or di:
                             redraw = True
                         if dx or dy:
                             meta['player_x'], meta['player_y'] = x, y
