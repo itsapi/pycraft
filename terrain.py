@@ -140,7 +140,7 @@ def add_ores(slice_, pos, meta):
                                              ceil(ore['vain_size'] / 2)))
 
                 # Won't allow ore above surface
-                if 0 < ore_height < slice_height(pos, meta):
+                if ore['lower'] < ore_height < min(ore['upper'], slice_height(pos, meta)):
                     slice_[world_gen['height'] - ore_height] = ore['char']
 
     return slice_
