@@ -124,7 +124,7 @@ blocks = {
         'colors': {
             'fg': BLACK,
             'bg': BLACK,
-            'style': DARK
+            'style': LIGHT
         },
         'solid': True,
         'breakable': False
