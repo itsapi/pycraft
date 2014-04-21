@@ -51,28 +51,37 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, blocks):
     block_x = str(x + cursor_x(cursor))
     block_y = y + cursor_y(cursor)
+    dinv = False
 
     new_slices = {}
 
     if inp in 'k' and block_y >= 0:
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ':
-            try:
-                new_slices[block_x] = map_[block_x]
-                new_slices[block_x][block_y] = inv[str(inv_sel)][0]
-                inv = rem_inv(inv, inv_sel)
-                redraw = True
-            except (KeyError, TypeError):
-                pass
+        if map_[block_x][block_y] == ' ' and inv[inv_sel] is not None:
+            # Place block in world from selected inv slot
+            new_slices[block_x] = map_[block_x]
+            new_slices[block_x][block_y] = inv[inv_sel]['block']
+            inv = rem_inv(inv, inv_sel)
+            dinv = True
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
+            # Distroy block
             block = map_[block_x][block_y]
             new_slices[block_x] = map_[block_x]
             new_slices[block_x][block_y] = ' '
             inv = add_inv(inv, block)
-            redraw = True
+            dinv = True
 
-    return new_slices, inv, bool(new_slices)
+    # If pressing b remove 1 item from inv slot
+    if inp in 'b':
+        inv = rem_inv(inv, inv_sel)
+        dinv = True
+    # If pressing ctrl-b remove stack from inv slot
+    if ord(inp) == 2:
+        inv = rem_inv(inv, inv_sel, MAX_ITEM)
+        dinv = True
+
+    return new_slices, inv, dinv
 
 
 def respawn(meta):
@@ -88,7 +97,7 @@ def move_cursor(inp):
 
 def move_inv_sel(inp):
     try:
-        return {'n': -1, 'm': 1}[inp]
+        return {'h': -1, ';': 1}[inp]
     except KeyError:
         return 0
 
@@ -119,43 +128,36 @@ def render_player(x, y, cursor, c_hidden):
 def render_inv(inv_sel, inv, blocks):
     out = []
     out.append('-' * 10)
-    for slot in range(INV_SLOTS):
-        try:
-            block = blocks[inv[str(slot)][0]]['char']
-            num = inv[str(slot)][1]
-        except (KeyError, TypeError):
+    for i, slot in enumerate(inv):
+        if slot is not None:
+            block = blocks[slot['block']]['char']
+            num = slot['num']
+        else:
             block, num = '', ''
-        out.append('| {:1} | {:2} |{}'.format(block, num, ' *' if slot == inv_sel else ''))
+        out.append('| {:1} | {:2} |{}'.format(block, num, ' *' if i == inv_sel else ''))
         out.append('-' * 10)
     return out
 
 
-def add_inv(inv, item):
-    found = False
-    for num, slot in inv.items():
-        try:
-            if slot[0] == item and slot[1] < MAX_ITEM:
-                inv[str(num)][1] += 1
-                found = True
-                break
-        except TypeError:
-            pass
+def add_inv(inv, block):
+    empty = False
+    placed = False
+    for i, slot in enumerate(inv):
+        if slot is not None and slot['block'] == block and slot['num'] < MAX_ITEM:
+            inv[i]['num'] += 1
+            placed = True
+        elif slot is None and empty is False:
+            empty = i
 
-    if not found:
-        for num in range(INV_SLOTS):
-            try:
-                slot = inv[str(num)]
-            except (KeyError, TypeError):
-                inv[str(num)] = [item, 1]
-                break
+    if placed is False and empty is not False:
+        inv[empty] = {'block': block, 'num': 1}
+
     return inv
 
 
-def rem_inv(inv, inv_sel):
-    inv_slot = inv[str(inv_sel)]
-    if inv_slot[1] == 1:
-        inv_slot = None
+def rem_inv(inv, inv_sel, num=1):
+    if inv[inv_sel]['num'] > num:
+        inv[inv_sel]['num'] -= num
     else:
-        inv_slot[1] -= 1
-    inv[str(inv_sel)] = inv_slot
+        inv[inv_sel] = None
     return inv

@@ -22,7 +22,7 @@ def main():
         df = 0 # Frame
         dc = 0 # Cursor
         di = 0 # Inventory Selector
-        db = False # Block
+        dinv = False # Inventory
         width = 40
         FPS = 10
         TPS = 10
@@ -102,7 +102,7 @@ def main():
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
 
-                inp = char if char in 'wadkjlnm' else None
+                inp = char if char in 'wadkjlh;b'+chr(2) else None
 
                 if time() >= (1/TPS) + last_inp and alive:
                     if inp:
@@ -111,7 +111,7 @@ def main():
                         y += dy
                         x += dx
 
-                        new_slices, meta['inv'], db = player.cursor_func(
+                        new_slices, meta['inv'], dinv = player.cursor_func(
                             str(inp), map_, x, y, cursor, inv_sel, meta['inv'], blocks
                         )
                         map_.update(new_slices)
@@ -122,7 +122,7 @@ def main():
                         di = player.move_inv_sel(inp)
                         inv_sel = (inv_sel + di) % player.INV_SLOTS
 
-                        if dx or dy or dc or di or db:
+                        if dx or dy or dc or di or dinv:
                             meta['player_x'], meta['player_y'] = x, y
                             saves.save_meta(save, meta)
                             redraw = True
