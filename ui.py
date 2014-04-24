@@ -33,10 +33,10 @@ def menu(name, options):
                 char = escape_code(bi)
                 if char == '\n':
                     break
-                if char == UP:
+                if char in 'wW':
                     selection -= 1
                     break
-                if char == DOWN:
+                if char in 'sS':
                     selection += 1
                     break
             selection %= len(options)
