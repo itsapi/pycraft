@@ -54,7 +54,7 @@ class _nbiGetchUnix:
     def char(self):
         if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
             return sys.stdin.read(1)
-        return None
+        return ''
 
 
 class _nbiGetchWindows:
@@ -71,8 +71,7 @@ class _nbiGetchWindows:
     def char(self):
         if self.msvcrt.kbhit():
             return str(self.msvcrt.getch(), encoding='UTF-8')
-        else:
-            return ''
+        return ''
 
 
 class _nbiGetchMacCarbon:
