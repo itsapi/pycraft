@@ -70,7 +70,10 @@ class _nbiGetchWindows:
 
     def char(self):
         if self.msvcrt.kbhit():
-            return str(self.msvcrt.getch(), encoding='UTF-8')
+            try:
+                return str(self.msvcrt.getch(), encoding='UTF-8')
+            except:
+                pass
         return ''
 
 
@@ -131,7 +134,10 @@ class _biGetchUnix(_nbiGetchUnix):
 
 class _biGetchWindows(_nbiGetchWindows):
     def char(self):
-        return str(self.msvcrt.getch(), encoding='UTF-8')
+        try:
+            return str(self.msvcrt.getch(), encoding='UTF-8')
+        except:
+            return ''
 
 
 class _biGetchMacCarbon(_nbiGetchMacCarbon):
