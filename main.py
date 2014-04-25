@@ -100,7 +100,7 @@ def main():
                     alive = False
 
                 # Take inputs and change pos accordingly
-                char = str(nbi.char()).lower()
+                char = nbi.char().lower()
 
                 inp = char if char in 'wadkjlh;b'+chr(2) else None
 
