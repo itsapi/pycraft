@@ -25,13 +25,14 @@ class NonBlockingInput:
                 self.impl = _nbiGetchUnix()
 
     def char(self):
-        return self.impl.char()
+        return self.impl.char().replace('\r', '\n').replace('\r\n', '\n')
 
     def __enter__(self):
-        return self.impl.enter()
+        self.impl.enter()
+        return self
 
     def __exit__(self, type_, value, traceback):
-        return self.impl.exit(type_, value, traceback)
+        self.impl.exit(type_, value, traceback)
 
 
 class _nbiGetchUnix:
@@ -45,7 +46,6 @@ class _nbiGetchUnix:
     def enter(self):
         self.old_settings = self.termios.tcgetattr(sys.stdin)
         self.tty.setcbreak(sys.stdin.fileno())
-        return self
 
     def exit(self, type_, value, traceback):
         self.termios.tcsetattr(sys.stdin,
@@ -63,13 +63,16 @@ class _nbiGetchWindows:
         self.msvcrt = msvcrt
 
     def enter(self):
-        return self
+        pass
 
     def exit(self, type_, value, traceback):
         pass
 
     def char(self):
-        return self.msvcrt.getch()
+        if self.msvcrt.kbhit():
+            return str(self.msvcrt.getch(), encoding='UTF-8')
+        else:
+            return ''
 
 
 class _nbiGetchMacCarbon:
@@ -86,7 +89,7 @@ class _nbiGetchMacCarbon:
         self.Carbon.Evt
 
     def enter(self):
-        return self
+        pass
 
     def exit(self, type_, value, traceback):
         pass
@@ -128,7 +131,8 @@ class _biGetchUnix(_nbiGetchUnix):
 
 
 class _biGetchWindows(_nbiGetchWindows):
-    pass
+    def char(self):
+        return str(self.msvcrt.getch(), encoding='UTF-8')
 
 
 class _biGetchMacCarbon(_nbiGetchMacCarbon):
