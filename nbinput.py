@@ -140,7 +140,7 @@ class _biGetchWindows(_nbiGetchWindows):
         try:
             return str(self.msvcrt.getch(), encoding='UTF-8')
         except:
-            return ''
+            return None
 
 
 class _biGetchMacCarbon(_nbiGetchMacCarbon):

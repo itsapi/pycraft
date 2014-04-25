@@ -30,7 +30,7 @@ def menu(name, options):
             print(title(name) + out)
 
             while True:
-                char = escape_code(bi)
+                char = str(escape_code(bi))
                 if char in ' \n':
                     break
                 if char in 'Ww'+UP:
