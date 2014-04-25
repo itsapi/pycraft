@@ -14,9 +14,9 @@ def menu(name, options):
     print('\n' * HEIGHT)
 
     selection = 0
-    char = ''
+    char = None
     with BlockingInput() as bi:
-        while not char in ' \n':
+        while not str(char) in ' \n':
 
             out = ''
             for i, option in enumerate(options):
