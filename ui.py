@@ -16,7 +16,7 @@ def menu(name, options):
     selection = 0
     char = None
     with BlockingInput() as bi:
-        while not char == '\n':
+        while not char in ' \n':
 
             out = ''
             for i, option in enumerate(options):
