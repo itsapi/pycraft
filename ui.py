@@ -14,7 +14,7 @@ def menu(name, options):
     print('\n' * HEIGHT)
 
     selection = 0
-    char = None
+    char = ''
     with BlockingInput() as bi:
         while not char in ' \n':
 
