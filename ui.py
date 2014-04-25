@@ -30,13 +30,13 @@ def menu(name, options):
             print(title(name) + out)
 
             while True:
-                char = escape_code(bi).lower()
+                char = escape_code(bi)
                 if char == '\n':
                     break
-                if char in 'w':
+                if char in 'Ww'+UP:
                     selection -= 1
                     break
-                if char in 's':
+                if char in 'Ss'+DOWN:
                     selection += 1
                     break
             selection %= len(options)
