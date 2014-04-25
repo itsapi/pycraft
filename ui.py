@@ -31,7 +31,7 @@ def menu(name, options):
 
             while True:
                 char = escape_code(bi)
-                if char == '\n':
+                if char in ' \n':
                     break
                 if char in 'Ww'+UP:
                     selection -= 1
