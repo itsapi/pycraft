@@ -138,7 +138,7 @@ def main():
                         inp = None
 
                 # Pause game
-                if char == ' ':
+                if char in ' \n':
                     meta['player_x'], meta['player_y'] = x, y
                     saves.save_meta(save, meta)
                     redraw = True
