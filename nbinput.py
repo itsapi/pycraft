@@ -25,7 +25,10 @@ class NonBlockingInput:
                 self.impl = _nbiGetchUnix()
 
     def char(self):
-        return self.impl.char().replace('\r', '\n').replace('\r\n', '\n')
+        try:
+            return self.impl.char().replace('\r', '\n').replace('\r\n', '\n')
+        except:
+            return None
 
     def __enter__(self):
         self.impl.enter()
