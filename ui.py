@@ -1,4 +1,5 @@
 import sys
+import json
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 from console import CLS, WIDTH, HEIGHT
@@ -51,6 +52,7 @@ def main():
             ('New Save', new),
             ('Load Save', load),
             ('Delete Save', delete),
+            ('Help', help_),
             ('Exit', lambda: sys.exit())
         ))
     return save
@@ -106,3 +108,27 @@ def pause():
         ('Resume', lambda: None),
         ('Main Menu', lambda: 'exit')
     ))
+
+
+def help_():
+    out = title('Help')
+
+    with open('help.json') as f:
+        data = json.load(f)
+
+    max_len = max(max(len(item[0]) for item in section) for section in data.values())
+
+    for label, section in data.items():
+        out += label + '\n'
+        for name, key in section:
+            out += '   {name:{max_len}} - {key}\n'.format(
+                name = name, key = key, max_len = max_len
+            )
+    out += 'Back...\n'
+
+    print(out)
+
+    with BlockingInput() as bi:
+        while not str(bi.char()) in ' \n':
+            pass
+    return None
