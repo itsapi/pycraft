@@ -52,7 +52,7 @@ def main():
                 # Generates new terrain
                 slice_list = terrain.detect_edges(map_, edges)
                 for pos in slice_list:
-                    new_slices[str(pos)] = terrain.gen_slice(pos, meta)
+                    new_slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
                     map_[str(pos)] = new_slices[str(pos)]
 
                 # Save new terrain to file

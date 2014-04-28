@@ -17,7 +17,8 @@ blocks = {
             'style': None
         },
         'solid': False,
-        'breakable': False
+        'breakable': False,
+        'hierarchy': 0
     },
     '-': { # Grass
         'char': 'v',
@@ -27,7 +28,8 @@ blocks = {
             'style': DARK
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 20
     },
     '|': { # Wood
         'char': '#',
@@ -37,7 +39,8 @@ blocks = {
             'style': LIGHT
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 10
     },
     '@': { # Leaves
         'char': '@',
@@ -47,7 +50,8 @@ blocks = {
             'style': DARK
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 5
     },
     '#': { # Stone
         'char': '~',
@@ -57,7 +61,8 @@ blocks = {
             'style': CLEAR
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 50
     },
     'x': { # Coal
         'char': 'x',
@@ -67,7 +72,8 @@ blocks = {
             'style': DARK
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 55
     },
     '+': { # Iron
         'char': '+',
@@ -77,7 +83,8 @@ blocks = {
             'style': LIGHT
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 60
     },
     ':': { # Redstone
         'char': ':',
@@ -87,7 +94,8 @@ blocks = {
             'style': DARK
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 65
     },
     '"': { # Gold
         'char': '"',
@@ -97,7 +105,8 @@ blocks = {
             'style': None
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 70
     },
     'o': { # Diamond
         'char': 'o',
@@ -107,7 +116,8 @@ blocks = {
             'style': LIGHT
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 75
     },
     '.': { # Emerald
         'char': 'o',
@@ -117,7 +127,8 @@ blocks = {
             'style': DARK
         },
         'solid': True,
-        'breakable': True
+        'breakable': True,
+        'hierarchy': 80
     },
     '_': { # Bedrock
         'char': '#',
@@ -127,7 +138,8 @@ blocks = {
             'style': LIGHT
         },
         'solid': True,
-        'breakable': False
+        'breakable': False,
+        'hierarchy': 100
     },
     '*': { # Player head
         'char': '*',
@@ -137,7 +149,8 @@ blocks = {
             'style': None
         },
         'solid': False,
-        'breakable': False
+        'breakable': False,
+        'hierarchy': 1000
     },
     '^': { # Player feet
         'char': '^',
@@ -147,7 +160,8 @@ blocks = {
             'style': None
         },
         'solid': False,
-        'breakable': False
+        'breakable': False,
+        'hierarchy': 1000
     },
     'X': { # Cursor
         'char': clear_bg,
@@ -157,7 +171,8 @@ blocks = {
             'style': None
         },
         'solid': False,
-        'breakable': False
+        'breakable': False,
+        'hierarchy': 1010
     }
 }
 
