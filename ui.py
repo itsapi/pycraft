@@ -116,7 +116,7 @@ def help_():
     with open('help.json') as f:
         data = json.load(f)
 
-    max_len = max(max(len(item[0]) for item in section) for section in data.values())
+    max_len = max(len(item[0]) for section in data.values() for item in section)
 
     for label, section in data.items():
         out += label + '\n'
