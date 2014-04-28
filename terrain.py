@@ -80,7 +80,7 @@ def slice_height(pos, meta):
     return int(slice_height_)
 
 
-def add_tree(slice_, pos, meta):
+def add_tree(slice_, pos, meta, blocks):
     # Maximum width of half a tree
     max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
@@ -111,18 +111,19 @@ def add_tree(slice_, pos, meta):
                     # Add leaves to slice
                     for j, leaf in enumerate(leaf_slice):
                         if leaf:
-                            slice_[leaf_height + j] = '@'
+                            sy = leaf_height + j
+                            slice_[sy] = spawn_hierarchy(blocks, ('@', slice_[sy]))
 
             if x == pos:
                 # Add trunk to slice
                 for i in range(air_height - tree_height,
                                air_height):
-                    slice_[i] = '|'
+                    slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
 
     return slice_
 
 
-def add_ores(slice_, pos, meta):
+def add_ores(slice_, pos, meta, blocks):
     for ore in world_gen['ores'].values():
         for x in range(pos - int(ore['vain_size'] / 2),
                        pos + ceil(ore['vain_size'] / 2)):
@@ -141,12 +142,13 @@ def add_ores(slice_, pos, meta):
 
                 # Won't allow ore above surface
                 if ore['lower'] < ore_height < min(ore['upper'], slice_height(pos, meta)):
-                    slice_[world_gen['height'] - ore_height] = ore['char']
+                    sy = world_gen['height'] - ore_height
+                    slice_[sy] = spawn_hierarchy(blocks, (ore['char'], slice_[sy]))
 
     return slice_
 
 
-def gen_slice(pos, meta):
+def gen_slice(pos, meta, blocks):
 
     slice_height_ = slice_height(pos, meta)
 
@@ -158,8 +160,8 @@ def gen_slice(pos, meta):
         ['_']
     )
 
-    slice_ = add_tree(slice_, pos, meta)
-    slice_ = add_ores(slice_, pos, meta)
+    slice_ = add_tree(slice_, pos, meta, blocks)
+    slice_ = add_ores(slice_, pos, meta, blocks)
 
     return slice_
 
@@ -175,6 +177,10 @@ def detect_edges(map_, edges):
             slices.append(pos)
 
     return slices
+
+
+def spawn_hierarchy(blocks, tests):
+    return max(tests, key=lambda block: blocks[block]['hierarchy'])
 
 
 def is_solid(blocks, block):
