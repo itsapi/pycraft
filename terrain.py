@@ -110,7 +110,7 @@ def add_tree(slice_, pos, meta):
 
                     # Add leaves to slice
                     for j, leaf in enumerate(leaf_slice):
-                        if leaf:
+                        if leaf and slice_[leaf_height + j] == ' ':
                             slice_[leaf_height + j] = '@'
 
             if x == pos:
