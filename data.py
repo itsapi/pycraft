@@ -236,3 +236,28 @@ world_gen = {
          (1, 1, 0, 0, 1, 1, 0))
     )
 }
+
+help_data = {
+    'Movement:': [
+        ['Move left', 'A'],
+        ['Move right', 'D'],
+        ['Jump', 'W']
+    ],
+    'Blocks:': [
+        ['Break/place block', 'K'],
+        ['Move cursor clockwise', 'L'],
+        ['Move cursor anti-clockwise', 'J']
+    ],
+    'Inventory:': [
+        ['Cycle inventory down', ';'],
+        ['Cycle inventory up', 'H'],
+        ['Drop single item', 'B'],
+        ['Drop entire stack', 'CTRL-B']
+    ],
+    'Menus:': [
+        ['Move up', 'W or UP'],
+        ['Move down', 'S or DOWN'],
+        ['Select', 'SPACE or RETURN'],
+        ['Pause', 'SPACE or RETURN']
+    ]
+}

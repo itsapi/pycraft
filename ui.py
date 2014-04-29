@@ -6,6 +6,7 @@ from console import CLS, WIDTH, HEIGHT
 from colors import *
 
 import saves
+from data import help_data
 
 
 back = ['Back...', lambda: None]
@@ -113,12 +114,9 @@ def pause():
 def help_():
     out = title('Help')
 
-    with open('help.json') as f:
-        data = json.load(f)
+    max_len = max(len(item[0]) for section in help_data.values() for item in section)
 
-    max_len = max(len(item[0]) for section in data.values() for item in section)
-
-    for label, section in data.items():
+    for label, section in help_data.items():
         out += label + '\n'
         for name, key in section:
             out += '   {name:{max_len}} - {key}\n'.format(
