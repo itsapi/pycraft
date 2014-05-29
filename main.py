@@ -1,4 +1,5 @@
 from time import time
+from serial import Serial
 
 from nbinput import NonBlockingInput
 
@@ -9,6 +10,7 @@ def main():
 
     saves.check_map_dir()
     blocks = terrain.gen_blocks()
+    serial = Serial('/dev/ttyACM1', 19200)
 
     # Menu loop
     while True:
@@ -99,10 +101,28 @@ def main():
                     below_solid = False
                     alive = False
 
+                nuncuk = serial.readline()
+                try:
+                    nums = nuncuk.decode('utf-8')[:-2].split('|')
+                    nums = [int(num) - 128 for num in nums]
+                except ValueError:
+                    nums = [0, 0]
+
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
-
                 inp = char if char in 'wadkjlh;b'+chr(2) else None
+
+                try:
+                    if nums[0] > 20:
+                        inp = 'd'
+                    if nums[0] < -20:
+                        inp = 'a'
+                    if nums[1] > 20:
+                        inp = 'w'
+                    if nums[1] < -20:
+                        inp = 's'
+                except IndexError:
+                    pass
 
                 if time() >= (1/TPS) + last_inp and alive:
                     if inp:
