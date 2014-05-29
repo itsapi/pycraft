@@ -36,7 +36,7 @@ def render_map(map_, objects, inv, blocks):
 
             char = pixel
 
-            # Add the player
+            # Add any objects
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
                     pixel = object_['char']
