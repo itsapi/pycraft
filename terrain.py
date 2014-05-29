@@ -116,7 +116,7 @@ def add_tree(slice_, pos, meta, blocks):
             for i, leaf_slice in enumerate(tree):
                 leaf_pos = x + (i - int(len(tree) / 2))
                 if leaf_pos == pos:
-                    leaf_height = air_height - tree_height - trunk_depth - 1
+                    leaf_height = air_height - tree_height - (len(leaf_slice) - trunk_depth)
 
                     # Add leaves to slice
                     for j, leaf in enumerate(leaf_slice):
