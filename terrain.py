@@ -105,7 +105,7 @@ def add_tree(slice_, pos, meta, blocks):
             # Get height above ground
             air_height = world_gen['height'] - slice_height(x, meta)
 
-            # Center tree slice (contains trunk)
+            # Centre tree slice (contains trunk)
             center_leaves = tree[int(len(tree)/2)]
             trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
                                if leaf)
