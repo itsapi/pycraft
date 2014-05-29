@@ -1,4 +1,5 @@
 import terrain
+from console import supported_chars
 
 
 cursor_x = lambda cursor: {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor]
@@ -127,16 +128,29 @@ def render_player(x, y, cursor, c_hidden):
 
 
 def render_inv(inv_sel, inv, blocks):
+    h, v, tl, t, tr, l, m, r, bl, b, br = \
+        supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
+
     out = []
-    out.append('-' * 10)
+    out.append(tl + (h*3) + t + (h*4) + tr)
     for i, slot in enumerate(inv):
         if slot is not None:
             block = blocks[slot['block']]['char']
             num = slot['num']
         else:
             block, num = '', ''
-        out.append('| {:1} | {:2} |{}'.format(block, num, ' *' if i == inv_sel else ''))
-        out.append('-' * 10)
+        out.append('{v} {b:1} {v} {n:2} {v}'.format(
+            b=block,
+            n=num,
+            s='*' if i == inv_sel else ' ',
+            v=v
+        ))
+
+        if not i == len(inv) - 1:
+            out.append(l + (h*3) + m + (h*4) + r)
+        else:
+            out.append(bl + (h*3) + b + (h*4) + br)
+
     return out
 
 
