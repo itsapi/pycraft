@@ -1,5 +1,6 @@
 import terrain
 from console import supported_chars
+from colors import *
 
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
@@ -139,10 +140,14 @@ def render_inv(inv_sel, inv, blocks):
             num = slot['num']
         else:
             block, num = '', ''
-        out.append('{v} {b:1} {v} {n:2} {v} {s}'.format(
+
+        # Have to do the padding before color because the color
+        #   messes with the char count.
+        num = '{:2}'.format(num)
+
+        out.append('{v} {b:1} {v} {n} {v}'.format(
             b=block,
-            n=num,
-            s='*' if i == inv_sel else ' ',
+            n=colorStr(num, bg=RED) if i == inv_sel else num,
             v=v
         ))
 
