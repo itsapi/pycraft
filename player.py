@@ -139,7 +139,7 @@ def render_inv(inv_sel, inv, blocks):
             num = slot['num']
         else:
             block, num = '', ''
-        out.append('{v} {b:1} {v} {n:2} {v}'.format(
+        out.append('{v} {b:1} {v} {n:2} {v} {s}'.format(
             b=block,
             n=num,
             s='*' if i == inv_sel else ' ',
