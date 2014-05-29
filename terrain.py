@@ -18,6 +18,17 @@ def move_map(map_, edges):
 
 
 def render_map(map_, objects, inv, blocks):
+    """
+        Prints out a frame of the game.
+
+        Takes:
+        - map_: a 2D list of blocks.
+        - objects: a list of dictionaries:
+            {'x': int, 'y': int, 'char': block}
+        - inv: a 2D list of chars to make up the inventory on
+            the right of the game.
+        - blocks: the main dictionary describing the blocks in the game.
+    """
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
