@@ -4,7 +4,6 @@ from math import ceil
 
 from console import CLS
 from colors import colorStr
-
 from data import world_gen, blocks
 
 
@@ -204,7 +203,7 @@ def ground_height(slice_, blocks):
 
 def gen_blocks():
 
-    # Convert the characters to their colored form
+    # Convert the characters to their coloured form
     for key, block in blocks.items():
         try:
             # Make sure it is a string
