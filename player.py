@@ -2,8 +2,8 @@ import terrain
 from console import supported_chars
 
 
-cursor_x = lambda cursor: {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor]
-cursor_y = lambda cursor: {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}[cursor]
+cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
+cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
 INV_SLOTS = 10
 MAX_ITEM = 64
@@ -50,8 +50,8 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
 
 def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
-    block_x = str(x + cursor_x(cursor))
-    block_y = y + cursor_y(cursor)
+    block_x = str(x + cursor_x[cursor])
+    block_y = y + cursor_y[cursor]
     dinv = False
     inv = meta['inv']
     ext_inv = meta['ext_inv']
@@ -119,8 +119,8 @@ def render_player(x, y, cursor, c_hidden):
     }
 
     cursor = {
-        'x': x + cursor_x(cursor),
-        'y': y + cursor_y(cursor),
+        'x': x + cursor_x[cursor],
+        'y': y + cursor_y[cursor],
         'char': 'X'
     }
 
