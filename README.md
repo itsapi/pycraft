@@ -1,7 +1,7 @@
 Pycraft
 =======
 
-A console based 2D Minecraft, runs best on Unix. Built by [grit96](//github.com/grit96) and [olls](//github.com/olls).
+A console based 2D Minecraft, runs best on Unix with Python 3.3+. Built by [grit96](//github.com/grit96) and [olls](//github.com/olls).
 
 Usage: `python3 main.py`
 
