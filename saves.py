@@ -165,7 +165,7 @@ def save_map(save, slices):
         try:
             with open(save_path(save, str(num) + CHUNK_EXT)) as f:
                 slices = parse_slices(f.readlines())
-        except FileNotFoundError:
+        except (OSError, IOError):
             slices = {}
         slices.update(chunk)
 
