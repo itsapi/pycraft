@@ -1,8 +1,10 @@
 import terrain
+from console import supported_chars
+from colors import *
 
 
-cursor_x = lambda cursor: {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}[cursor]
-cursor_y = lambda cursor: {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}[cursor]
+cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
+cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
 INV_SLOTS = 10
 MAX_ITEM = 64
@@ -49,8 +51,8 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
 
 def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
-    block_x = str(x + cursor_x(cursor))
-    block_y = y + cursor_y(cursor)
+    block_x = str(x + cursor_x[cursor])
+    block_y = y + cursor_y[cursor]
     dinv = False
     inv = meta['inv']
     ext_inv = meta['ext_inv']
@@ -118,8 +120,8 @@ def render_player(x, y, cursor, c_hidden):
     }
 
     cursor = {
-        'x': x + cursor_x(cursor),
-        'y': y + cursor_y(cursor),
+        'x': x + cursor_x[cursor],
+        'y': y + cursor_y[cursor],
         'char': 'X'
     }
 
@@ -127,16 +129,33 @@ def render_player(x, y, cursor, c_hidden):
 
 
 def render_inv(inv_sel, inv, blocks):
+    h, v, tl, t, tr, l, m, r, bl, b, br = \
+        supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
+
     out = []
-    out.append('-' * 10)
+    out.append(tl + (h*3) + t + (h*4) + tr)
     for i, slot in enumerate(inv):
         if slot is not None:
             block = blocks[slot['block']]['char']
             num = slot['num']
         else:
             block, num = '', ''
-        out.append('| {:1} | {:2} |{}'.format(block, num, ' *' if i == inv_sel else ''))
-        out.append('-' * 10)
+
+        # Have to do the padding before color because the color
+        #   messes with the char count.
+        num = '{:2}'.format(num)
+
+        out.append('{v} {b:1} {v} {n} {v}'.format(
+            b=block,
+            n=colorStr(num, bg=RED) if i == inv_sel else num,
+            v=v
+        ))
+
+        if not i == len(inv) - 1:
+            out.append(l + (h*3) + m + (h*4) + r)
+        else:
+            out.append(bl + (h*3) + b + (h*4) + br)
+
     return out
 
 

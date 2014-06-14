@@ -4,7 +4,6 @@ from math import ceil
 
 from console import CLS
 from colors import colorStr
-
 from data import world_gen, blocks
 
 
@@ -18,6 +17,17 @@ def move_map(map_, edges):
 
 
 def render_map(map_, objects, inv, blocks):
+    """
+        Prints out a frame of the game.
+
+        Takes:
+        - map_: a 2D list of blocks.
+        - objects: a list of dictionaries:
+            {'x': int, 'y': int, 'char': block}
+        - inv: a 2D list of chars to make up the inventory on
+            the right of the game.
+        - blocks: the main dictionary describing the blocks in the game.
+    """
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -36,7 +46,7 @@ def render_map(map_, objects, inv, blocks):
 
             char = pixel
 
-            # Add the player
+            # Add any objects
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
                     pixel = object_['char']
@@ -95,7 +105,7 @@ def add_tree(slice_, pos, meta, blocks):
             # Get height above ground
             air_height = world_gen['height'] - slice_height(x, meta)
 
-            # Center tree slice (contains trunk)
+            # Centre tree slice (contains trunk)
             center_leaves = tree[int(len(tree)/2)]
             trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
                                if leaf)
@@ -106,7 +116,7 @@ def add_tree(slice_, pos, meta, blocks):
             for i, leaf_slice in enumerate(tree):
                 leaf_pos = x + (i - int(len(tree) / 2))
                 if leaf_pos == pos:
-                    leaf_height = air_height - tree_height - trunk_depth - 1
+                    leaf_height = air_height - tree_height - (len(leaf_slice) - trunk_depth)
 
                     # Add leaves to slice
                     for j, leaf in enumerate(leaf_slice):
@@ -193,7 +203,7 @@ def ground_height(slice_, blocks):
 
 def gen_blocks():
 
-    # Convert the characters to their colored form
+    # Convert the characters to their coloured form
     for key, block in blocks.items():
         try:
             # Make sure it is a string
