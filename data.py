@@ -141,6 +141,17 @@ blocks = {
         'breakable': False,
         'hierarchy': 100
     },
+    '=': { # Ladder
+        'char': lambda bg, blocks: clear_bg('=', bg, blocks),
+        'colors': {
+            'fg': None,
+            'bg': BLACK,
+            'style': CLEAR
+        },
+        'solid': True,
+        'breakable': True,
+        'hierarchy': 50
+    },
     '*': { # Player head
         'char': '*',
         'colors': {
@@ -164,7 +175,7 @@ blocks = {
         'hierarchy': 1000
     },
     'X': { # Cursor
-        'char': clear_bg,
+        'char': lambda bg, blocks: clear_bg('X', bg, blocks),
         'colors': {
             'fg': RED,
             'bg': None,

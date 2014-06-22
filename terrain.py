@@ -44,6 +44,7 @@ def render_map(map_, objects, inv, blocks):
     for y, row in enumerate(map_):
         for x, pixel in enumerate(row):
 
+            # Block behind
             char = pixel
 
             # Add any objects
@@ -52,7 +53,7 @@ def render_map(map_, objects, inv, blocks):
                     pixel = object_['char']
 
             try:
-                out += blocks[pixel]['char'](pixel, char, blocks)
+                out += blocks[pixel]['char'](char, blocks)
             except TypeError:
                 out += blocks[pixel]['char']
 
