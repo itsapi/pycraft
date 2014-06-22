@@ -1,12 +1,7 @@
 from colors import *
 
 
-clear_bg = lambda char, bg, blocks_: colorStr(
-    char,
-    bg = blocks_[bg]['colors']['bg'],
-    fg = blocks_[char]['colors']['fg'],
-    style = blocks_[char]['colors']['style']
-)
+
 
 blocks = {
     ' ': { # Air
@@ -142,21 +137,21 @@ blocks = {
         'hierarchy': 100
     },
     '=': { # Ladder
-        'char': lambda bg, blocks: clear_bg('=', bg, blocks),
+        'char': '=',
         'colors': {
-            'fg': None,
-            'bg': BLACK,
-            'style': CLEAR
+            'fg': BLACK,
+            'bg': None,
+            'style': None
         },
-        'solid': True,
+        'solid': False,
         'breakable': True,
-        'hierarchy': 50
+        'hierarchy': 10
     },
     '*': { # Player head
         'char': '*',
         'colors': {
             'fg': WHITE,
-            'bg': CYAN,
+            'bg': None,
             'style': None
         },
         'solid': False,
@@ -167,7 +162,7 @@ blocks = {
         'char': '^',
         'colors': {
             'fg': WHITE,
-            'bg': CYAN,
+            'bg': None,
             'style': None
         },
         'solid': False,
@@ -175,7 +170,7 @@ blocks = {
         'hierarchy': 1000
     },
     'X': { # Cursor
-        'char': lambda bg, blocks: clear_bg('X', bg, blocks),
+        'char': 'X',
         'colors': {
             'fg': RED,
             'bg': None,

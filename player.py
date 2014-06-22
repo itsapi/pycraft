@@ -41,8 +41,10 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
     # Jumps if up pressed, block below, no block above
     if (char in 'w' and y > 1
-        and blocks[ player_slice[below_y] ]['solid']
-        and not blocks[ player_slice[above_y] ]['solid']):
+        and not is_solid( player_slice[above_y] )
+            and (
+                is_solid( player_slice[below_y] )
+                or player_slice[feet_y] == '=' )):
 
         dy = -1
         jump = 5

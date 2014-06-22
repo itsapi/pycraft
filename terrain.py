@@ -52,9 +52,19 @@ def render_map(map_, objects, inv, blocks):
                 if object_['x'] == x and object_['y'] == y:
                     pixel = object_['char']
 
-            try:
-                out += blocks[pixel]['char'](char, blocks)
-            except TypeError:
+            # Add sky behind blocks without objects
+            if pixel == char:
+                char = ' '
+
+            if blocks[pixel]['colors']['bg'] is None:
+                char_bg = blocks[char]['colors']['bg']
+                out += colorStr(
+                    blocks[pixel]['char'],
+                    bg = blocks[' ']['colors']['bg'] if char_bg is None else char_bg,
+                    fg = blocks[pixel]['colors']['fg'],
+                    style = blocks[pixel]['colors']['style']
+                )
+            else: 
                 out += blocks[pixel]['char']
 
         try:
@@ -129,7 +139,7 @@ def add_tree(slice_, pos, meta, blocks):
                 # Add trunk to slice
                 for i in range(air_height - tree_height,
                                air_height):
-                    slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
+                    slice_[i] = spawn_hierarchy(blocks, ('=', slice_[i]))
 
     return slice_
 
@@ -206,14 +216,9 @@ def gen_blocks():
 
     # Convert the characters to their coloured form
     for key, block in blocks.items():
-        try:
-            # Make sure it is a string
-            blocks[key]['char'] + ''
-            string = True
-        except TypeError:
-            string = False
 
-        if string:
+        # If bg is transparent, it must be coloured at runtime.
+        if blocks[key]['colors']['bg'] is not None:
             blocks[key]['char'] = colorStr(
                 block['char'],
                 block['colors']['fg'],
