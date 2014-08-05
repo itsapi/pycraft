@@ -139,7 +139,7 @@ def add_tree(slice_, pos, meta, blocks):
                 # Add trunk to slice
                 for i in range(air_height - tree_height,
                                air_height):
-                    slice_[i] = spawn_hierarchy(blocks, ('=', slice_[i]))
+                    slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
 
     return slice_
 
