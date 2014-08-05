@@ -1,8 +1,6 @@
 from colors import *
 
 
-
-
 blocks = {
     ' ': { # Air
         'char': ' ',
