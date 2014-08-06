@@ -64,7 +64,7 @@ def render_map(map_, objects, inv, blocks):
                     fg = blocks[pixel]['colors']['fg'],
                     style = blocks[pixel]['colors']['style']
                 )
-            else: 
+            else:
                 out += blocks[pixel]['char']
 
         try:
