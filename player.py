@@ -138,17 +138,17 @@ def render_inv(inv_sel, inv, blocks):
     out.append(tl + (h*3) + t + (h*4) + tr)
     for i, slot in enumerate(inv):
         if slot is not None:
-            block = blocks[slot['block']]['char']
+            block_char = blocks[slot['block']]['char']
             num = slot['num']
         else:
-            block, num = '', ''
+            block_char, num = '', ''
 
         # Have to do the padding before color because the color
         #   messes with the char count.
         num = '{:2}'.format(num)
 
         out.append('{v} {b:1} {v} {n} {v}'.format(
-            b=block,
+            b=colorStr(block_char, bg=None),
             n=colorStr(num, bg=RED) if i == inv_sel else num,
             v=v
         ))
