@@ -42,30 +42,30 @@ def render_map(map_, objects, inv, blocks):
     # Output the map
     out = ''
     for y, row in enumerate(map_):
-        for x, pixel in enumerate(row):
+        for x, pixel_f in enumerate(row):
 
-            # Block behind
-            char = pixel
+            # Block back and front are same to begin
+            pixel_b = pixel_f
 
             # Add any objects
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
-                    pixel = object_['char']
+                    pixel_f = object_['char']
 
             # Add sky behind blocks without objects
-            if pixel == char:
-                char = ' '
+            if pixel_f == pixel_b:
+                pixel_b = ' '
 
-            if blocks[pixel]['colors']['bg'] is None:
-                char_bg = blocks[char]['colors']['bg']
+            if blocks[pixel_f]['colors']['bg'] is None:
+                char_bg = blocks[pixel_b]['colors']['bg']
                 out += colorStr(
-                    blocks[pixel]['char'],
+                    blocks[pixel_f]['char'],
                     bg = blocks[' ']['colors']['bg'] if char_bg is None else char_bg,
-                    fg = blocks[pixel]['colors']['fg'],
-                    style = blocks[pixel]['colors']['style']
+                    fg = blocks[pixel_f]['colors']['fg'],
+                    style = blocks[pixel_f]['colors']['style']
                 )
             else:
-                out += blocks[pixel]['char']
+                out += blocks[pixel_f]['char']
 
         try:
             out += ' ' + inv[y]
