@@ -22,6 +22,7 @@ def main():
         key, slice_ = line.split('<sep>')
         slice_ = list(slice_)
         slices[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
+        slices[key] = ''.join(slices[key][::-1])
 
     # split map data into chunks
     chunks = {}
@@ -38,7 +39,7 @@ def main():
         pass
     for num, chunk in chunks.items():
         with open('saves/{}/chunks/{}.json'.format(save, num), 'w') as f:
-            json.dump(chunk, f)
+            json.dump(chunk, f, indent=4)
 
 
 if __name__ == '__main__':
