@@ -14,7 +14,7 @@ blocks = {
         'hierarchy': 0
     },
     '-': { # Grass
-        'char': 'v',
+        'char': '⌒',
         'colors': {
             'fg': GREEN,
             'bg': GREEN,
@@ -146,7 +146,7 @@ blocks = {
         'hierarchy': 10
     },
     '*': { # Player head
-        'char': '*',
+        'char': 'o',
         'colors': {
             'fg': WHITE,
             'bg': None,

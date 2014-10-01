@@ -1,13 +1,14 @@
 import json
 import os
 
+
 def main():
     saves = os.listdir('saves')
     print('Choose a save to convert:\n')
     print('\n'.join('({}) {}'.format(i, save) for i, save in enumerate(saves)))
     save = saves[int(input('> '))]
 
-    # extract map data from chunk files
+    # Extract map data from chunk files
     map_ = []
     chunks = (file_ for file_ in os.listdir('saves/' + save)
               if file_.endswith('.chunk'))
@@ -16,7 +17,7 @@ def main():
             data = f.readlines()
         map_ += data
 
-    # convert map data into object
+    # Convert map data into object
     slices = {}
     for line in map_:
         key, slice_ = line.split('<sep>')
@@ -24,7 +25,7 @@ def main():
         slices[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
         slices[key] = ''.join(slices[key][::-1])
 
-    # split map data into chunks
+    # Split map data into chunks
     chunks = {}
     for pos, slice_ in slices.items():
         try:
@@ -32,7 +33,7 @@ def main():
         except KeyError:
             chunks[int(pos) // 16] = {pos: slice_}
 
-    # save chunks to file
+    # Save chunks to file
     try:
         os.mkdir('saves/{}/chunks'.format(save))
     except FileExistsError:

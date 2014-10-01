@@ -13,6 +13,7 @@ def _has_colors(stream):
     except:
         return False
 
+
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = list(range(8))
 NORMAL, BOLD, DARK, ITALICS, UNDERLINE,\
     _, _, INVERT, CLEAR, STRIKETHROUGH = list(range(10))
@@ -34,6 +35,7 @@ def colorStr(text, fg=None, bg=None, style=None):
         return seq
     else:
         return text
+
 
 if __name__ == '__main__':
     for style in range(10):

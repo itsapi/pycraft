@@ -38,5 +38,6 @@ def supported_chars(*tests):
             pass
     return '?' * len(tests[0])
 
+
 WIDTH, HEIGHT = getTerminalSize()
 CLS = chr(27) + '[2J'
