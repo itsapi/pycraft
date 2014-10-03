@@ -102,6 +102,7 @@ def main():
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
 
+                # receive input if key pressed is w a d k j l h ; b or enter
                 inp = char if char in 'wadkjlh;b'+chr(2) else None
 
                 if time() >= (1/TPS) + last_inp and alive:
