@@ -74,7 +74,7 @@ def main():
                     last_out = time()
                     objects = player.render_player(int(width / 2), y, cursor, c_hidden)
                     inv = player.render_inv(inv_sel, meta['inv'], blocks)
-                    terrain.render_map(view, objects, inv, blocks)
+                    terrain.render_map(view, objects, inv, blocks, width, tick)
                 else:
                     df = 0
 

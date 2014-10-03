@@ -6,7 +6,7 @@ blocks = {
         'char': ' ',
         'colors': {
             'fg': None,
-            'bg': CYAN,
+            'bg': None,
             'style': None
         },
         'solid': False,

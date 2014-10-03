@@ -1,10 +1,12 @@
 import random
 import copy
-from math import ceil
+from math import ceil, sin, cos, radians
 
 from console import CLS
-from colors import colorStr
+from colors import *
 from data import world_gen, blocks
+
+sun_y = world_gen['height'] - world_gen['ground_height']
 
 
 def move_map(map_, edges):
@@ -16,7 +18,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, inv, blocks):
+def render_map(map_, objects, inv, blocks, width, tick):
     """
         Prints out a frame of the game.
 
@@ -28,6 +30,8 @@ def render_map(map_, objects, inv, blocks):
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
     """
+    # Work out current time in radians for the sun
+    tick = radians(tick % 360)
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -56,15 +60,23 @@ def render_map(map_, objects, inv, blocks):
             if pixel_f == pixel_b:
                 pixel_b = ' '
 
+            # If the front block has a transparent bg
             if blocks[pixel_f]['colors']['bg'] is None:
+
+                # Figure out bg color
                 char_bg = blocks[pixel_b]['colors']['bg']
+                if char_bg is None or pixel_b == ' ':
+                    bg = sky(x, y, tick, width)
+                else:
+                    bg = char_bg
+
                 out += colorStr(
                     blocks[pixel_f]['char'],
-                    bg = blocks[' ']['colors']['bg'] if char_bg is None else char_bg,
+                    bg = bg,
                     fg = blocks[pixel_f]['colors']['fg'],
                     style = blocks[pixel_f]['colors']['style']
                 )
-            else:
+            else: # The block was colored on startup
                 out += blocks[pixel_f]['char']
 
         try:
@@ -75,6 +87,17 @@ def render_map(map_, objects, inv, blocks):
         out += '\n'
 
     print(CLS + out, end='')
+
+
+def sky(x, y, time, width):
+    """ Returns the sky color. """
+    sun_r = width / 2
+
+    if (int(sun_r * sin(time) + sun_r + 1) in [x, x+1] and
+        int(sun_r * cos(time) + sun_y) in [y, y+1]):
+        return YELLOW
+    else:
+        return CYAN
 
 
 def slice_height(pos, meta):
