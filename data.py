@@ -146,7 +146,7 @@ blocks = {
         'hierarchy': 10
     },
     '*': { # Player head
-        'char': 'o',
+        'char': '*',
         'colors': {
             'fg': WHITE,
             'bg': None,
