@@ -31,7 +31,7 @@ def render_map(map_, objects, inv, blocks, width, tick):
         - blocks: the main dictionary describing the blocks in the game.
     """
     # Work out current time in radians for the sun
-    tick = radians(tick % 360) / 3
+    tick = radians((tick / 6) % 360)
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
