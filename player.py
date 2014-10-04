@@ -141,7 +141,7 @@ def render_inv(inv_sel, inv, blocks):
             block_char = blocks[slot['block']]['char']
             num = slot['num']
         else:
-            block_char, num = '', ''
+            block_char, num = ' ', ''
 
         # Have to do the padding before color because the color
         #   messes with the char count.
