@@ -144,10 +144,10 @@ def render_inv(inv_sel, inv, blocks):
             block_char, num = ' ', ''
 
         # Have to do the padding before color because the color
-        #   messes with the char count.
+        #   messes with the char count. (The block will allways be 1 char wide.)
         num = '{:2}'.format(num)
 
-        out.append('{v} {b:1} {v} {n} {v}'.format(
+        out.append('{v} {b} {v} {n} {v}'.format(
             b=colorStr(block_char, bg=None),
             n=colorStr(num, bg=RED) if i == inv_sel else num,
             v=v
