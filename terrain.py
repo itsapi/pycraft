@@ -31,7 +31,7 @@ def render_map(map_, objects, inv, blocks, width, tick):
         - blocks: the main dictionary describing the blocks in the game.
     """
     # Work out current time in radians for the sun
-    tick = radians((tick / 6) % 360)
+    tick = radians((tick / 32) % 360)
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -94,7 +94,7 @@ def sky(x, y, time, width):
     sun_r = width / 2
 
     if (int(sun_r * sin(time) + sun_r + 1) in [x, x+1] and
-        int(sun_r * cos(time) + sun_y) in [y, y+1]):
+        int(sun_r * cos(time) + sun_y) == y):
         return YELLOW
     else:
         return CYAN
