@@ -97,11 +97,20 @@ def sky(x, y, time, width):
     """ Returns the sky color. """
     sun_r = width / 2
 
-    if (int(sun_r * sin(time) + sun_r + 1) in [x, x+1] and
-        int(sun_r * cos(time) + sun_y) == y):
-        return YELLOW
+    if cos(time) > 0:
+        # Day
+        if (int(sun_r * -sin(time) + sun_r + 1) in [x, x+1] and
+            int(sun_r * -cos(time) + sun_y) == y):
+            return YELLOW
+        else:
+            return CYAN
     else:
-        return CYAN
+        # Night
+        if (int(sun_r * sin(time) + sun_r + 1) in [x, x+1] and
+            int(sun_r * cos(time) + sun_y) == y):
+            return WHITE
+        else:
+            return BLUE
 
 
 def slice_height(pos, meta):
