@@ -153,11 +153,14 @@ def add_tree(slice_, pos, meta, blocks):
     max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
+
+        tree_chance = biome(pos, meta)
+
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x) + 'tree')
 
-        # Generate a tree with a 5% chance
-        if random.random() <= 0.05:
+        # Generate a tree with a chance dependent on the biome
+        if random.random() <= tree_chance:
             tree = random.choice(world_gen['trees'])
 
             # Get height above ground
@@ -189,6 +192,26 @@ def add_tree(slice_, pos, meta, blocks):
                     slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
 
     return slice_
+
+
+def biome(pos, meta):
+    biome_type = []
+
+    # Check surrounding slices for a biome marker
+    for boime_x in range(pos - int(world_gen['max_biome_size'] / 2),
+                         pos + int(world_gen['max_biome_size'] / 2)):
+        # Set seed for random numbers based on position
+        random.seed(str(meta['seed']) + str(boime_x) + 'biome')
+
+        # Generate a biome marker with a 5% chance
+        if random.random() <= 0.05:
+            biome_type.append(random.choice([0]*2 + [.05]*2 + [.2]))
+
+    if not biome_type:
+        # If not plains or forest, it's normal
+        return .05
+    else:
+        return max(set(biome_type), key=biome_type.count)
 
 
 def add_ores(slice_, pos, meta, blocks):

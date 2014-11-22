@@ -185,6 +185,7 @@ world_gen = {
     'max_hill': 15,
     'ground_height': 10,
     'chunk_size': 16,
+    'max_biome_size': 50,
     'ores': {
         'coal': {
             'char': 'x',
