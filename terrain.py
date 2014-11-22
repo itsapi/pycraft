@@ -205,7 +205,7 @@ def biome(pos, meta):
 
         # Generate a biome marker with a 5% chance
         if random.random() <= 0.05:
-            biome_type.append(random.choice([0]*2 + [.05]*2 + [.2]))
+            biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
     if not biome_type:
         # If not plains or forest, it's normal

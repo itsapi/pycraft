@@ -186,6 +186,7 @@ world_gen = {
     'ground_height': 10,
     'chunk_size': 16,
     'max_biome_size': 50,
+    'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'ores': {
         'coal': {
             'char': 'x',
