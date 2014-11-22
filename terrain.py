@@ -154,7 +154,7 @@ def add_tree(slice_, pos, meta, blocks):
 
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
 
-        tree_chance = biome(pos, meta)
+        tree_chance = biome(x, meta)
 
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x) + 'tree')
