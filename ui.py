@@ -107,6 +107,7 @@ def new():
 def pause():
     return menu('Paused', (
         ('Resume', lambda: None),
+        ('Help', help_),
         ('Main Menu', lambda: 'exit')
     ))
 
