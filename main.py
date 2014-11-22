@@ -25,6 +25,7 @@ def main():
         width = 40
         FPS = 10
         TPS = 10
+        SUN_TICK = radians(1/32)
 
         old_sun = None
         old_edges = None
@@ -67,10 +68,8 @@ def main():
                     old_edges = edges
                     redraw = True
 
-                # Work out current time in radians for the sun
-                rad = radians((tick / 32) % 360)
                 # Sun has moved
-                sun = terrain.sun(rad, width)
+                sun = terrain.sun(tick, width)
                 if not sun == old_sun:
                     old_sun = sun
                     redraw = True
@@ -82,7 +81,7 @@ def main():
                     last_out = time()
                     objects = player.render_player(int(width / 2), y, cursor, c_hidden)
                     inv = player.render_inv(inv_sel, meta['inv'], blocks)
-                    terrain.render_map(view, objects, inv, blocks, sun, rad)
+                    terrain.render_map(view, objects, inv, blocks, sun, tick)
                 else:
                     df = 0
 
@@ -157,7 +156,7 @@ def main():
                 # Increase tick
                 if time() >= (1/TPS) + last_tick:
                     dt = 1
-                    tick += dt
+                    tick += SUN_TICK
                     last_tick = time()
                 else:
                     dt = 0
