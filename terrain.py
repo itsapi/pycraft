@@ -1,6 +1,6 @@
 import random
 import copy
-from math import ceil, sin, cos, radians
+from math import ceil, sin, cos, radians, pi
 
 from console import CLS
 from colors import *
@@ -18,7 +18,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, inv, blocks, width, tick):
+def render_map(map_, objects, inv, blocks, sun, tick):
     """
         Prints out a frame of the game.
 
@@ -30,8 +30,6 @@ def render_map(map_, objects, inv, blocks, width, tick):
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
     """
-    # Work out current time in radians for the sun
-    tick = radians((tick / 32) % 360)
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -70,7 +68,7 @@ def render_map(map_, objects, inv, blocks, width, tick):
                 # Figure out bg color
                 char_bg = blocks[pixel_b]['colors']['bg']
                 if char_bg is None or pixel_b == ' ':
-                    bg = sky(x, y, tick, width)
+                    bg = sky(x, y, tick, sun)
                 else:
                     bg = char_bg
 
@@ -93,22 +91,35 @@ def render_map(map_, objects, inv, blocks, width, tick):
     print(CLS + out, end='')
 
 
-def sky(x, y, time, width):
-    """ Returns the sky color. """
+def sun(time, width):
+    """ Returns position of sun """
+
     sun_r = width / 2
 
-    if cos(time) > 0:
-        # Day
-        if (int(sun_r * -sin(time) + sun_r + 1) in [x, x+1] and
-            int(sun_r * -cos(time) + sun_y) == y):
+    # Set i to +1 for night and -1 for day
+    i = -2 * (cos(time) > 0) + 1
+    #print(i, cos(time))
+    x = int(sun_r * i * sin(time) + sun_r + 1)
+    y = int(sun_r * i * cos(time) + sun_y)
+
+    return x, y
+
+
+def sky(x, y, time, sun):
+    """ Returns the sky color. """
+
+    day = cos(time) > 0
+
+    if (sun[0] in [x, x+1] and
+        sun[1] == y):
+
+        if day:
             return YELLOW
         else:
-            return CYAN
-    else:
-        # Night
-        if (int(sun_r * sin(time) + sun_r + 1) in [x, x+1] and
-            int(sun_r * cos(time) + sun_y) == y):
             return WHITE
+    else:
+        if day:
+            return CYAN
         else:
             return BLUE
 

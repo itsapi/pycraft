@@ -1,7 +1,6 @@
 from time import time
-
+from math import radians
 from nbinput import NonBlockingInput
-
 import saves, ui, terrain, player
 
 
@@ -27,6 +26,7 @@ def main():
         FPS = 10
         TPS = 10
 
+        old_sun = None
         old_edges = None
         redraw = False
         last_out = time()
@@ -67,6 +67,14 @@ def main():
                     old_edges = edges
                     redraw = True
 
+                # Work out current time in radians for the sun
+                rad = radians((tick / 32) % 360)
+                # Sun has moved
+                sun = terrain.sun(rad, width)
+                if not sun == old_sun:
+                    old_sun = sun
+                    redraw = True
+
                 # Draw view
                 if redraw and time() >= 1/FPS + last_out:
                     df = 1
@@ -74,7 +82,7 @@ def main():
                     last_out = time()
                     objects = player.render_player(int(width / 2), y, cursor, c_hidden)
                     inv = player.render_inv(inv_sel, meta['inv'], blocks)
-                    terrain.render_map(view, objects, inv, blocks, width, tick)
+                    terrain.render_map(view, objects, inv, blocks, sun, rad)
                 else:
                     df = 0
 
