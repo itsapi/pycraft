@@ -117,12 +117,11 @@ def main():
                     y += dy
                     x += dx
 
-                    (new_slices,
-                    meta['inv'],
-                    meta['ext_inv'],
-                    dinv) = player.cursor_func(
-                        str(inp), map_, x, y, cursor, inv_sel, meta, blocks
-                    )
+                    new_slices, meta['inv'], meta['ext_inv'], dinv = \
+                        player.cursor_func(
+                            str(inp), map_, x, y, cursor, inv_sel, meta, blocks
+                        )
+
                     map_.update(new_slices)
 
                     dc = player.move_cursor(inp)
