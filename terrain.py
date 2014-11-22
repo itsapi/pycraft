@@ -8,6 +8,9 @@ from data import world_gen, blocks
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 
+# Maximum width of half a tree
+max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
+
 
 def move_map(map_, edges):
 
@@ -149,8 +152,6 @@ def slice_height(pos, meta):
 
 
 def add_tree(slice_, pos, meta, blocks):
-    # Maximum width of half a tree
-    max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
         # Set seed for random numbers based on position
