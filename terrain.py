@@ -37,11 +37,15 @@ def render_map(map_, objects, inv, blocks, width, tick):
     map_ = list(map_.items())
     map_.sort(key=lambda item: int(item[0]))
 
+    # map_ = [[0, '##  '],
+    #         [1, '### '],
+    #         [2, '##  ']]
+
     # Seperates the pos and data
     map_ = tuple(zip(*map_))[1]
 
     # Orientates the data
-    map_ = tuple(zip(*map_))
+    map_ = zip(*map_)
 
     # Output the map
     out = ''
