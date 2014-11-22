@@ -108,42 +108,40 @@ def main():
 
                 # Take inputs and change pos accordingly
                 char = str(nbi.char()).lower()
-
                 # receive input if key pressed is w a d k j l h ; b or enter
                 inp = char if char in 'wadkjlh;b'+chr(2) else None
 
-                if time() >= (1/TPS) + last_inp and alive:
-                    if inp:
-                        dx, dy, jump = player.get_pos_delta(
-                            str(inp), map_, x, y, blocks, jump)
-                        y += dy
-                        x += dx
+                if time() >= (1/TPS) + last_inp and alive and inp:
+                    dx, dy, jump = player.get_pos_delta(
+                        str(inp), map_, x, y, blocks, jump)
+                    y += dy
+                    x += dx
 
-                        (new_slices,
-                        meta['inv'],
-                        meta['ext_inv'],
-                        dinv) = player.cursor_func(
-                            str(inp), map_, x, y, cursor, inv_sel, meta, blocks
-                        )
-                        map_.update(new_slices)
+                    (new_slices,
+                    meta['inv'],
+                    meta['ext_inv'],
+                    dinv) = player.cursor_func(
+                        str(inp), map_, x, y, cursor, inv_sel, meta, blocks
+                    )
+                    map_.update(new_slices)
 
-                        dc = player.move_cursor(inp)
-                        cursor = (cursor + dc) % 6
+                    dc = player.move_cursor(inp)
+                    cursor = (cursor + dc) % 6
 
-                        di = player.move_inv_sel(inp)
-                        inv_sel = (inv_sel + di) % player.INV_SLOTS
+                    di = player.move_inv_sel(inp)
+                    inv_sel = (inv_sel + di) % player.INV_SLOTS
 
-                        if dx or dy or dc or di or dinv:
-                            meta['player_x'], meta['player_y'] = x, y
-                            saves.save_meta(save, meta)
-                            redraw = True
-                        if dx or dy:
-                            c_hidden = True
-                        if dc:
-                            c_hidden = False
+                    if dx or dy or dc or di or dinv:
+                        meta['player_x'], meta['player_y'] = x, y
+                        saves.save_meta(save, meta)
+                        redraw = True
+                    if dx or dy:
+                        c_hidden = True
+                    if dc:
+                        c_hidden = False
 
-                        last_inp = time()
-                        inp = None
+                    last_inp = time()
+                    inp = None
 
                 # Pause game
                 if char in ' \n':
