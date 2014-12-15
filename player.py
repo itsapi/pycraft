@@ -67,8 +67,8 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             # Place block in world from selected inv slot
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = inv[inv_sel]['block']
-            inv, ext_inv = rem_inv(inv, ext_inv, inv_sel)
-            dinv = True
+            inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
+            dinv = change or dinv
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
             # Distroy block
@@ -76,16 +76,15 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
             inv, ext_inv = add_inv(inv, ext_inv, block)
-            dinv = True
 
     # If pressing b remove 1 item from inv slot
     if inp in 'b':
-        inv, ext_inv = rem_inv(inv, ext_inv, inv_sel)
-        dinv = True
+        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
+        dinv = change or dinv
     # If pressing ctrl-b remove stack from inv slot
     if ord(inp) == 2:
-        inv, ext_inv = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
-        dinv = True
+        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
+        dinv = change or dinv
     return slices, inv, ext_inv, dinv
 
 
@@ -187,12 +186,18 @@ def add_inv(inv, ext_inv, block):
 
 
 def rem_inv(inv, ext_inv, inv_sel, num=1):
-    if inv[inv_sel]['num'] > num:
+    if inv[inv_sel] is not None and inv[inv_sel]['num'] > num:
         inv[inv_sel]['num'] -= num
+        change = True
     else:
         if ext_inv:
             inv[inv_sel] = ext_inv[0]
             ext_inv.remove(ext_inv[0])
-        else:
+            change = True
+        elif inv[inv_sel] is not None:
             inv[inv_sel] = None
-    return inv, ext_inv
+            change = True
+        else:
+            # inv was already None
+            change = False
+    return inv, ext_inv, change
