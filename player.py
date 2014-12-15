@@ -28,7 +28,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
     # Calculate change in x pos for left and right movement
     for test_char, dir_, func in (('a', -1, left_slice), ('d', 1, right_slice)):
-        if (char in test_char
+        if (test_char in char
             and not is_solid( func[head_y] )):
 
             if is_solid( func[feet_y] ):
@@ -40,7 +40,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
                 dx = dir_
 
     # Jumps if up pressed, block below, no block above
-    if (char in 'w' and y > 1
+    if ('w' in char and y > 1
         and not is_solid( player_slice[above_y] )
             and (
                 is_solid( player_slice[below_y] )
@@ -61,7 +61,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
 
     slices = {}
 
-    if inp in 'k' and block_y >= 0:
+    if 'k' in inp and block_y >= 0:
         # If pressing k and block is air
         if map_[block_x][block_y] == ' ' and inv[inv_sel] is not None:
             # Place block in world from selected inv slot
@@ -79,11 +79,11 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             dinv = True
 
     # If pressing b remove 1 item from inv slot
-    if inp in 'b':
+    if 'b' in inp:
         inv, ext_inv = rem_inv(inv, ext_inv, inv_sel)
         dinv = True
     # If pressing ctrl-b remove stack from inv slot
-    if ord(inp) == 2:
+    if chr(2) in inp:
         inv, ext_inv = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
         dinv = True
     return slices, inv, ext_inv, dinv
@@ -187,7 +187,7 @@ def add_inv(inv, ext_inv, block):
 
 
 def rem_inv(inv, ext_inv, inv_sel, num=1):
-    if inv[inv_sel]['num'] > num:
+    if inv[inv_sel] is not None and inv[inv_sel]['num'] > num:
         inv[inv_sel]['num'] -= num
     else:
         if ext_inv:

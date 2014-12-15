@@ -2,6 +2,7 @@ from time import time
 from math import radians
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player
+import pitrol
 
 
 def main():
@@ -109,8 +110,10 @@ def game(blocks, meta, map_, save):
 
             # Take inputs and change pos accordingly
             char = str(nbi.char()).lower()
-            # receive input if key pressed is w a d k j l h ; b or enter
-            inp = char if char in 'wadkjlh;b'+chr(2) else None
+            # # receive input if key pressed is w a d k j l h ; b or enter
+            # inp = char if char in 'wadkjlh;b'+chr(2) else None
+            inp = pitrol.wasd()
+            inp = None if inp is '' else inp
 
             if time() >= (1/TPS) + last_inp and alive and inp:
                 dx, dy, jump = player.get_pos_delta(
