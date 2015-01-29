@@ -24,6 +24,17 @@ blocks = {
         'breakable': True,
         'hierarchy': 20
     },
+    'v': { # Tall Grass
+        'char': 'v',
+        'colors': {
+            'fg': GREEN,
+            'bg': None,
+            'style': LIGHT
+        },
+        'solid': False,
+        'breakable': True,
+        'hierarchy': 0
+    },
     '|': { # Wood
         'char': '#',
         'colors': {
@@ -187,6 +198,7 @@ world_gen = {
     'chunk_size': 16,
     'max_biome_size': 50,
     'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
+    'tall_grass_rate': .25,
     'ores': {
         'coal': {
             'char': 'x',

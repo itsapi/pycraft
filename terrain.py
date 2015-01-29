@@ -240,6 +240,18 @@ def add_ores(slice_, pos, meta, blocks):
     return slice_
 
 
+def add_tall_grass(slice_, pos, meta, blocks, slice_height_):
+    # Set seed for random numbers based on position and grass
+    random.seed(str(meta['seed']) + str(pos) + 'grass')
+
+    # Gernerate a grass with a probability
+    if random.random() <= world_gen['tall_grass_rate']:
+        sy = world_gen['height'] - slice_height_ - 1
+        slice_[sy] = spawn_hierarchy(blocks, ('v', slice_[sy]))
+    
+    return slice_
+
+
 def gen_slice(pos, meta, blocks):
 
     slice_height_ = slice_height(pos, meta)
@@ -254,6 +266,7 @@ def gen_slice(pos, meta, blocks):
 
     slice_ = add_tree(slice_, pos, meta, blocks)
     slice_ = add_ores(slice_, pos, meta, blocks)
+    slice_ = add_tall_grass(slice_, pos, meta, blocks, slice_height_)
 
     return slice_
 
