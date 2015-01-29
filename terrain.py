@@ -215,7 +215,7 @@ def biome(pos, meta):
         return max(set(biome_type), key=biome_type.count)
 
 
-def add_ores(slice_, pos, meta, blocks):
+def add_ores(slice_, pos, meta, blocks, slice_height_):
     for ore in world_gen['ores'].values():
         for x in range(pos - int(ore['vain_size'] / 2),
                        pos + ceil(ore['vain_size'] / 2)):
@@ -233,7 +233,7 @@ def add_ores(slice_, pos, meta, blocks):
                                              ceil(ore['vain_size'] / 2)))
 
                 # Won't allow ore above surface
-                if ore['lower'] < ore_height < min(ore['upper'], slice_height(pos, meta)):
+                if ore['lower'] < ore_height < min(ore['upper'], slice_height_):
                     sy = world_gen['height'] - ore_height
                     slice_[sy] = spawn_hierarchy(blocks, (ore['char'], slice_[sy]))
 
@@ -265,7 +265,7 @@ def gen_slice(pos, meta, blocks):
     )
 
     slice_ = add_tree(slice_, pos, meta, blocks)
-    slice_ = add_ores(slice_, pos, meta, blocks)
+    slice_ = add_ores(slice_, pos, meta, blocks, slice_height_)
     slice_ = add_tall_grass(slice_, pos, meta, blocks, slice_height_)
 
     return slice_
