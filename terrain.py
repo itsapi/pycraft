@@ -256,7 +256,7 @@ def gen_slice(pos, meta, blocks):
 
     slice_height_ = slice_height(pos, meta)
 
-    # Form slice of sky - ground - stone layers
+    # Form slice of sky, grass, stone, bedrock
     slice_ = (
         [' '] * (world_gen['height'] - slice_height_) +
         ['-'] +
