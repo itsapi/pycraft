@@ -14,11 +14,11 @@ blocks = {
         'hierarchy': 0
     },
     '-': { # Grass
-        'char': '⌒',
+        'char': '░',
         'colors': {
             'fg': GREEN,
             'bg': GREEN,
-            'style': DARK
+            'style': LIGHT
         },
         'solid': True,
         'breakable': True,
