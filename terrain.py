@@ -113,14 +113,14 @@ def sky(x, y, time, sun):
 
     day = cos(time) > 0
 
-    if (sun[0] in [x, x+1] and
-        sun[1] == y):
-
+    if sun[0] in [x, x+1] and sun[1] == y:
+        # Sun pixel
         if day:
             return YELLOW
         else:
             return WHITE
     else:
+        # Sky pixel
         if day:
             return CYAN
         else:
