@@ -15,14 +15,14 @@ back = ('Back...', lambda: None)
 def menu(name, options):
     """
         Executes the users selection from the menu, and returns the result
-        
+
         Takes:
         - name: menu title
         - options: a tuple of option name and option function
     """
-    
+
     STAR = colorStr('*', YELLOW)
-    
+
     print('\n' * HEIGHT)
 
     selection = 0

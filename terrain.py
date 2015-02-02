@@ -13,7 +13,6 @@ max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2
 
 
 def move_map(map_, edges):
-
     # Create subset of slices from map_ between edges
     slices = {}
     for pos in range(*edges):
@@ -128,7 +127,6 @@ def sky(x, y, time, sun):
 
 
 def slice_height(pos, meta):
-
     slice_height_ = world_gen['ground_height']
 
     # Check surrounding slices for a hill
@@ -152,9 +150,7 @@ def slice_height(pos, meta):
 
 
 def add_tree(slice_, pos, meta, blocks):
-
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
-
         tree_chance = biome(x, meta)
 
         # Set seed for random numbers based on position
@@ -248,12 +244,11 @@ def add_tall_grass(slice_, pos, meta, blocks, slice_height_):
     if random.random() <= world_gen['tall_grass_rate']:
         sy = world_gen['height'] - slice_height_ - 1
         slice_[sy] = spawn_hierarchy(blocks, ('v', slice_[sy]))
-    
+
     return slice_
 
 
 def gen_slice(pos, meta, blocks):
-
     slice_height_ = slice_height(pos, meta)
 
     # Form slice of sky, grass, stone, bedrock
@@ -272,7 +267,6 @@ def gen_slice(pos, meta, blocks):
 
 
 def detect_edges(map_, edges):
-
     slices = []
     for pos in range(*edges):
         try:
@@ -297,7 +291,6 @@ def ground_height(slice_, blocks):
 
 
 def gen_blocks():
-
     # Convert the characters to their coloured form
     for key, block in blocks.items():
 
