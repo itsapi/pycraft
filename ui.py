@@ -58,6 +58,8 @@ def menu(name, options):
 
 
 def main():
+    """ Loops the main menu until the user loads a save. """
+
     save = None
     while not save:
         save = menu('Main menu', (
@@ -67,14 +69,17 @@ def main():
             ('Help', help_),
             ('Exit', lambda: sys.exit())
         ))
+
     return save
 
 
 def lambda_gen(func, var):
+    """ Creates a lambda for to call a function with a parameter. """
     return lambda: func(var)
 
 
 def title(name):
+    """ Returns a padded coloured string containin the title. """
     return '{cls} {title}\n\n'.format(
         cls = CLS,
         title = colorStr('{name}\n {_}'.format(
@@ -85,6 +90,7 @@ def title(name):
 
 
 def load():
+    """ A menu for selectng a save to load. """
     saves_list = saves.list_saves()
     return menu(
         'Load save',
@@ -94,6 +100,7 @@ def load():
 
 
 def delete():
+    """ A menu for selectng a save to delete. """
     saves_list = saves.list_saves()
     return menu(
         'Delete save',
@@ -103,6 +110,8 @@ def delete():
 
 
 def new():
+    """ Lets the user enter a save name, then it creates and loads the save. """
+    
     print(title('New save'), end='')
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
@@ -124,6 +133,8 @@ def pause():
 
 
 def help_():
+    """ Displays the help stored in the help_data list. """
+    
     out = title('Help')
 
     max_len = max(len(item[0]) for section in help_data.values() for item in section)
