@@ -9,10 +9,20 @@ import saves
 from data import help_data
 
 
-back = ['Back...', lambda: None]
+back = ('Back...', lambda: None)
 
 
 def menu(name, options):
+    """
+        Executes the users selection from the menu, and returns the result
+        
+        Takes:
+        - name: menu title
+        - options: a tuple of option name and option function
+    """
+    
+    STAR = colorStr('*', YELLOW)
+    
     print('\n' * HEIGHT)
 
     selection = 0
@@ -20,17 +30,17 @@ def menu(name, options):
     with BlockingInput() as bi:
         while not str(char) in ' \n':
 
+            # Print menu
             out = ''
             for i, option in enumerate(options):
                 if i == selection:
-                    star = colorStr('*', YELLOW)
-                    out += star + colorStr(option[0], style=BOLD) + star
+                    out += STAR + colorStr(option[0], style=BOLD) + STAR
                 else:
                     out += ' ' + option[0]
                 out += '\n'
-
             print(title(name) + out)
 
+            # Wait for useful input
             while True:
                 char = str(escape_code(bi))
                 if char in ' \n':
@@ -43,6 +53,7 @@ def menu(name, options):
                     break
             selection %= len(options)
 
+    # Execute function of selection
     return options[selection][1]()
 
 
