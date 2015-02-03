@@ -102,7 +102,6 @@ def sun(time, width):
 
     # Set i to +1 for night and -1 for day
     i = -2 * (cos(time) > 0) + 1
-    #print(i, cos(time))
     x = int(sun_r * i * sin(time) + sun_r + 1)
     y = int(sun_r * i * cos(time) + sun_y)
 
