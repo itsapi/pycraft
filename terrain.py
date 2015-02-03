@@ -31,6 +31,8 @@ def render_map(map_, objects, inv, blocks, sun, tick):
         - inv: a 2D list of chars to make up the inventory on
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
+        - sun: (x, y) position of the sun.
+        - tick: the game time.
     """
 
     # Sorts the dict as a list by pos
