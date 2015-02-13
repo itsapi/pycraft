@@ -14,9 +14,9 @@ back = ('Back...', lambda: None)
 
 def menu(name, options):
     """
-        Executes the users selection from the menu, and returns the result
+        Executes the users selection from the menu, and returns the result.
 
-        Takes:
+        Parameters:
         - name: menu title
         - options: a tuple of option name and option function
     """
@@ -79,7 +79,7 @@ def lambda_gen(func, var):
 
 
 def title(name):
-    """ Returns a padded coloured string containin the title. """
+    """ Returns a padded coloured string containing the title. """
     return '{cls} {title}\n\n'.format(
         cls = CLS,
         title = colorStr('{name}\n {_}'.format(
