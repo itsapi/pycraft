@@ -111,7 +111,7 @@ def delete():
 
 def new():
     """ Lets the user enter a save name, then it creates and loads the save. """
-    
+
     print(title('New save'), end='')
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
@@ -134,7 +134,7 @@ def pause():
 
 def help_():
     """ Displays the help stored in the help_data list. """
-    
+
     out = title('Help')
 
     max_len = max(len(item[0]) for section in help_data.values() for item in section)
