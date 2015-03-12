@@ -14,7 +14,7 @@ blocks = {
         'hierarchy': 0
     },
     '-': { # Grass
-        'char': '░',
+        'char': '░ᚇ~',
         'colors': {
             'fg': GREEN,
             'bg': GREEN,

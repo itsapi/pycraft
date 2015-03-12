@@ -2,7 +2,7 @@ import random
 import copy
 from math import ceil, sin, cos, radians, pi
 
-from console import CLS
+from console import CLS, supported_chars
 from colors import *
 from data import world_gen, blocks
 
@@ -295,10 +295,13 @@ def gen_blocks():
     # Convert the characters to their coloured form
     for key, block in blocks.items():
 
+        # Get supported version of block char
+        blocks[key]['char'] = supported_chars(*block['char'])
+
         # If bg is transparent, it must be coloured at runtime.
         if blocks[key]['colors']['bg'] is not None:
             blocks[key]['char'] = colorStr(
-                block['char'],
+                blocks[key]['char'],
                 block['colors']['fg'],
                 block['colors']['bg'],
                 block['colors']['style']
