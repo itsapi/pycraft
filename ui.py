@@ -2,7 +2,7 @@ import sys
 import json
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
-from console import CLS, WIDTH, HEIGHT
+from console import CLS, REDRAW, WIDTH, HEIGHT
 from colors import *
 
 import saves
@@ -23,8 +23,6 @@ def menu(name, options):
 
     STAR = colorStr('*', YELLOW)
 
-    print('\n' * HEIGHT)
-
     selection = 0
     char = None
     with BlockingInput() as bi:
@@ -38,7 +36,7 @@ def menu(name, options):
                 else:
                     out += ' ' + option[0]
                 out += '\n'
-            print(title(name) + out)
+            print(REDRAW + title(name) + out)
 
             # Wait for useful input
             while True:

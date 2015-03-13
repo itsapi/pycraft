@@ -40,4 +40,5 @@ def supported_chars(*tests):
 
 
 WIDTH, HEIGHT = getTerminalSize()
-CLS = chr(27) + '[2J'
+CLS = '\033[2J'
+REDRAW = '\033[;f'

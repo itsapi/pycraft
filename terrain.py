@@ -2,7 +2,7 @@ import random
 import copy
 from math import ceil, sin, cos, radians, pi
 
-from console import CLS, supported_chars
+from console import CLS, REDRAW, supported_chars
 from colors import *
 from data import world_gen, blocks
 
@@ -92,7 +92,7 @@ def render_map(map_, objects, inv, blocks, sun, tick):
 
         out += '\n'
 
-    print(CLS + out, end='')
+    print('\033[;f' + out)
 
 
 def sun(time, width):
