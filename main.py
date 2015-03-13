@@ -2,6 +2,7 @@ from time import time
 from math import radians
 import sys
 
+from console import CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player
 
@@ -9,7 +10,8 @@ import saves, ui, terrain, player
 def main():
 
     # Hide cursor
-    print('\033[?25l')
+    print(HIDE_CUR)
+    print(CLS)
 
     saves.check_map_dir()
     blocks = terrain.gen_blocks()
@@ -21,7 +23,8 @@ def main():
 
 def exit():
     # Show cursor
-    print('\033[?25h')
+    print(SHOW_CUR)
+    print(CLS)
 
     sys.exit()
 

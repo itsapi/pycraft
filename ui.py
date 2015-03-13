@@ -34,7 +34,7 @@ def menu(name, options):
                 if i == selection:
                     out += STAR + colorStr(option[0], style=BOLD) + STAR
                 else:
-                    out += ' ' + option[0]
+                    out += ' ' + option[0] + ' '
                 out += '\n'
             print(REDRAW + title(name) + out)
 
@@ -50,7 +50,7 @@ def menu(name, options):
                     selection += 1
                     break
             selection %= len(options)
-
+        print(CLS)
     # Execute function of selection
     return options[selection][1]()
 
@@ -78,8 +78,7 @@ def lambda_gen(func, var):
 
 def title(name):
     """ Returns a padded coloured string containing the title. """
-    return '{cls} {title}\n\n'.format(
-        cls = CLS,
+    return '{title}\n\n'.format(
         title = colorStr('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
@@ -123,6 +122,7 @@ def new():
 
 
 def pause():
+    print(CLS)
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
@@ -144,10 +144,11 @@ def help_():
                 name = name, key = key, max_len = max_len
             )
     out += 'Back...\n'
-
     print(out)
 
     with BlockingInput() as bi:
         while not str(bi.char()) in ' \n':
             pass
+
+    print(CLS)
     return None
