@@ -57,7 +57,7 @@ def menu(name, options):
     return options[selection][1]()
 
 
-def main():
+def main(exit):
     """ Loops the main menu until the user loads a save. """
 
     save = None
@@ -67,7 +67,7 @@ def main():
             ('Load Save', load),
             ('Delete Save', delete),
             ('Help', help_),
-            ('Exit', lambda: sys.exit())
+            ('Exit', exit)
         ))
 
     return save

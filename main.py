@@ -1,17 +1,29 @@
 from time import time
 from math import radians
+import sys
+
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player
 
 
 def main():
 
+    # Hide cursor
+    print('\033[?25l')
+
     saves.check_map_dir()
     blocks = terrain.gen_blocks()
 
     # Menu loop
     while True:
-        game(blocks, *ui.main())
+        game(blocks, *ui.main(exit))
+
+
+def exit():
+    # Show cursor
+    print('\033[?25h')
+
+    sys.exit()
 
 
 def game(blocks, meta, map_, save):
