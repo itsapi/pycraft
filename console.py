@@ -41,6 +41,6 @@ def supported_chars(*tests):
 
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
-REDRAW = '\033[;f'
+REDRAW = '\033[0;0f'
 HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
