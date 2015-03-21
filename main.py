@@ -58,7 +58,11 @@ def game(blocks, meta, map_, save):
     new_slices = {}
     alive = True
 
-    crafting_list, crafting_sel = player.get_crafting(meta['inv'], crafting_sel, blocks)
+    crafting_list, crafting_sel = player.get_crafting(
+        meta['inv'],
+        crafting_sel,
+        blocks
+    )
 
     # Game loop
     game = True
@@ -96,12 +100,33 @@ def game(blocks, meta, map_, save):
                 df = 1
                 redraw = False
                 last_out = time()
-                objects = player.render_player(int(width / 2), y, cursor, c_hidden)
+                objects = player.render_player(
+                    int(width / 2),
+                    y,
+                    cursor,
+                    c_hidden
+                )
 
-                crafting_grid = player.render_grid(crafting_list, blocks, crafting_sel if crafting else None)
-                inv_grid = player.render_grid(meta['inv'], blocks, None if crafting else inv_sel)
+                crafting_grid = player.render_grid(
+                    crafting_list,
+                    blocks,
+                    crafting_sel if crafting else None
+                )
+                inv_grid = player.render_grid(
+                    meta['inv'],
+                    blocks,
+                    None if crafting else inv_sel
+                )
 
-                terrain.render_map(view, objects, inv_grid, crafting_grid, blocks, sun, tick)
+                terrain.render_map(
+                    view,
+                    objects,
+                    inv_grid,
+                    crafting_grid,
+                    blocks,
+                    sun,
+                    tick
+                )
             else:
                 df = 0
 
@@ -145,11 +170,13 @@ def game(blocks, meta, map_, save):
                 if crafting:
                     meta['inv'], inv_sel, crafting_list, dcraft = \
                         player.crafting(
-                            str(inp), meta['inv'], inv_sel, crafting_list, crafting_sel, blocks
+                            str(inp), meta['inv'], inv_sel,
+                            crafting_list, crafting_sel, blocks
                         )
 
                 if dinv or dcraft:
-                    crafting_list, crafting_sel = player.get_crafting(meta['inv'], crafting_sel, blocks)
+                    crafting_list, crafting_sel = \
+                        player.get_crafting(meta['inv'], crafting_sel, blocks)
 
                 map_.update(new_slices)
 
@@ -158,9 +185,11 @@ def game(blocks, meta, map_, save):
 
                 di = player.move_sel(inp)
                 if crafting:
-                    crafting_sel = ((crafting_sel + di) % len(crafting_list)) if len(crafting_list) else 0
+                    crafting_sel = ((crafting_sel + di) % len(crafting_list)) \
+                                       if len(crafting_list) else 0
                 else:
-                    inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else 0
+                    inv_sel = ((inv_sel + di) % len(meta['inv'])) \
+                                  if len(meta['inv']) else 0
 
                 if dx or dy or dc or di or dinv or dcraft:
                     meta['player_x'], meta['player_y'] = x, y
