@@ -17,16 +17,14 @@ def main():
     blocks = terrain.gen_blocks()
 
     # Menu loop
-    while True:
-        game(blocks, *ui.main(exit))
+    try:
+        while True:
+            game(blocks, *ui.main())
 
-
-def exit():
-    # Show cursor
-    print(SHOW_CUR)
-    print(CLS)
-
-    sys.exit()
+    finally:
+        # Show cursor
+        print(SHOW_CUR)
+        print(CLS)
 
 
 def game(blocks, meta, map_, save):
@@ -54,7 +52,7 @@ def game(blocks, meta, map_, save):
     inp = None
     jump = 0
     cursor = 0
-    inv_sel = 0
+    inv_sel = -1
     c_hidden = True
     new_slices = {}
     alive = True
@@ -124,8 +122,8 @@ def game(blocks, meta, map_, save):
 
             # Take inputs and change pos accordingly
             char = str(nbi.char()).lower()
-            # receive input if key pressed is w a d k j l h ; b or ctrl-b
-            inp = char if char in 'wadkjlh;b'+chr(2) else None
+            # receive input if key pressed is w a d k j l h or ;
+            inp = char if char in 'wadkjlh;' else None
 
             if time() >= (1/TPS) + last_inp and alive and inp:
                 dx, dy, jump = player.get_pos_delta(
@@ -133,7 +131,7 @@ def game(blocks, meta, map_, save):
                 y += dy
                 x += dx
 
-                new_slices, meta['inv'], meta['ext_inv'], dinv = \
+                new_slices, meta['inv'], dinv = \
                     player.cursor_func(
                         str(inp), map_, x, y, cursor, inv_sel, meta, blocks
                     )
@@ -144,7 +142,7 @@ def game(blocks, meta, map_, save):
                 cursor = (cursor + dc) % 6
 
                 di = player.move_inv_sel(inp)
-                inv_sel = (inv_sel + di) % player.INV_SLOTS
+                inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else -1
 
                 if dx or dy or dc or di or dinv:
                     meta['player_x'], meta['player_y'] = x, y

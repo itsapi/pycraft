@@ -1,13 +1,10 @@
 import terrain
-from console import supported_chars
+from console import supported_chars, CLS
 from colors import *
 
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
-
-INV_SLOTS = 10
-MAX_ITEM = 64
 
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
@@ -57,36 +54,27 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     block_y = y + cursor_y[cursor]
     dinv = False
     inv = meta['inv']
-    ext_inv = meta['ext_inv']
 
     slices = {}
 
     if inp in 'k' and block_y >= 0:
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ' and inv[inv_sel] is not None:
+        if map_[block_x][block_y] == ' ':
             # Place block in world from selected inv slot
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = inv[inv_sel]['block']
-            inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-            dinv = change or dinv
+            inv = rem_inv(inv, inv_sel)
+            dinv = True
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
-            # Distroy block
+            # Destroy block
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
-            inv, ext_inv, change = add_inv(inv, ext_inv, block)
-            dinv = change or dinv
+            inv = add_inv(inv, block)
+            dinv = True
 
-    # If pressing b remove 1 item from inv slot
-    if inp in 'b':
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-        dinv = change or dinv
-    # If pressing ctrl-b remove stack from inv slot
-    if ord(inp) == 2:
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
-        dinv = change or dinv
-    return slices, inv, ext_inv, dinv
+    return slices, inv, dinv
 
 
 def respawn(meta):
@@ -94,17 +82,11 @@ def respawn(meta):
 
 
 def move_cursor(inp):
-    try:
-        return {'j': -1, 'l': 1}[inp]
-    except KeyError:
-        return 0
+    return {'j': -1, 'l': 1}.get(inp, 0)
 
 
 def move_inv_sel(inp):
-    try:
-        return {'h': -1, ';': 1}[inp]
-    except KeyError:
-        return 0
+    return {'h': -1, ';': 1}.get(inp, 0)
 
 
 def render_player(x, y, cursor, c_hidden):
@@ -134,8 +116,12 @@ def render_inv(inv_sel, inv, blocks):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
+
+    # Find maximum length of the num column.
+    max_n_w = len(str(max(map(lambda s: s['num'], inv)))) if len(inv) else 1
+
     out = []
-    out.append(tl + (h*3) + t + (h*4) + tr)
+    out.append(tl + (h*3) + t + (h*(max_n_w+2)) + tr)
     for i, slot in enumerate(inv):
         if slot is not None:
             block_char = blocks[slot['block']]['char']
@@ -144,8 +130,8 @@ def render_inv(inv_sel, inv, blocks):
             block_char, num = ' ', ''
 
         # Have to do the padding before color because the color
-        #   messes with the char count. (The block will allways be 1 char wide.)
-        num = '{:2}'.format(num)
+        #   messes with the char count. (The block will always be 1 char wide.)
+        num = '{:{max}}'.format(num, max=max_n_w)
 
         out.append('{v} {b} {v} {n} {v}'.format(
             b=colorStr(block_char, bg=None),
@@ -154,55 +140,35 @@ def render_inv(inv_sel, inv, blocks):
         ))
 
         if not i == len(inv) - 1:
-            out.append(l + (h*3) + m + (h*4) + r)
-        else:
-            out.append(bl + (h*3) + b + (h*4) + br)
+            out.append(l + (h*3) + m + (h*(max_n_w+2)) + r)
 
+    out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br)
     return out
 
 
-def add_inv(inv, ext_inv, block):
-    empty = False
+def add_inv(inv, block):
     placed = False
-    change = False
 
     for i, slot in enumerate(inv):
-        if slot is not None and slot['block'] == block and slot['num'] < MAX_ITEM:
+        if slot['block'] == block:
             inv[i]['num'] += 1
             placed = True
-            change = True
             break
-        elif slot is None and empty is False:
-            empty = i
 
-    if placed is False and empty is not False:
-        inv[empty] = {'block': block, 'num': 1}
-        change = True
+    if placed is False:
+        inv.append({'block': block, 'num': 1})
+
+    return inv
+
+
+def rem_inv(inv, inv_sel):
+    if inv[inv_sel]['num'] == 1:
+        inv.remove(inv[inv_sel])
+
+        if inv_sel == len(inv):
+            inv_sel -= 1
+            print(CLS)
     else:
-        for i, slot in enumerate(ext_inv):
-            if slot['block'] == block and slot['num'] < MAX_ITEM:
-                ext_inv[i]['num'] += 1
-                placed = True
-                break
-        if not placed:
-            ext_inv.append({'block': block, 'num': 1})
+        inv[inv_sel]['num'] -= 1
 
-    return inv, ext_inv, change
-
-
-def rem_inv(inv, ext_inv, inv_sel, num=1):
-    if inv[inv_sel] is not None and inv[inv_sel]['num'] > num:
-        inv[inv_sel]['num'] -= num
-        change = True
-    else:
-        if ext_inv:
-            inv[inv_sel] = ext_inv[0]
-            ext_inv.remove(ext_inv[0])
-            change = True
-        elif inv[inv_sel] is not None:
-            inv[inv_sel] = None
-            change = True
-        else:
-            # inv was already None
-            change = False
-    return inv, ext_inv, change
+    return inv
