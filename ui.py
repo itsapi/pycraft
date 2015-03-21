@@ -109,12 +109,14 @@ def delete():
 def new():
     """ Lets the user enter a save name, then it creates and loads the save. """
 
-    print(title('New save'), end='')
+    print(REDRAW + title('New save'), end='')
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ')
     if not meta['name']:
+        print(CLS)
         return None
+
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
