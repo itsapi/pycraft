@@ -149,7 +149,7 @@ def game(blocks, meta, map_, save):
                 cursor = (cursor + dc) % 6
 
                 di = player.move_inv_sel(inp)
-                inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else -1
+                inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else 0
 
                 if dx or dy or dc or di or dinv:
                     meta['player_x'], meta['player_y'] = x, y
