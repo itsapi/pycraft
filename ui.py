@@ -78,7 +78,7 @@ def lambda_gen(func, var):
 
 def title(name):
     """ Returns a padded coloured string containing the title. """
-    return '{title}\n\n'.format(
+    return ' {title}\n\n'.format(
         title = colorStr('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
@@ -109,12 +109,14 @@ def delete():
 def new():
     """ Lets the user enter a save name, then it creates and loads the save. """
 
-    print(title('New save'), end='')
+    print(REDRAW + title('New save'), end='')
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ')
     if not meta['name']:
+        print(CLS)
         return None
+
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
@@ -133,7 +135,7 @@ def pause():
 def help_():
     """ Displays the help stored in the help_data list. """
 
-    out = title('Help')
+    out = REDRAW + title('Help')
 
     max_len = max(len(item[0]) for section in help_data.values() for item in section)
 
