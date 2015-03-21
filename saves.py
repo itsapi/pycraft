@@ -5,7 +5,6 @@ import random
 from shutil import rmtree
 
 from terrain import world_gen
-from player import INV_SLOTS
 
 
 default_meta = {

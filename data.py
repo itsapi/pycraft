@@ -154,7 +154,10 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
-        'hierarchy': 10
+        'hierarchy': 10,
+        'recipe': {
+            '|': 3
+        }
     },
     '*': { # Player head
         'char': '*',

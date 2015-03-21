@@ -112,17 +112,17 @@ def render_player(x, y, cursor, c_hidden):
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def render_inv(inv_sel, inv, blocks):
+def render_grid(sel, grid, blocks):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
 
     # Find maximum length of the num column.
-    max_n_w = len(str(max(map(lambda s: s['num'], inv)))) if len(inv) else 1
+    max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
     out = []
     out.append(tl + (h*3) + t + (h*(max_n_w+2)) + tr)
-    for i, slot in enumerate(inv):
+    for i, slot in enumerate(grid):
         if slot is not None:
             block_char = blocks[slot['block']]['char']
             num = slot['num']
@@ -135,15 +135,31 @@ def render_inv(inv_sel, inv, blocks):
 
         out.append('{v} {b} {v} {n} {v}'.format(
             b=colorStr(block_char, bg=None),
-            n=colorStr(num, bg=RED) if i == inv_sel else num,
+            n=colorStr(num, bg=RED) if i == sel else num,
             v=v
         ))
 
-        if not i == len(inv) - 1:
+        if not i == len(grid) - 1:
             out.append(l + (h*3) + m + (h*(max_n_w+2)) + r)
 
     out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br)
     return out
+
+
+def get_crafting(inv, blocks):
+    inv = dict(map(lambda a: (a['block'], a['num']), inv))
+    crafting = []
+
+    for block in blocks.values():
+        if 'recipe' in block:
+            can_craft = True
+            for c, n in block['recipe'].items():
+                if not (c in inv and n <= inv[c]):
+                    can_craft = False
+            if can_craft:
+                crafting.append({'block': block['char'], 'num': 1})
+
+    return crafting
 
 
 def add_inv(inv, block):

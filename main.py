@@ -52,6 +52,10 @@ def game(blocks, meta, map_, save):
     inp = None
     jump = 0
     cursor = 0
+    crafting = False
+    crafting_sel = 0
+    crafting_list = []
+    inv = []
     inv_sel = -1
     c_hidden = True
     new_slices = {}
@@ -94,8 +98,13 @@ def game(blocks, meta, map_, save):
                 redraw = False
                 last_out = time()
                 objects = player.render_player(int(width / 2), y, cursor, c_hidden)
-                inv = player.render_inv(inv_sel, meta['inv'], blocks)
-                terrain.render_map(view, objects, inv, blocks, sun, tick)
+
+                if crafting:
+                    grid = player.render_grid(crafting_sel, crafting_list, blocks)
+                else:
+                    grid = player.render_grid(inv_sel, meta['inv'], blocks)
+
+                terrain.render_map(view, objects, grid, blocks, sun, tick)
             else:
                 df = 0
 
@@ -155,6 +164,13 @@ def game(blocks, meta, map_, save):
 
                 last_inp = time()
                 inp = None
+
+
+            if char in 'c':
+                redraw = True
+                crafting = not crafting
+                if crafting:
+                    crafting_list = player.get_crafting(meta['inv'], blocks)
 
             # Pause game
             if char in ' \n':
