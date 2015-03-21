@@ -168,7 +168,7 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
 
     dinv = False
 
-    if inp in 'i':
+    if inp in 'i' and len(crafting_list):
         dinv = True
         block = crafting_list[crafting_sel]
 
