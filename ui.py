@@ -78,7 +78,7 @@ def lambda_gen(func, var):
 
 def title(name):
     """ Returns a padded coloured string containing the title. """
-    return '{title}\n\n'.format(
+    return ' {title}\n\n'.format(
         title = colorStr('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
