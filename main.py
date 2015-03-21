@@ -56,7 +56,7 @@ def game(blocks, meta, map_, save):
     crafting_sel = 0
     crafting_list = []
     inv = []
-    inv_sel = -1
+    inv_sel = 0
     c_hidden = True
     new_slices = {}
     alive = True
@@ -140,7 +140,7 @@ def game(blocks, meta, map_, save):
                 y += dy
                 x += dx
 
-                new_slices, meta['inv'], dinv = \
+                new_slices, meta['inv'], inv_sel, dinv = \
                     player.cursor_func(
                         str(inp), map_, x, y, cursor, inv_sel, meta, blocks
                     )

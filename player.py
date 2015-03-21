@@ -59,11 +59,11 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
 
     if inp in 'k' and block_y >= 0:
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ':
+        if map_[block_x][block_y] == ' ' and len(inv):
             # Place block in world from selected inv slot
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = inv[inv_sel]['block']
-            inv = rem_inv(inv, inv_sel)
+            inv, inv_sel = rem_inv(inv, inv_sel)
             dinv = True
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
@@ -74,7 +74,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             inv = add_inv(inv, block)
             dinv = True
 
-    return slices, inv, dinv
+    return slices, inv, inv_sel, dinv
 
 
 def respawn(meta):
@@ -115,7 +115,6 @@ def render_player(x, y, cursor, c_hidden):
 def render_grid(sel, grid, blocks):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
-
 
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
@@ -183,8 +182,7 @@ def rem_inv(inv, inv_sel):
 
         if inv_sel == len(inv):
             inv_sel -= 1
-            print(CLS)
     else:
         inv[inv_sel]['num'] -= 1
 
-    return inv
+    return inv, inv_sel
