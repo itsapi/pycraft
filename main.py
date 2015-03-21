@@ -119,9 +119,7 @@ def game(blocks, meta, map_, save):
             # If no block below, kill player
             try:
                 block = map_[str(x)][y+1]
-                below_solid = terrain.is_solid(blocks, block)
             except IndexError:
-                below_solid = False
                 alive = False
 
             # Take inputs and change pos accordingly
