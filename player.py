@@ -6,9 +6,6 @@ from colors import *
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
-INV_SLOTS = 10
-MAX_ITEM = 64
-
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
 
@@ -70,7 +67,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             dinv = True
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
-            # Distroy block
+            # Destroy block
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
