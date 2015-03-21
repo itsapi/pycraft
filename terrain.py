@@ -92,7 +92,7 @@ def render_map(map_, objects, inv, blocks, sun, tick):
 
         out += '\n'
 
-    print('\033[;f' + out)
+    print(REDRAW + out)
 
 
 def sun(time, width):
