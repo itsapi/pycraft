@@ -108,11 +108,15 @@ def game(blocks, meta, map_, save):
                 )
 
                 crafting_grid = player.render_grid(
+                    player.CRAFT_TITLE,
+                    crafting,
                     crafting_list,
                     blocks,
                     crafting_sel if crafting else None
                 )
                 inv_grid = player.render_grid(
+                    player.INV_TITLE,
+                    not crafting,
                     meta['inv'],
                     blocks,
                     None if crafting else inv_sel
