@@ -135,7 +135,7 @@ def pause():
 def help_():
     """ Displays the help stored in the help_data list. """
 
-    out = title('Help')
+    out = REDRAW + title('Help')
 
     max_len = max(len(item[0]) for section in help_data.values() for item in section)
 
