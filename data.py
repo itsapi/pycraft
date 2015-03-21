@@ -290,7 +290,7 @@ help_data = {
     'Inventory:': [
         ['Cycle inventory down', 'O'],
         ['Cycle inventory up', 'U'],
-        ['Toggle crafting menu', 'C']
+        ['Toggle crafting menu', 'C'],
         ['Craft selected item', 'I']
     ],
     'Menus:': [
