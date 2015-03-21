@@ -55,11 +55,12 @@ def game(blocks, meta, map_, save):
     crafting = False
     crafting_sel = 0
     crafting_list = []
-    inv = []
     inv_sel = 0
     c_hidden = True
     new_slices = {}
     alive = True
+
+    crafting_list = player.get_crafting(meta['inv'], blocks)
 
     # Game loop
     game = True
@@ -159,7 +160,7 @@ def game(blocks, meta, map_, save):
                     c_hidden = True
                 if dc:
                     c_hidden = False
-                if dinv and crafting:
+                if dinv:
                     crafting_list = player.get_crafting(meta['inv'], blocks)
 
                 last_inp = time()
@@ -169,8 +170,6 @@ def game(blocks, meta, map_, save):
             if char in 'c':
                 redraw = True
                 crafting = not crafting
-                if crafting:
-                    crafting_list = player.get_crafting(meta['inv'], blocks)
 
             # Pause game
             if char in ' \n':

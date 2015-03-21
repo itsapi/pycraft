@@ -85,15 +85,11 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
             else: # The block was colored on startup
                 out += blocks[pixel_f]['char']
 
-        try:
-            out += ' ' + inv[y]
-        except IndexError:
-            out += ' ' + len(inv[0]) * ' '
-
-        try:
-            out += ' ' + crafting[y]
-        except IndexError:
-            out += ' ' + len(crafting[0]) * ' '
+        for grid in [inv, crafting]:
+            try:
+                out += ' ' + grid[y]
+            except IndexError:
+                out += ' ' + len(grid[0]) * ' '
 
         out += '\n'
 
