@@ -146,6 +146,8 @@ def render_grid(grid, blocks, sel=None):
 
 
 def get_crafting(inv, crafting_sel, blocks):
+    """ Makes a list of blocks you can craft """
+
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
     crafting = []
 
@@ -162,6 +164,8 @@ def get_crafting(inv, crafting_sel, blocks):
 
 
 def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
+    """ Crafts the selected item in crafting_list """
+
     dinv = False
 
     if inp in 'i':
@@ -173,6 +177,8 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
             for i, b in enumerate(inv):
                 if b['block'] == c:
                     rem_inv(inv, i, n)
+
+                    # So it decremments inv_sel if you're... um, at the end of the list... uh, yeah...
                     inv_sel -= inv_sel > i or len(inv) == inv_sel
 
         add_inv(inv, block['block'], block['num'])
