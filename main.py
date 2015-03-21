@@ -17,16 +17,14 @@ def main():
     blocks = terrain.gen_blocks()
 
     # Menu loop
-    while True:
-        game(blocks, *ui.main(exit))
+    try:
+        while True:
+            game(blocks, *ui.main())
 
-
-def exit():
-    # Show cursor
-    print(SHOW_CUR)
-    print(CLS)
-
-    sys.exit()
+    finally:
+        # Show cursor
+        print(SHOW_CUR)
+        print(CLS)
 
 
 def game(blocks, meta, map_, save):
