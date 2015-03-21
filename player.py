@@ -6,6 +6,9 @@ from colors import *
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
+INV_TITLE = 'Inventory'
+CRAFT_TITLE = 'Crafting'
+
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
 
@@ -118,15 +121,23 @@ def render_player(x, y, cursor, colour, c_hidden):
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def render_grid(grid, blocks, sel=None):
+def render_grid(title, selected, grid, blocks, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
-    out = []
-    out.append(tl + (h*3) + t + (h*(max_n_w+2)) + tr)
+    # Figure out number of trailing spaces to make the grid same width as the title.
+    #             | block | ----num---- |
+    total_width = 1 + 3 + 2 + max_n_w + 2
+    trailing = max(0, len(title) - total_width) * ' '
+
+    out = [
+        colorStr(title, style=BOLD) if selected else title,
+        tl + (h*3) + t + (h*(max_n_w+2)) + tr + trailing
+    ]
+
     for i, slot in enumerate(grid):
         if slot is not None:
             block_char = blocks[slot['block']]['char']
@@ -138,20 +149,27 @@ def render_grid(grid, blocks, sel=None):
         #   messes with the char count. (The block will always be 1 char wide.)
         num = '{:{max}}'.format(num, max=max_n_w)
 
-        out.append('{v} {b} {v} {n} {v}'.format(
+        out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=colorStr(block_char, bg=None),
             n=colorStr(num, bg=RED) if i == sel else num,
-            v=v
+            v=v,
+            trail=trailing
         ))
 
         if not i == len(grid) - 1:
-            out.append(l + (h*3) + m + (h*(max_n_w+2)) + r)
+            out.append(l + (h*3) + m + (h*(max_n_w+2)) + r + trailing)
 
-    out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br)
+    out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br + trailing)
     return out
 
 
+def title(t, selected):
+    return colorStr(t, style=BOLD) if selected else t
+
+
 def get_crafting(inv, crafting_sel, blocks):
+    """ Makes a list of blocks you can craft """
+
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
     crafting = []
 
@@ -168,6 +186,8 @@ def get_crafting(inv, crafting_sel, blocks):
 
 
 def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
+    """ Crafts the selected item in crafting_list """
+
     dinv = False
 
     if inp in 'i' and len(crafting_list):
@@ -179,6 +199,8 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
             for i, b in enumerate(inv):
                 if b['block'] == c:
                     rem_inv(inv, i, n)
+
+                    # So it decremments inv_sel if you're... um, at the end of the list... uh, yeah...
                     inv_sel -= inv_sel > i or len(inv) == inv_sel
 
         add_inv(inv, block['block'], block['num'])
