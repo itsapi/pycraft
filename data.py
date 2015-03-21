@@ -288,10 +288,10 @@ help_data = {
         ['Move cursor anti-clockwise', 'J']
     ],
     'Inventory:': [
-        ['Cycle inventory down', ';'],
-        ['Cycle inventory up', 'H'],
-        ['Drop single item', 'B'],
-        ['Drop entire stack', 'CTRL-B']
+        ['Cycle inventory down', 'O'],
+        ['Cycle inventory up', 'U'],
+        ['Toggle crafting menu', 'C']
+        ['Craft selected item', 'I']
     ],
     'Menus:': [
         ['Move up', 'W or UP'],
