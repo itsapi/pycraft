@@ -8,8 +8,6 @@ import saves, ui, terrain, player
 
 
 def main():
-
-    # Hide cursor
     print(HIDE_CUR)
     print(CLS)
 
@@ -22,7 +20,6 @@ def main():
             game(blocks, *ui.main())
 
     finally:
-        # Show cursor
         print(SHOW_CUR)
         print(CLS)
 
