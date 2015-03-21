@@ -94,17 +94,11 @@ def respawn(meta):
 
 
 def move_cursor(inp):
-    try:
-        return {'j': -1, 'l': 1}[inp]
-    except KeyError:
-        return 0
+    return {'j': -1, 'l': 1}.get(inp, 0)
 
 
 def move_inv_sel(inp):
-    try:
-        return {'h': -1, ';': 1}[inp]
-    except KeyError:
-        return 0
+    return {'h': -1, ';': 1}.get(inp, 0)
 
 
 def render_player(x, y, cursor, c_hidden):
