@@ -120,6 +120,7 @@ def render_inv(inv_sel, inv, blocks):
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
 
+    # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], inv)))) if len(inv) else 1
 
     out = []
@@ -132,7 +133,7 @@ def render_inv(inv_sel, inv, blocks):
             block_char, num = ' ', ''
 
         # Have to do the padding before color because the color
-        #   messes with the char count. (The block will allways be 1 char wide.)
+        #   messes with the char count. (The block will always be 1 char wide.)
         num = '{:{max}}'.format(num, max=max_n_w)
 
         out.append('{v} {b} {v} {n} {v}'.format(
