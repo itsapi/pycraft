@@ -88,7 +88,7 @@ def render_map(map_, objects, inv, blocks, sun, tick):
         try:
             out += ' ' + inv[y]
         except IndexError:
-            pass
+            out += ' ' + len(inv[0]) * ' '
 
         out += '\n'
 

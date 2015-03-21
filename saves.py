@@ -14,8 +14,7 @@ default_meta = {
     'spawn': 0,
     'player_x': 0,
     'player_y': 1,
-    'inv': [None for i in range(INV_SLOTS)],
-    'ext_inv': []
+    'inv': []
 }
 
 SAVES_DIR = 'saves'

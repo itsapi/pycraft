@@ -1,5 +1,5 @@
 import terrain
-from console import supported_chars
+from console import supported_chars, CLS
 from colors import *
 
 
@@ -57,36 +57,27 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     block_y = y + cursor_y[cursor]
     dinv = False
     inv = meta['inv']
-    ext_inv = meta['ext_inv']
 
     slices = {}
 
     if inp in 'k' and block_y >= 0:
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ' and inv[inv_sel] is not None:
+        if map_[block_x][block_y] == ' ':
             # Place block in world from selected inv slot
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = inv[inv_sel]['block']
-            inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-            dinv = change or dinv
+            inv = rem_inv(inv, inv_sel)
+            dinv = True
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
             # Distroy block
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
-            inv, ext_inv, change = add_inv(inv, ext_inv, block)
-            dinv = change or dinv
+            inv = add_inv(inv, block)
+            dinv = True
 
-    # If pressing b remove 1 item from inv slot
-    if inp in 'b':
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-        dinv = change or dinv
-    # If pressing ctrl-b remove stack from inv slot
-    if ord(inp) == 2:
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
-        dinv = change or dinv
-    return slices, inv, ext_inv, dinv
+    return slices, inv, dinv
 
 
 def respawn(meta):
@@ -149,54 +140,34 @@ def render_inv(inv_sel, inv, blocks):
 
         if not i == len(inv) - 1:
             out.append(l + (h*3) + m + (h*4) + r)
-        else:
-            out.append(bl + (h*3) + b + (h*4) + br)
 
+    out.append(bl + (h*3) + b + (h*4) + br)
     return out
 
 
-def add_inv(inv, ext_inv, block):
-    empty = False
+def add_inv(inv, block):
     placed = False
-    change = False
 
     for i, slot in enumerate(inv):
-        if slot is not None and slot['block'] == block and slot['num'] < MAX_ITEM:
+        if slot['block'] == block:
             inv[i]['num'] += 1
             placed = True
-            change = True
             break
-        elif slot is None and empty is False:
-            empty = i
 
-    if placed is False and empty is not False:
-        inv[empty] = {'block': block, 'num': 1}
-        change = True
+    if placed is False:
+        inv.append({'block': block, 'num': 1})
+
+    return inv
+
+
+def rem_inv(inv, inv_sel):
+    if inv[inv_sel]['num'] == 1:
+        inv.remove(inv[inv_sel])
+
+        if inv_sel == len(inv):
+            inv_sel -= 1
+            print(CLS)
     else:
-        for i, slot in enumerate(ext_inv):
-            if slot['block'] == block and slot['num'] < MAX_ITEM:
-                ext_inv[i]['num'] += 1
-                placed = True
-                break
-        if not placed:
-            ext_inv.append({'block': block, 'num': 1})
+        inv[inv_sel]['num'] -= 1
 
-    return inv, ext_inv, change
-
-
-def rem_inv(inv, ext_inv, inv_sel, num=1):
-    if inv[inv_sel] is not None and inv[inv_sel]['num'] > num:
-        inv[inv_sel]['num'] -= num
-        change = True
-    else:
-        if ext_inv:
-            inv[inv_sel] = ext_inv[0]
-            ext_inv.remove(ext_inv[0])
-            change = True
-        elif inv[inv_sel] is not None:
-            inv[inv_sel] = None
-            change = True
-        else:
-            # inv was already None
-            change = False
-    return inv, ext_inv, change
+    return inv
