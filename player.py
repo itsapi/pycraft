@@ -85,8 +85,8 @@ def move_cursor(inp):
     return {'j': -1, 'l': 1}.get(inp, 0)
 
 
-def move_inv_sel(inp):
-    return {'h': -1, ';': 1}.get(inp, 0)
+def move_sel(inp):
+    return {'u': -1, 'o': 1}.get(inp, 0)
 
 
 def render_player(x, y, cursor, c_hidden):
