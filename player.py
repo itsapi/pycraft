@@ -119,8 +119,11 @@ def render_inv(inv_sel, inv, blocks):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
+
+    max_n_w = len(str(max(map(lambda s: s['num'], inv)))) if len(inv) else 1
+
     out = []
-    out.append(tl + (h*3) + t + (h*4) + tr)
+    out.append(tl + (h*3) + t + (h*(max_n_w+2)) + tr)
     for i, slot in enumerate(inv):
         if slot is not None:
             block_char = blocks[slot['block']]['char']
@@ -130,7 +133,7 @@ def render_inv(inv_sel, inv, blocks):
 
         # Have to do the padding before color because the color
         #   messes with the char count. (The block will allways be 1 char wide.)
-        num = '{:2}'.format(num)
+        num = '{:{max}}'.format(num, max=max_n_w)
 
         out.append('{v} {b} {v} {n} {v}'.format(
             b=colorStr(block_char, bg=None),
@@ -139,9 +142,9 @@ def render_inv(inv_sel, inv, blocks):
         ))
 
         if not i == len(inv) - 1:
-            out.append(l + (h*3) + m + (h*4) + r)
+            out.append(l + (h*3) + m + (h*(max_n_w+2)) + r)
 
-    out.append(bl + (h*3) + b + (h*4) + br)
+    out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br)
     return out
 
 
