@@ -8,8 +8,6 @@ import saves, ui, terrain, player
 
 
 def main():
-
-    # Hide cursor
     print(HIDE_CUR)
     print(CLS)
 
@@ -22,7 +20,6 @@ def main():
             game(blocks, *ui.main())
 
     finally:
-        # Show cursor
         print(SHOW_CUR)
         print(CLS)
 
@@ -161,9 +158,9 @@ def game(blocks, meta, map_, save):
 
                 di = player.move_sel(inp)
                 if crafting:
-                    crafting_sel = ((crafting_sel + di) % len(crafting_list)) if len(crafting_list) else -1
+                    crafting_sel = ((crafting_sel + di) % len(crafting_list)) if len(crafting_list) else 0
                 else:
-                    inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else -1
+                    inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else 0
 
                 if dx or dy or dc or di or dinv or dcraft:
                     meta['player_x'], meta['player_y'] = x, y
