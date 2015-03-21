@@ -89,7 +89,12 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
-def render_player(x, y, cursor, c_hidden):
+def cursor_colour(x, y, cursor, map_, blocks):
+    block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
+    return [RED, GREEN][block['breakable']]
+
+
+def render_player(x, y, cursor, colour, c_hidden):
 
     head = {
         'x': x,
@@ -106,7 +111,8 @@ def render_player(x, y, cursor, c_hidden):
     cursor = {
         'x': x + cursor_x[cursor],
         'y': y + cursor_y[cursor],
-        'char': 'X'
+        'char': 'X',
+        'colour': colour
     }
 
     return (head, feet) if c_hidden else (head, feet, cursor)

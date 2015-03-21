@@ -56,11 +56,13 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
 
             # Block back and front are same to begin
             pixel_b = pixel_f
+            colour = None
 
             # Add any objects
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
                     pixel_f = object_['char']
+                    colour = object_.get('colour')
 
             # Add sky behind blocks without objects
             if pixel_f == pixel_b:
@@ -79,7 +81,7 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
                 out += colorStr(
                     blocks[pixel_f]['char'],
                     bg = bg,
-                    fg = blocks[pixel_f]['colors']['fg'],
+                    fg = colour if colour else blocks[pixel_f]['colors']['fg'],
                     style = blocks[pixel_f]['colors']['style']
                 )
             else: # The block was colored on startup

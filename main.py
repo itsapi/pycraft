@@ -100,10 +100,20 @@ def game(blocks, meta, map_, save):
                 df = 1
                 redraw = False
                 last_out = time()
+
+                cursor_colour = player.cursor_colour(
+                    x,
+                    y,
+                    cursor,
+                    map_,
+                    blocks
+                )
+
                 objects = player.render_player(
                     int(width / 2),
                     y,
                     cursor,
+                    cursor_colour,
                     c_hidden
                 )
 
@@ -112,6 +122,7 @@ def game(blocks, meta, map_, save):
                     blocks,
                     crafting_sel if crafting else None
                 )
+
                 inv_grid = player.render_grid(
                     meta['inv'],
                     blocks,
