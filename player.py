@@ -145,7 +145,7 @@ def render_grid(grid, blocks, sel=None):
     return out
 
 
-def get_crafting(inv, blocks):
+def get_crafting(inv, crafting_sel, blocks):
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
     crafting = []
 
@@ -158,31 +158,50 @@ def get_crafting(inv, blocks):
             if can_craft:
                 crafting.append({'block': block['char'], 'num': 1})
 
-    return crafting
+    return crafting, max(crafting_sel, len(crafting) - 1)
 
 
-def add_inv(inv, block):
+def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
+    dinv = False
+
+    if inp in 'i':
+        dinv = True
+        block = crafting_list[crafting_sel]
+
+        recipe = blocks[block['block']]['recipe']
+        for c, n in recipe.items():
+            for i, b in enumerate(inv):
+                if b['block'] == c:
+                    rem_inv(inv, i, n)
+                    inv_sel -= inv_sel > i or len(inv) == inv_sel
+
+        add_inv(inv, block['block'], block['num'])
+
+    return inv, inv_sel, crafting_list, dinv
+
+
+def add_inv(inv, block, n=1):
     placed = False
 
     for i, slot in enumerate(inv):
         if slot['block'] == block:
-            inv[i]['num'] += 1
+            inv[i]['num'] += n
             placed = True
             break
 
     if placed is False:
-        inv.append({'block': block, 'num': 1})
+        inv.append({'block': block, 'num': n})
 
     return inv
 
 
-def rem_inv(inv, inv_sel):
-    if inv[inv_sel]['num'] == 1:
+def rem_inv(inv, inv_sel, n=1):
+    if inv[inv_sel]['num'] == n:
         inv.remove(inv[inv_sel])
 
         if inv_sel == len(inv):
             inv_sel -= 1
     else:
-        inv[inv_sel]['num'] -= 1
+        inv[inv_sel]['num'] -= n
 
     return inv, inv_sel

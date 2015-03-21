@@ -37,6 +37,7 @@ def game(blocks, meta, map_, save):
     dc = 0 # Cursor
     di = 0 # Inventory Selector
     dinv = False # Inventory
+    dcraft = False
     width = 40
     FPS = 10
     TPS = 10
@@ -60,7 +61,7 @@ def game(blocks, meta, map_, save):
     new_slices = {}
     alive = True
 
-    crafting_list = player.get_crafting(meta['inv'], blocks)
+    crafting_list, crafting_sel = player.get_crafting(meta['inv'], crafting_sel, blocks)
 
     # Game loop
     game = True
@@ -144,15 +145,27 @@ def game(blocks, meta, map_, save):
                         str(inp), map_, x, y, cursor, inv_sel, meta, blocks
                     )
 
+                if crafting:
+                    meta['inv'], inv_sel, crafting_list, dcraft = \
+                        player.crafting(
+                            str(inp), meta['inv'], inv_sel, crafting_list, crafting_sel, blocks
+                        )
+
+                if dinv or dcraft:
+                    crafting_list, crafting_sel = player.get_crafting(meta['inv'], crafting_sel, blocks)
+
                 map_.update(new_slices)
 
                 dc = player.move_cursor(inp)
                 cursor = (cursor + dc) % 6
 
-                di = player.move_inv_sel(inp)
-                inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else -1
+                di = player.move_sel(inp)
+                if crafting:
+                    crafting_sel = ((crafting_sel + di) % len(crafting_list)) if len(crafting_list) else -1
+                else:
+                    inv_sel = ((inv_sel + di) % len(meta['inv'])) if len(meta['inv']) else -1
 
-                if dx or dy or dc or di or dinv:
+                if dx or dy or dc or di or dinv or dcraft:
                     meta['player_x'], meta['player_y'] = x, y
                     saves.save_meta(save, meta)
                     redraw = True
@@ -160,12 +173,9 @@ def game(blocks, meta, map_, save):
                     c_hidden = True
                 if dc:
                     c_hidden = False
-                if dinv:
-                    crafting_list = player.get_crafting(meta['inv'], blocks)
 
                 last_inp = time()
                 inp = None
-
 
             if char in 'c':
                 redraw = True
