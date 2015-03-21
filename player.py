@@ -112,7 +112,7 @@ def render_player(x, y, cursor, c_hidden):
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def render_grid(sel, grid, blocks):
+def render_grid(grid, blocks, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
