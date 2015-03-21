@@ -109,22 +109,22 @@ def game(blocks, meta, map_, save):
             # Player falls when no solid block below it
             if dt and not terrain.is_solid(blocks, map_[str(x)][y+1]):
                 if jump > 0:
+                    # Countdown till fall
                     jump -= 1
                 else:
+                    # Fall
                     y += 1
                     redraw = True
 
             # If no block below, kill player
             try:
                 block = map_[str(x)][y+1]
-                below_solid = terrain.is_solid(blocks, block)
             except IndexError:
-                below_solid = False
                 alive = False
 
             # Take inputs and change pos accordingly
             char = str(nbi.char()).lower()
-            # receive input if key pressed is w a d k j l h ; b or enter
+            # receive input if key pressed is w a d k j l h ; b or ctrl-b
             inp = char if char in 'wadkjlh;b'+chr(2) else None
 
             if time() >= (1/TPS) + last_inp and alive and inp:

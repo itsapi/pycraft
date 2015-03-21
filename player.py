@@ -75,7 +75,8 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
-            inv, ext_inv = add_inv(inv, ext_inv, block)
+            inv, ext_inv, change = add_inv(inv, ext_inv, block)
+            dinv = change or dinv
 
     # If pressing b remove 1 item from inv slot
     if inp in 'b':
@@ -163,16 +164,20 @@ def render_inv(inv_sel, inv, blocks):
 def add_inv(inv, ext_inv, block):
     empty = False
     placed = False
+    change = False
+
     for i, slot in enumerate(inv):
         if slot is not None and slot['block'] == block and slot['num'] < MAX_ITEM:
             inv[i]['num'] += 1
             placed = True
+            change = True
             break
         elif slot is None and empty is False:
             empty = i
 
     if placed is False and empty is not False:
         inv[empty] = {'block': block, 'num': 1}
+        change = True
     else:
         for i, slot in enumerate(ext_inv):
             if slot['block'] == block and slot['num'] < MAX_ITEM:
@@ -182,7 +187,7 @@ def add_inv(inv, ext_inv, block):
         if not placed:
             ext_inv.append({'block': block, 'num': 1})
 
-    return inv, ext_inv
+    return inv, ext_inv, change
 
 
 def rem_inv(inv, ext_inv, inv_sel, num=1):
