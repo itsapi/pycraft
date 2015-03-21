@@ -20,7 +20,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, inv, blocks, sun, tick):
+def render_map(map_, objects, inv, crafting, blocks, sun, tick):
     """
         Prints out a frame of the game.
 
@@ -89,6 +89,11 @@ def render_map(map_, objects, inv, blocks, sun, tick):
             out += ' ' + inv[y]
         except IndexError:
             out += ' ' + len(inv[0]) * ' '
+
+        try:
+            out += ' ' + crafting[y]
+        except IndexError:
+            out += ' ' + len(crafting[0]) * ' '
 
         out += '\n'
 

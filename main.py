@@ -99,12 +99,10 @@ def game(blocks, meta, map_, save):
                 last_out = time()
                 objects = player.render_player(int(width / 2), y, cursor, c_hidden)
 
-                if crafting:
-                    grid = player.render_grid(crafting_sel, crafting_list, blocks)
-                else:
-                    grid = player.render_grid(inv_sel, meta['inv'], blocks)
+                crafting_grid = player.render_grid(crafting_list, blocks, crafting_sel if crafting else None)
+                inv_grid = player.render_grid(meta['inv'], blocks, None if crafting else inv_sel)
 
-                terrain.render_map(view, objects, grid, blocks, sun, tick)
+                terrain.render_map(view, objects, inv_grid, crafting_grid, blocks, sun, tick)
             else:
                 df = 0
 
@@ -161,6 +159,8 @@ def game(blocks, meta, map_, save):
                     c_hidden = True
                 if dc:
                     c_hidden = False
+                if dinv and crafting:
+                    crafting_list = player.get_crafting(meta['inv'], blocks)
 
                 last_inp = time()
                 inp = None
