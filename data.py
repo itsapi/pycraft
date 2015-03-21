@@ -164,7 +164,7 @@ blocks = {
         'colors': {
             'fg': WHITE,
             'bg': None,
-            'style': None
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
@@ -175,7 +175,7 @@ blocks = {
         'colors': {
             'fg': WHITE,
             'bg': None,
-            'style': None
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
