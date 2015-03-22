@@ -20,7 +20,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, inv, crafting, blocks, sun, tick):
+def render_map(map_, objects, grids, blocks, sun, tick):
     """
         Prints out a frame of the game.
 
@@ -28,7 +28,7 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
         - map_: a 2D list of blocks.
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
-        - inv: a 2D list of chars to make up the inventory on
+        - grids: a list of 2D lists of chars to make up the inventory on
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
         - sun: (x, y) position of the sun.
@@ -62,7 +62,7 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
             for object_ in objects:
                 if object_['x'] == x and object_['y'] == y:
                     pixel_f = object_['char']
-                    colour = object_.get('colour')
+                    colour = object_.get('colour') # None if not there
 
             # Add sky behind blocks without objects
             if pixel_f == pixel_b:
@@ -87,7 +87,7 @@ def render_map(map_, objects, inv, crafting, blocks, sun, tick):
             else: # The block was colored on startup
                 out += blocks[pixel_f]['char']
 
-        for grid in [inv, crafting]:
+        for grid in grids:
             try:
                 out += ' ' + grid[y]
             except IndexError:
