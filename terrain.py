@@ -137,8 +137,8 @@ def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 
     # Check surrounding slices for a hill with min gradient
-    for x in range(pos - world_gen['max_hill'] * world_gen['max_grad'],
-                   pos + world_gen['max_hill'] * world_gen['max_grad']):
+    for x in range(pos - world_gen['max_hill'] * world_gen['min_grad'],
+                   pos + world_gen['max_hill'] * world_gen['min_grad']):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x) + 'hill')
 
@@ -146,8 +146,8 @@ def slice_height(pos, meta):
         if random.random() <= 0.05:
 
             # Get gradient for left, or right side of hill
-            gradient_l = random.randint(1, world_gen['max_grad'])
-            gradient_r = random.randint(1, world_gen['max_grad'])
+            gradient_l = random.randint(1, world_gen['min_grad'])
+            gradient_r = random.randint(1, world_gen['min_grad'])
 
             if x < pos:
                 gradient = gradient_r
