@@ -139,7 +139,8 @@ def render_grid(title, selected, grid, blocks, sel=None):
     trailing = ' ' * max(0, len(title) - total_width)
 
     out = [
-        (colorStr(title, style=BOLD) if selected else title) + ' ' * max(0, total_width - len(title)),
+        (colorStr(title, style=BOLD) if selected else title) +
+            ' ' * max(0, total_width - len(title)),
         tl + (h*3) + t + (h*(max_n_w+2)) + tr + trailing
     ]
 
