@@ -102,48 +102,28 @@ def game(blocks, meta, map_, save):
                 redraw = False
                 last_out = time()
 
-                cursor_colour = player.cursor_colour(
-                    x,
-                    y,
-                    cursor,
-                    map_,
-                    blocks
+                cursor_colour, can_break = player.cursor_colour(
+                    x, y, cursor, map_, blocks, meta['inv'], inv_sel
                 )
 
                 objects = player.render_player(
-                    int(width / 2),
-                    y,
-                    cursor,
-                    cursor_colour,
-                    c_hidden
+                    int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
                 if crafting:
                     label = player.label(
-                        crafting_list,
-                        crafting_sel,
-                        blocks
-                    )
+                        crafting_list, crafting_sel, blocks)
                 else:
                     label = player.label(
-                        meta['inv'],
-                        inv_sel,
-                        blocks
-                    )
+                        meta['inv'], inv_sel, blocks)
 
                 crafting_grid = player.render_grid(
-                    player.CRAFT_TITLE,
-                    crafting,
-                    crafting_list,
-                    blocks,
+                    player.CRAFT_TITLE, crafting, crafting_list, blocks,
                     crafting_sel if crafting else None
                 )
 
                 inv_grid = player.render_grid(
-                    player.INV_TITLE,
-                    not crafting,
-                    meta['inv'],
-                    blocks,
+                    player.INV_TITLE, not crafting, meta['inv'], blocks,
                     None if crafting else inv_sel
                 )
 
@@ -152,7 +132,8 @@ def game(blocks, meta, map_, save):
                 terrain.render_map(
                     view,
                     objects,
-                    [[inv_grid, crafting_grid], [[label]]],
+                    [[inv_grid, crafting_grid],
+                     [[label]]],
                     blocks,
                     sun,
                     lights,
@@ -195,7 +176,8 @@ def game(blocks, meta, map_, save):
 
                 new_slices, meta['inv'], inv_sel, dinv = \
                     player.cursor_func(
-                        str(inp), map_, x, y, cursor, inv_sel, meta, blocks
+                        str(inp), map_, x, y, cursor,
+                        can_break, inv_sel, meta, blocks
                     )
 
                 if crafting:

@@ -52,7 +52,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
+def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
     dinv = False
@@ -73,7 +73,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
             dinv = True
 
         # If pressing k and block is not air and breakable
-        elif blocks[ map_[block_x][block_y] ]['breakable']:
+        elif blocks[ map_[block_x][block_y] ]['breakable'] and can_break:
 
             # Destroy block
             block = map_[block_x][block_y]
@@ -97,9 +97,16 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
-def cursor_colour(x, y, cursor, map_, blocks):
+def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
-    return [RED, WHITE][block['breakable']]
+
+    try:
+        strength = blocks[inv[inv_sel]['block']]['strength']
+    except KeyError:
+        strength = 20
+
+    can_break = block['breakable'] and strength >= block['hierarchy']
+    return [RED, WHITE][can_break], can_break
 
 
 def render_player(x, y, cursor, colour, c_hidden):
@@ -151,12 +158,21 @@ def render_grid(title, selected, grid, blocks, sel=None):
         else:
             block_char, num = ' ', ''
 
+        colour = blocks[slot['block']]['colours']
+        if colour['bg'] is None:
+            block_char = colorStr(
+                block_char,
+                fg=colour['fg'],
+                bg=None,
+                style=colour['style']
+            )
+
         # Have to do the padding before colour because the colour
         #   messes with the char count. (The block will always be 1 char wide.)
         num = '{:{max}}'.format(num, max=max_n_w)
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
-            b=colorStr(block_char, bg=None),
+            b=block_char,
             n=colorStr(num, bg=RED) if i == sel else num,
             v=v,
             trail=trailing
