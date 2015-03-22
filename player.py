@@ -99,7 +99,7 @@ def move_sel(inp):
 
 def cursor_colour(x, y, cursor, map_, blocks):
     block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
-    return [RED, GREEN][block['breakable']]
+    return [RED, WHITE][block['breakable']]
 
 
 def render_player(x, y, cursor, colour, c_hidden):
