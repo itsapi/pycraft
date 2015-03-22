@@ -12,7 +12,7 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
 # Distance between two points, streached on the x to make it circularish...
-dist = lambda p1, p2: sqrt( (abs(p1[0]-p2[0]) ** 1.5) + (abs(p1[1]-p2[1]) ** 2) )
+dist = lambda p1, p2: sqrt( (abs(p1[0]-p2[0]) ** sqrt(2)) + (abs(p1[1]-p2[1]) ** 2) )
 
 
 def move_map(map_, edges):
