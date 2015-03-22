@@ -151,12 +151,21 @@ def render_grid(title, selected, grid, blocks, sel=None):
         else:
             block_char, num = ' ', ''
 
+        colour = blocks[slot['block']]['colours']
+        if colour['bg'] is None:
+            block_char = colorStr(
+                block_char,
+                fg=colour['fg'],
+                bg=None,
+                style=colour['style']
+            )
+
         # Have to do the padding before colour because the colour
         #   messes with the char count. (The block will always be 1 char wide.)
         num = '{:{max}}'.format(num, max=max_n_w)
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
-            b=colorStr(block_char, bg=None),
+            b=block_char,
             n=colorStr(num, bg=RED) if i == sel else num,
             v=v,
             trail=trailing
