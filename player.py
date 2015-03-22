@@ -133,8 +133,7 @@ def render_grid(title, selected, grid, blocks, sel=None):
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
-    # Figure out number of trailing spaces to make the grid same width as the
-    #   title.
+    # Figure out number of trailing spaces to make the grid same width as the title.
     #             | block | ----num---- |
     total_width = 1 + 3 + 2 + max_n_w + 2
     trailing = ' ' * max(0, len(title) - total_width)
@@ -187,7 +186,8 @@ def get_crafting(inv, crafting_sel, blocks):
                 if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({'block': block['char'], 'num': block.get('crafts', 1)})
+                crafting.append({'block': block['char'],
+                                 'num': block.get('crafts', 1)})
 
     return crafting, max(crafting_sel, len(crafting) - 1)
 
