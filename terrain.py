@@ -69,10 +69,10 @@ def render_map(map_, objects, grids, label, blocks, sun, tick):
                 pixel_b = ' '
 
             # If the front block has a transparent bg
-            if blocks[pixel_f]['colors']['bg'] is None:
+            if blocks[pixel_f]['colours']['bg'] is None:
 
-                # Figure out bg color
-                char_bg = blocks[pixel_b]['colors']['bg']
+                # Figure out bg colour
+                char_bg = blocks[pixel_b]['colours']['bg']
                 if char_bg is None or pixel_b == ' ':
                     bg = sky(x, y, tick, sun)
                 else:
@@ -81,10 +81,10 @@ def render_map(map_, objects, grids, label, blocks, sun, tick):
                 out += colorStr(
                     blocks[pixel_f]['char'],
                     bg = bg,
-                    fg = colour if colour else blocks[pixel_f]['colors']['fg'],
-                    style = blocks[pixel_f]['colors']['style']
+                    fg = colour if colour else blocks[pixel_f]['colours']['fg'],
+                    style = blocks[pixel_f]['colours']['style']
                 )
-            else: # The block was colored on startup
+            else: # The block was coloured on startup
                 out += blocks[pixel_f]['char']
 
         if y == max(map(len, grids)) + 2:
@@ -115,7 +115,7 @@ def sun(time, width):
 
 
 def sky(x, y, time, sun):
-    """ Returns the sky color. """
+    """ Returns the sky colour. """
 
     day = cos(time) > 0
 
@@ -305,12 +305,12 @@ def gen_blocks():
         blocks[key]['char'] = supported_chars(*block['char'])
 
         # If bg is transparent, it must be coloured at runtime.
-        if blocks[key]['colors']['bg'] is not None:
+        if blocks[key]['colours']['bg'] is not None:
             blocks[key]['char'] = colorStr(
                 blocks[key]['char'],
-                block['colors']['fg'],
-                block['colors']['bg'],
-                block['colors']['style']
+                block['colours']['fg'],
+                block['colours']['bg'],
+                block['colours']['style']
             )
 
     return blocks

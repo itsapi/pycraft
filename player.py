@@ -151,7 +151,7 @@ def render_grid(title, selected, grid, blocks, sel=None):
         else:
             block_char, num = ' ', ''
 
-        # Have to do the padding before color because the color
+        # Have to do the padding before colour because the colour
         #   messes with the char count. (The block will always be 1 char wide.)
         num = '{:{max}}'.format(num, max=max_n_w)
 

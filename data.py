@@ -5,7 +5,7 @@ blocks = {
     ' ': { # Air
         'char': ' ',
         'name': 'Air',
-        'colors': {
+        'colours': {
             'fg': None,
             'bg': None,
             'style': None
@@ -17,7 +17,7 @@ blocks = {
     '-': { # Grass
         'char': '░ᚇ~',
         'name': 'Grass',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': LIGHT
@@ -29,7 +29,7 @@ blocks = {
     'v': { # Tall Grass
         'char': 'v',
         'name': 'Tall Grass',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': None,
             'style': LIGHT
@@ -41,7 +41,7 @@ blocks = {
     '|': { # Wood
         'char': '#',
         'name': 'Wood',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': MAGENTA,
             'style': LIGHT
@@ -53,7 +53,7 @@ blocks = {
     '@': { # Leaves
         'char': '@',
         'name': 'Leaves',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': DARK
@@ -65,7 +65,7 @@ blocks = {
     '#': { # Stone
         'char': '~',
         'name': 'Stone',
-        'colors': {
+        'colours': {
             'fg': None,
             'bg': BLACK,
             'style': CLEAR
@@ -77,7 +77,7 @@ blocks = {
     'x': { # Coal
         'char': 'x',
         'name': 'Coal',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
             'style': DARK
@@ -89,7 +89,7 @@ blocks = {
     '+': { # Iron
         'char': '+',
         'name': 'Iron',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': LIGHT
@@ -101,7 +101,7 @@ blocks = {
     ':': { # Redstone
         'char': ':',
         'name': 'Redstone',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': DARK
@@ -113,7 +113,7 @@ blocks = {
     '"': { # Gold
         'char': '"',
         'name': 'Gold',
-        'colors': {
+        'colours': {
             'fg': YELLOW,
             'bg': BLACK,
             'style': None
@@ -125,7 +125,7 @@ blocks = {
     'o': { # Diamond
         'char': 'o',
         'name': 'Diamond',
-        'colors': {
+        'colours': {
             'fg': BLUE,
             'bg': BLACK,
             'style': LIGHT
@@ -137,7 +137,7 @@ blocks = {
     '.': { # Emerald
         'char': 'o',
         'name': 'Emerald',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': BLACK,
             'style': DARK
@@ -149,7 +149,7 @@ blocks = {
     '_': { # Bedrock
         'char': '#',
         'name': 'Bedrock',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
             'style': LIGHT
@@ -161,7 +161,7 @@ blocks = {
     '/': { # Sticks
         'char': '/',
         'name': 'Sticks',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': None,
             'style': None
@@ -177,7 +177,7 @@ blocks = {
     '=': { # Ladder
         'char': '=',
         'name': 'Ladder',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': None,
             'style': None
@@ -192,7 +192,7 @@ blocks = {
     '*': { # Player head
         'char': '*',
         'name': 'Player head',
-        'colors': {
+        'colours': {
             'fg': WHITE,
             'bg': None,
             'style': BOLD
@@ -204,7 +204,7 @@ blocks = {
     '^': { # Player feet
         'char': '^',
         'name': 'Player feet',
-        'colors': {
+        'colours': {
             'fg': WHITE,
             'bg': None,
             'style': BOLD
@@ -216,7 +216,7 @@ blocks = {
     'X': { # Cursor
         'char': 'X',
         'name': 'Cursor',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': None,
             'style': None
