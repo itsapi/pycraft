@@ -99,7 +99,7 @@ def move_sel(inp):
 
 def cursor_colour(x, y, cursor, map_, blocks):
     block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
-    return [RED, GREEN][block['breakable']]
+    return [RED, WHITE][block['breakable']]
 
 
 def render_player(x, y, cursor, colour, c_hidden):
@@ -133,14 +133,14 @@ def render_grid(title, selected, grid, blocks, sel=None):
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
-    # Figure out number of trailing spaces to make the grid same width as the
-    #   title.
+    # Figure out number of trailing spaces to make the grid same width as the title.
     #     |   block    |         num          |
     top = tl + (h*3) + t + (h*(max_n_w+2)) + tr
     trailing = ' ' * max(0, len(title) - len(top))
 
     out = [
-        (colorStr(title, style=BOLD) if selected else title) + ' ' * max(0, len(top) - len(title)),
+        (colorStr(title, style=BOLD) if selected else title) +
+            ' ' * max(0, len(top) - len(title)),
         top + trailing
     ]
 
@@ -186,10 +186,8 @@ def get_crafting(inv, crafting_sel, blocks):
                 if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({
-                    'block': block['char'],
-                    'num': block.get('crafts', 1)
-                })
+                crafting.append({'block': block['char'],
+                                 'num': block.get('crafts', 1)})
 
     return crafting, max(crafting_sel, len(crafting) - 1)
 
