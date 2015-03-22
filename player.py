@@ -133,7 +133,8 @@ def render_grid(title, selected, grid, blocks, sel=None):
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
-    # Figure out number of trailing spaces to make the grid same width as the title.
+    # Figure out number of trailing spaces to make the grid same width as the
+    #   title.
     #             | block | ----num---- |
     total_width = 1 + 3 + 2 + max_n_w + 2
     trailing = ' ' * max(0, len(title) - total_width)
@@ -181,11 +182,11 @@ def get_crafting(inv, crafting_sel, blocks):
     for block in blocks.values():
         if 'recipe' in block:
             can_craft = True
-            for c, n in block['recipe'].items():
-                if not (c in inv and n <= inv[c]):
+            for ingredient, n in block['recipe'].items():
+                if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({'block': block['char'], 'num': 1})
+                crafting.append({'block': block['char'], 'num': block.get('crafts', 1)})
 
     return crafting, max(crafting_sel, len(crafting) - 1)
 
@@ -199,18 +200,17 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
         dinv = True
         block = crafting_list[crafting_sel]
 
-        crafts = blocks[block['block']].get('crafts', 1)
         recipe = blocks[block['block']]['recipe']
-        for c, n in recipe.items():
+        for ingredient, n in recipe.items():
             for i, b in enumerate(inv):
-                if b['block'] == c:
-                    rem_inv(inv, i, block['num'] * n)
+                if b['block'] == ingredient:
+                    rem_inv(inv, i, n)
 
-                    # decrements inv_sel if you're at the end of the list
-                    # or an item is removed below you in the list
+                    # Decrements inv_sel if you're at the end of the list
+                    #   or an item is removed below you in the list.
                     inv_sel -= inv_sel > i or len(inv) == inv_sel
 
-        add_inv(inv, block['block'], block['num'] * crafts)
+        add_inv(inv, block['block'], block['num'])
 
     return inv, inv_sel, crafting_list, dinv
 
