@@ -2,7 +2,7 @@ from colors import *
 
 
 blocks = {
-    ' ': { # Air
+    ' ': {
         'char': ' ',
         'name': 'Air',
         'colours': {
@@ -14,7 +14,7 @@ blocks = {
         'breakable': False,
         'hierarchy': 0
     },
-    '-': { # Grass
+    '-': {
         'char': '░ᚇ~',
         'name': 'Grass',
         'colours': {
@@ -26,7 +26,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 20
     },
-    'v': { # Tall Grass
+    'v': {
         'char': 'v',
         'name': 'Tall Grass',
         'colours': {
@@ -38,7 +38,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 0
     },
-    '|': { # Wood
+    '|': {
         'char': '#',
         'name': 'Wood',
         'colours': {
@@ -50,7 +50,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 10
     },
-    '@': { # Leaves
+    '@': {
         'char': '@',
         'name': 'Leaves',
         'colours': {
@@ -62,7 +62,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 5
     },
-    '#': { # Stone
+    '#': {
         'char': '~',
         'name': 'Stone',
         'colours': {
@@ -74,7 +74,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 50
     },
-    'x': { # Coal
+    'x': {
         'char': 'x',
         'name': 'Coal',
         'colours': {
@@ -86,7 +86,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 55
     },
-    '+': { # Iron
+    '+': {
         'char': '+',
         'name': 'Iron',
         'colours': {
@@ -98,7 +98,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 60
     },
-    ':': { # Redstone
+    ':': {
         'char': ':',
         'name': 'Redstone',
         'colours': {
@@ -110,7 +110,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 65
     },
-    '"': { # Gold
+    '"': {
         'char': '"',
         'name': 'Gold',
         'colours': {
@@ -122,7 +122,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 70
     },
-    'o': { # Diamond
+    'o': {
         'char': 'o',
         'name': 'Diamond',
         'colours': {
@@ -134,7 +134,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 75
     },
-    '.': { # Emerald
+    '.': {
         'char': 'o',
         'name': 'Emerald',
         'colours': {
@@ -146,7 +146,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 80
     },
-    '_': { # Bedrock
+    '_': {
         'char': '#',
         'name': 'Bedrock',
         'colours': {
@@ -158,7 +158,7 @@ blocks = {
         'breakable': False,
         'hierarchy': 100
     },
-    '/': { # Sticks
+    '/': {
         'char': '/',
         'name': 'Sticks',
         'colours': {
@@ -174,7 +174,7 @@ blocks = {
         },
         'crafts': 6
     },
-    '=': { # Ladder
+    '=': {
         'char': '=',
         'name': 'Ladder',
         'colours': {
@@ -189,7 +189,7 @@ blocks = {
             '/': 3
         }
     },
-    '*': { # Player head
+    '*': {
         'char': '*',
         'name': 'Player head',
         'colours': {
@@ -201,7 +201,7 @@ blocks = {
         'breakable': False,
         'hierarchy': 1000
     },
-    '^': { # Player feet
+    '^': {
         'char': '^',
         'name': 'Player feet',
         'colours': {
@@ -213,7 +213,7 @@ blocks = {
         'breakable': False,
         'hierarchy': 1000
     },
-    'X': { # Cursor
+    'X': {
         'char': 'X',
         'name': 'Cursor',
         'colours': {
