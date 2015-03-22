@@ -2,7 +2,7 @@ import random
 import copy
 from math import ceil, sin, cos, radians, pi
 
-from console import CLS, REDRAW, supported_chars
+from console import CLS, CLS_END, CLS_END_LN, REDRAW, supported_chars
 from colors import *
 from data import world_gen, blocks
 
@@ -87,18 +87,22 @@ def render_map(map_, objects, grids, label, blocks, sun, tick):
             else: # The block was coloured on startup
                 out += blocks[pixel_f]['char']
 
-        if y == max(map(len, grids)) + 2:
-            out += '  ' + label + (sum(map(len, grids)) - len(label)) * ' '
+        if y == max(map(len, grids)) + 1:
+            # Label
+            out += '  ' + label
         else:
+            # Grid
+            prev_empty = 0
             for grid in grids:
                 try:
-                    out += ' ' + grid[y]
+                    out += ' ' + prev_empty * ' ' + grid[y]
+                    prev_empty = 0
                 except IndexError:
-                    out += ' ' + len(grid[0]) * ' '
+                    prev_empty += len(grid[1])
 
-        out += '  \n'
+        out += CLS_END_LN + '\n'
 
-    print(REDRAW + out)
+    print(REDRAW + out + CLS_END)
 
 
 def sun(time, width):
