@@ -190,7 +190,7 @@ blocks = {
             'x': 1
         },
         'crafts': 4,
-        'light': 6
+        'light': 7
     },
     '=': {
         'char': '=',

@@ -38,7 +38,7 @@ def game(blocks, meta, map_, save):
     width = 40
     FPS = 10
     TPS = 10
-    SUN_TICK = radians(1/32)
+    SUN_TICK = radians(0/32)
 
     old_sun = None
     old_edges = None
@@ -69,9 +69,10 @@ def game(blocks, meta, map_, save):
         while game:
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
+            extended_edges = (edges[0]-terrain.max_light, edges[1]+terrain.max_light)
 
             # Generates new terrain
-            slice_list = terrain.detect_edges(map_, edges)
+            slice_list = terrain.detect_edges(map_, extended_edges)
             for pos in slice_list:
                 new_slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
                 map_[str(pos)] = new_slices[str(pos)]
@@ -85,6 +86,7 @@ def game(blocks, meta, map_, save):
             # Moving view
             if not edges == old_edges:
                 view = terrain.move_map(map_, edges)
+                extended_view = terrain.move_map(map_, extended_edges)
                 old_edges = edges
                 redraw = True
 
@@ -138,7 +140,7 @@ def game(blocks, meta, map_, save):
                     blocks
                 )
 
-                lights = terrain.get_lights(view, edges[0])
+                lights = terrain.get_lights(extended_view, edges[0], blocks)
 
                 terrain.render_map(
                     view,

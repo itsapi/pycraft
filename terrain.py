@@ -11,9 +11,7 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 # Maximum width of half a tree
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
-# Distance between two points, streached on the x to make it circularish...
-dist = lambda p1, p2: sqrt( (abs(p1[0]-p2[0]) ** sqrt(2)) + (abs(p1[1]-p2[1]) ** 2) )
-
+max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 def move_map(map_, edges):
     # Create subset of slices from map_ between edges
@@ -123,6 +121,10 @@ def sun(time, width):
     return x, y
 
 
+# Checks if a point is within a lights range.
+lit = lambda x, y, l: (( ((x-l['x']) ** 2) /  l['radius']    ** 2)
+                     + ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) < 1)
+
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
@@ -136,13 +138,13 @@ def sky(x, y, time, sun, lights):
             return WHITE
     else:
         # Sky pixel
-        if day or any(map(lambda l: l['radius'] >= dist((x, y), (l['x'], l['y'])), lights)):
+        if day or any(map(lambda l: lit(x, y, l), lights)):
             return CYAN
         else:
             return BLUE
 
 
-def get_lights(_map, start_x):
+def get_lights(_map, start_x, blocks):
     lights = []
 
     for x, slice_ in _map.items():
