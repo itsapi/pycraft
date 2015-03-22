@@ -61,15 +61,20 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     slices = {}
 
     if inp in 'k' and block_y >= 0:
+
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ' and len(inv):
+        if (map_[block_x][block_y] == ' ' and len(inv) and
+            blocks[ inv[inv_sel]['block'] ]['breakable']):
+
             # Place block in world from selected inv slot
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = inv[inv_sel]['block']
             inv, inv_sel = rem_inv(inv, inv_sel)
             dinv = True
+
         # If pressing k and block is not air and breakable
         elif blocks[ map_[block_x][block_y] ]['breakable']:
+
             # Destroy block
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
