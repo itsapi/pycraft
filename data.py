@@ -244,7 +244,7 @@ blocks = {
         'hierarchy': 1010
     },
     '1': {
-        'char': '⚒',
+        'char': '⚒T',
         'name': 'Wooden Pickaxe',
         'colours': {
             'fg': MAGENTA,
@@ -260,7 +260,7 @@ blocks = {
         }
     },
     '2': {
-        'char': '⚒',
+        'char': '⚒T',
         'name': 'Stone Pickaxe',
         'colours': {
             'fg': BLACK,
@@ -276,7 +276,7 @@ blocks = {
         }
     },
     '3': {
-        'char': '⚒',
+        'char': '⚒T',
         'name': 'Iron Pickaxe',
         'colours': {
             'fg': RED,
@@ -285,10 +285,26 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
-        'strength': 80,
+        'strength': 75,
         'recipe': {
             '/': 2,
             '+': 3
+        }
+    },
+    '4': {
+        'char': '⚒',
+        'name': 'Diamond Pickaxe',
+        'colours': {
+            'fg': CYAN,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 80,
+        'recipe': {
+            '/': 2,
+            'o': 3
         }
     }
 }
