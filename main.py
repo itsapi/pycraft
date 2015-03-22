@@ -133,10 +133,17 @@ def game(blocks, meta, map_, save):
                     None if crafting else inv_sel
                 )
 
+                label = player.inv_label(
+                    meta['inv'],
+                    inv_sel,
+                    blocks
+                )
+
                 terrain.render_map(
                     view,
                     objects,
                     [inv_grid, crafting_grid],
+                    label,
                     blocks,
                     sun,
                     tick
