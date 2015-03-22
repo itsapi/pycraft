@@ -4,6 +4,7 @@ from colors import *
 blocks = {
     ' ': { # Air
         'char': ' ',
+        'name': 'Air',
         'colours': {
             'fg': None,
             'bg': None,
@@ -15,6 +16,7 @@ blocks = {
     },
     '-': { # Grass
         'char': '░ᚇ~',
+        'name': 'Grass',
         'colours': {
             'fg': GREEN,
             'bg': GREEN,
@@ -26,6 +28,7 @@ blocks = {
     },
     'v': { # Tall Grass
         'char': 'v',
+        'name': 'Tall Grass',
         'colours': {
             'fg': GREEN,
             'bg': None,
@@ -37,6 +40,7 @@ blocks = {
     },
     '|': { # Wood
         'char': '#',
+        'name': 'Wood',
         'colours': {
             'fg': BLACK,
             'bg': MAGENTA,
@@ -48,6 +52,7 @@ blocks = {
     },
     '@': { # Leaves
         'char': '@',
+        'name': 'Leaves',
         'colours': {
             'fg': GREEN,
             'bg': GREEN,
@@ -59,6 +64,7 @@ blocks = {
     },
     '#': { # Stone
         'char': '~',
+        'name': 'Stone',
         'colours': {
             'fg': None,
             'bg': BLACK,
@@ -70,6 +76,7 @@ blocks = {
     },
     'x': { # Coal
         'char': 'x',
+        'name': 'Coal',
         'colours': {
             'fg': BLACK,
             'bg': BLACK,
@@ -81,6 +88,7 @@ blocks = {
     },
     '+': { # Iron
         'char': '+',
+        'name': 'Iron',
         'colours': {
             'fg': RED,
             'bg': BLACK,
@@ -92,6 +100,7 @@ blocks = {
     },
     ':': { # Redstone
         'char': ':',
+        'name': 'Redstone',
         'colours': {
             'fg': RED,
             'bg': BLACK,
@@ -103,6 +112,7 @@ blocks = {
     },
     '"': { # Gold
         'char': '"',
+        'name': 'Gold',
         'colours': {
             'fg': YELLOW,
             'bg': BLACK,
@@ -114,6 +124,7 @@ blocks = {
     },
     'o': { # Diamond
         'char': 'o',
+        'name': 'Diamond',
         'colours': {
             'fg': BLUE,
             'bg': BLACK,
@@ -125,6 +136,7 @@ blocks = {
     },
     '.': { # Emerald
         'char': 'o',
+        'name': 'Emerald',
         'colours': {
             'fg': GREEN,
             'bg': BLACK,
@@ -136,6 +148,7 @@ blocks = {
     },
     '_': { # Bedrock
         'char': '#',
+        'name': 'Bedrock',
         'colours': {
             'fg': BLACK,
             'bg': BLACK,
@@ -147,6 +160,7 @@ blocks = {
     },
     '/': { # Sticks
         'char': '/',
+        'name': 'Sticks',
         'colours': {
             'fg': BLACK,
             'bg': None,
@@ -162,6 +176,7 @@ blocks = {
     },
     '=': { # Ladder
         'char': '=',
+        'name': 'Ladder',
         'colours': {
             'fg': BLACK,
             'bg': None,
@@ -176,6 +191,7 @@ blocks = {
     },
     '*': { # Player head
         'char': '*',
+        'name': 'Player head',
         'colours': {
             'fg': WHITE,
             'bg': None,
@@ -187,6 +203,7 @@ blocks = {
     },
     '^': { # Player feet
         'char': '^',
+        'name': 'Player feet',
         'colours': {
             'fg': WHITE,
             'bg': None,
@@ -198,6 +215,7 @@ blocks = {
     },
     'X': { # Cursor
         'char': 'X',
+        'name': 'Cursor',
         'colours': {
             'fg': RED,
             'bg': None,

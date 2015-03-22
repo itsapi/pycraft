@@ -20,7 +20,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, grids, blocks, sun, tick):
+def render_map(map_, objects, grids, label, blocks, sun, tick):
     """
         Prints out a frame of the game.
 
@@ -87,13 +87,16 @@ def render_map(map_, objects, grids, blocks, sun, tick):
             else: # The block was coloured on startup
                 out += blocks[pixel_f]['char']
 
-        for grid in grids:
-            try:
-                out += ' ' + grid[y]
-            except IndexError:
-                out += ' ' + len(grid[0]) * ' '
+        if y == max(map(len, grids)) + 2:
+            out += '  ' + label + (sum(map(len, grids)) - len(label)) * ' '
+        else:
+            for grid in grids:
+                try:
+                    out += ' ' + grid[y]
+                except IndexError:
+                    out += ' ' + len(grid[0]) * ' '
 
-        out += '\n'
+        out += '  \n'
 
     print(REDRAW + out)
 
