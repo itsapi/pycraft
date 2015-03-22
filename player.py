@@ -102,7 +102,7 @@ def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
 
     try:
         strength = blocks[inv[inv_sel]['block']]['strength']
-    except KeyError:
+    except (IndexError, KeyError):
         strength = 20
 
     can_break = block['breakable'] and strength >= block['hierarchy']
