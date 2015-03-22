@@ -38,7 +38,7 @@ def game(blocks, meta, map_, save):
     width = 40
     FPS = 10
     TPS = 10
-    SUN_TICK = radians(0/32)
+    SUN_TICK = radians(1/32)
 
     old_sun = None
     old_edges = None
