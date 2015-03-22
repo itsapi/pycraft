@@ -46,7 +46,6 @@ def game(blocks, meta, map_, save):
     last_out = time()
     last_tick = time()
     last_inp = time()
-    tick = 0
     inp = None
     jump = 0
     cursor = 0
@@ -90,7 +89,7 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            sun = terrain.sun(tick, width)
+            sun = terrain.sun(meta['tick'], width)
             if not sun == old_sun:
                 old_sun = sun
                 redraw = True
@@ -146,7 +145,7 @@ def game(blocks, meta, map_, save):
                     label,
                     blocks,
                     sun,
-                    tick
+                    meta['tick']
                 )
             else:
                 df = 0
@@ -250,7 +249,7 @@ def game(blocks, meta, map_, save):
             # Increase tick
             if time() >= (1/TPS) + last_tick:
                 dt = 1
-                tick += SUN_TICK
+                meta['tick'] += SUN_TICK
                 last_tick = time()
             else:
                 dt = 0

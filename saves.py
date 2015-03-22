@@ -13,7 +13,8 @@ default_meta = {
     'spawn': 0,
     'player_x': 0,
     'player_y': 1,
-    'inv': []
+    'inv': [],
+    'tick': 0
 }
 
 SAVES_DIR = 'saves'
