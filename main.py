@@ -136,8 +136,7 @@ def game(blocks, meta, map_, save):
                 terrain.render_map(
                     view,
                     objects,
-                    inv_grid,
-                    crafting_grid,
+                    [inv_grid, crafting_grid],
                     blocks,
                     sun,
                     tick
