@@ -199,16 +199,18 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
         dinv = True
         block = crafting_list[crafting_sel]
 
+        crafts = blocks[block['block']].get('crafts', 1)
         recipe = blocks[block['block']]['recipe']
         for c, n in recipe.items():
             for i, b in enumerate(inv):
                 if b['block'] == c:
-                    rem_inv(inv, i, n)
+                    rem_inv(inv, i, block['num'] * n)
 
-                    # So it decremments inv_sel if you're... um, at the end of the list... uh, yeah...
+                    # decrements inv_sel if you're at the end of the list
+                    # or an item is removed below you in the list
                     inv_sel -= inv_sel > i or len(inv) == inv_sel
 
-        add_inv(inv, block['block'], block['num'])
+        add_inv(inv, block['block'], block['num'] * crafts)
 
     return inv, inv_sel, crafting_list, dinv
 
