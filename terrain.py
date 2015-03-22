@@ -1,6 +1,6 @@
 import random
 import copy
-from math import ceil, sin, cos, radians, pi
+from math import ceil, sin, cos, radians, pi, sqrt
 
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, supported_chars
 from colors import *
@@ -11,6 +11,9 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 # Maximum width of half a tree
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
+# Distance between two points, streached on the x to make it circularish...
+dist = lambda p1, p2: sqrt( (abs(p1[0]-p2[0]) ** 1.5) + (abs(p1[1]-p2[1]) ** 2) )
+
 
 def move_map(map_, edges):
     # Create subset of slices from map_ between edges
@@ -20,7 +23,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, grids, label, blocks, sun, tick):
+def render_map(map_, objects, grids, label, blocks, sun, lights, tick):
     """
         Prints out a frame of the game.
 
@@ -32,6 +35,8 @@ def render_map(map_, objects, grids, label, blocks, sun, tick):
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
         - sun: (x, y) position of the sun.
+        -lights: a list of light sources:
+            {'x': int, 'y': int, 'radius': int}
         - tick: the game time.
     """
 
@@ -74,7 +79,7 @@ def render_map(map_, objects, grids, label, blocks, sun, tick):
                 # Figure out bg colour
                 char_bg = blocks[pixel_b]['colours']['bg']
                 if char_bg is None or pixel_b == ' ':
-                    bg = sky(x, y, tick, sun)
+                    bg = sky(x, y, tick, sun, lights)
                 else:
                     bg = char_bg
 
@@ -118,7 +123,7 @@ def sun(time, width):
     return x, y
 
 
-def sky(x, y, time, sun):
+def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
     day = cos(time) > 0
@@ -131,10 +136,20 @@ def sky(x, y, time, sun):
             return WHITE
     else:
         # Sky pixel
-        if day:
+        if day or any(map(lambda l: l['radius'] >= dist((x, y), (l['x'], l['y'])), lights)):
             return CYAN
         else:
             return BLUE
+
+
+def get_lights(_map, start_x):
+    lights = []
+
+    for x, slice_ in _map.items():
+        if 'i' in slice_:
+            lights.append({'radius': 6, 'x': x-start_x, 'y': slice_.index('i')})
+
+    return lights
 
 
 def slice_height(pos, meta):

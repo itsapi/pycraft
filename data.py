@@ -174,6 +174,23 @@ blocks = {
         },
         'crafts': 6
     },
+    'i': {
+        'char': '¡',
+        'name': 'Torch',
+        'colours': {
+            'fg': BLACK,
+            'bg': None,
+            'style': BOLD
+        },
+        'solid': False,
+        'breakable': True,
+        'hierarchy': 10,
+        'recipe': {
+            '|': 1,
+            'x': 1
+        },
+        'crafts': 4
+    },
     '=': {
         'char': '=',
         'name': 'Ladder',

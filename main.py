@@ -138,6 +138,8 @@ def game(blocks, meta, map_, save):
                     blocks
                 )
 
+                lights = terrain.get_lights(view, edges[0])
+
                 terrain.render_map(
                     view,
                     objects,
@@ -145,6 +147,7 @@ def game(blocks, meta, map_, save):
                     label,
                     blocks,
                     sun,
+                    lights,
                     meta['tick']
                 )
             else:
