@@ -145,6 +145,21 @@ blocks = {
         'breakable': False,
         'hierarchy': 100
     },
+    '/': { # Sticks
+        'char': '/',
+        'colors': {
+            'fg': BLACK,
+            'bg': None,
+            'style': None
+        },
+        'solid': False,
+        'breakable': False,
+        'hierarchy': 10,
+        'recipe': {
+            '|': 1
+        },
+        'crafts': 6
+    },
     '=': { # Ladder
         'char': '=',
         'colors': {
@@ -156,7 +171,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 10,
         'recipe': {
-            '|': 3
+            '/': 3
         }
     },
     '*': { # Player head
