@@ -4,7 +4,7 @@ from colors import *
 blocks = {
     ' ': { # Air
         'char': ' ',
-        'colors': {
+        'colours': {
             'fg': None,
             'bg': None,
             'style': None
@@ -15,7 +15,7 @@ blocks = {
     },
     '-': { # Grass
         'char': '░ᚇ~',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': LIGHT
@@ -26,7 +26,7 @@ blocks = {
     },
     'v': { # Tall Grass
         'char': 'v',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': None,
             'style': LIGHT
@@ -37,7 +37,7 @@ blocks = {
     },
     '|': { # Wood
         'char': '#',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': MAGENTA,
             'style': LIGHT
@@ -48,7 +48,7 @@ blocks = {
     },
     '@': { # Leaves
         'char': '@',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': DARK
@@ -59,7 +59,7 @@ blocks = {
     },
     '#': { # Stone
         'char': '~',
-        'colors': {
+        'colours': {
             'fg': None,
             'bg': BLACK,
             'style': CLEAR
@@ -70,7 +70,7 @@ blocks = {
     },
     'x': { # Coal
         'char': 'x',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
             'style': DARK
@@ -81,7 +81,7 @@ blocks = {
     },
     '+': { # Iron
         'char': '+',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': LIGHT
@@ -92,7 +92,7 @@ blocks = {
     },
     ':': { # Redstone
         'char': ':',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': DARK
@@ -103,7 +103,7 @@ blocks = {
     },
     '"': { # Gold
         'char': '"',
-        'colors': {
+        'colours': {
             'fg': YELLOW,
             'bg': BLACK,
             'style': None
@@ -114,7 +114,7 @@ blocks = {
     },
     'o': { # Diamond
         'char': 'o',
-        'colors': {
+        'colours': {
             'fg': BLUE,
             'bg': BLACK,
             'style': LIGHT
@@ -125,7 +125,7 @@ blocks = {
     },
     '.': { # Emerald
         'char': 'o',
-        'colors': {
+        'colours': {
             'fg': GREEN,
             'bg': BLACK,
             'style': DARK
@@ -136,7 +136,7 @@ blocks = {
     },
     '_': { # Bedrock
         'char': '#',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
             'style': LIGHT
@@ -147,7 +147,7 @@ blocks = {
     },
     '/': { # Sticks
         'char': '/',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': None,
             'style': None
@@ -162,7 +162,7 @@ blocks = {
     },
     '=': { # Ladder
         'char': '=',
-        'colors': {
+        'colours': {
             'fg': BLACK,
             'bg': None,
             'style': None
@@ -176,7 +176,7 @@ blocks = {
     },
     '*': { # Player head
         'char': '*',
-        'colors': {
+        'colours': {
             'fg': WHITE,
             'bg': None,
             'style': BOLD
@@ -187,7 +187,7 @@ blocks = {
     },
     '^': { # Player feet
         'char': '^',
-        'colors': {
+        'colours': {
             'fg': WHITE,
             'bg': None,
             'style': BOLD
@@ -198,7 +198,7 @@ blocks = {
     },
     'X': { # Cursor
         'char': 'X',
-        'colors': {
+        'colours': {
             'fg': RED,
             'bg': None,
             'style': None
