@@ -136,22 +136,34 @@ def sky(x, y, time, sun):
 def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 
-    # Check surrounding slices for a hill
-    for x in range(pos - world_gen['max_hill'] * 2,
-                   pos + world_gen['max_hill'] * 2):
+    # Check surrounding slices for a hill with min gradient
+    for x in range(pos - world_gen['max_hill'] * world_gen['max_grad'],
+                   pos + world_gen['max_hill'] * world_gen['max_grad']):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x) + 'hill')
 
         # Generate a hill with a 5% chance
         if random.random() <= 0.05:
-            # Make top of hill flat
-            # Set height to height of hill minus distance from hill
-            hill_height = (world_gen['ground_height'] +
-                random.randint(0, world_gen['max_hill']) - abs(pos-x)/2)
-            hill_height -= 1 if pos == x else 0
 
-            if hill_height > slice_height_:
-                slice_height_ = hill_height
+            # Get gradient for left, or right side of hill
+            gradient_l = random.randint(1, world_gen['max_grad'])
+            gradient_r = random.randint(1, world_gen['max_grad'])
+
+            if x < pos:
+                gradient = gradient_r
+            else:
+                gradient = gradient_l
+
+            # Check if still in range with new gradient
+            if abs(pos-x) / gradient < world_gen['max_hill']:
+
+                # Set height to height of hill minus distance from hill
+                hill_height = (world_gen['ground_height'] +
+                    random.randint(0, world_gen['max_hill']) - abs(pos-x)/gradient)
+                # Make top of hill flat
+                hill_height -= 1 if pos == x else 0
+
+                slice_height_ = max(slice_height_, hill_height)
 
     return int(slice_height_)
 
