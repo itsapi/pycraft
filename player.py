@@ -192,28 +192,53 @@ def get_crafting(inv, crafting_sel, blocks):
     return crafting, max(crafting_sel, len(crafting) - 1)
 
 
+def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
+    dcraft = False
+
+    if inp in '-=':
+        dn = '-='.find(inp)*2 - 1
+
+        inv = dict(map(lambda a: (a['block'], a['num']), inv))
+
+        craft = crafting_list[crafting_sel]
+        block = blocks[craft['block']]
+
+        n_crafts = max(1, dn + int(craft['num'] / block.get('crafts', 1)))
+
+        can_craft = True
+        for ingredient, n in block['recipe'].items():
+            if not (ingredient in inv and (n * n_crafts) <= inv[ingredient]):
+                can_craft = False
+
+        if can_craft:
+            crafting_list[crafting_sel]['num'] = n_crafts * block.get('crafts', 1)
+            dcraft = True
+
+    return crafting_list, dcraft
+
+
 def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
     """ Crafts the selected item in crafting_list """
 
-    dinv = False
+    dcraft = False
 
     if inp in 'i' and len(crafting_list):
-        dinv = True
-        block = crafting_list[crafting_sel]
+        dcraft = True
+        craft = crafting_list[crafting_sel]
 
-        recipe = blocks[block['block']]['recipe']
-        for ingredient, n in recipe.items():
+        block = blocks[craft['block']]
+        for ingredient, n in block['recipe'].items():
             for i, b in enumerate(inv):
                 if b['block'] == ingredient:
-                    rem_inv(inv, i, n)
+                    inv, _ = rem_inv(inv, i, n * int(craft['num'] / block.get('crafts', 1)))
 
                     # Decrements inv_sel if you're at the end of the list
                     #   or an item is removed below you in the list.
                     inv_sel -= inv_sel > i or len(inv) == inv_sel
 
-        add_inv(inv, block['block'], block['num'])
+        add_inv(inv, craft['block'], craft['num'])
 
-    return inv, inv_sel, crafting_list, dinv
+    return inv, inv_sel, crafting_list, dcraft
 
 
 def add_inv(inv, block, n=1):

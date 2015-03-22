@@ -168,7 +168,7 @@ def game(blocks, meta, map_, save):
             # Take inputs and change pos accordingly
             char = str(nbi.char()).lower()
             # receive input if key pressed is w a d k j l i u o
-            inp = char if char in 'wadkjliuo' else None
+            inp = char if char in 'wadkjliuo-=' else None
 
             if time() >= (1/TPS) + last_inp and alive and inp:
                 dx, dy, jump = player.get_pos_delta(
@@ -182,15 +182,26 @@ def game(blocks, meta, map_, save):
                     )
 
                 if crafting:
+
                     meta['inv'], inv_sel, crafting_list, dcraft = \
                         player.crafting(
                             str(inp), meta['inv'], inv_sel,
                             crafting_list, crafting_sel, blocks
                         )
 
+
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
                         player.get_crafting(meta['inv'], crafting_sel, blocks)
+
+                if crafting:
+                    crafting_list, dcraftI = \
+                        player.craft_num(
+                            str(inp), meta['inv'], crafting_list,
+                            crafting_sel, blocks
+                        )
+
+                    dcraft = dcraftI or dcraft
 
                 map_.update(new_slices)
 
