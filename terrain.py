@@ -21,7 +21,7 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, grids, label, blocks, sun, lights, tick):
+def render_map(map_, objects, grids, blocks, sun, lights, tick):
     """
         Prints out a frame of the game.
 
@@ -33,10 +33,16 @@ def render_map(map_, objects, grids, label, blocks, sun, lights, tick):
             the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
         - sun: (x, y) position of the sun.
-        -lights: a list of light sources:
+        - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int}
         - tick: the game time.
     """
+
+    # Sort out grids
+    merged_grids = []
+    for row in grids:
+        for y in range(max(map(len, row))):
+            merged_grids.append(' '.join(map(lambda g: g[y] if y < len(g) else ' ' * len(g[0]), row)))
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -90,18 +96,9 @@ def render_map(map_, objects, grids, label, blocks, sun, lights, tick):
             else: # The block was coloured on startup
                 out += blocks[pixel_f]['char']
 
-        if y == max(map(len, grids)) + 1:
-            # Label
-            out += '  ' + label
-        else:
-            # Grid
-            prev_empty = 0
-            for grid in grids:
-                try:
-                    out += ' ' + prev_empty * ' ' + grid[y]
-                    prev_empty = 0
-                except IndexError:
-                    prev_empty += len(grid[1])
+        # Grids
+        if y < len(merged_grids):
+            out += ' ' + merged_grids[y]
 
         out += CLS_END_LN + '\n'
 

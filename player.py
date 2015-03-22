@@ -136,13 +136,13 @@ def render_grid(title, selected, grid, blocks, sel=None):
     # Figure out number of trailing spaces to make the grid same width as the title.
     #     |   block    |         num          |
     top = tl + (h*3) + t + (h*(max_n_w+2)) + tr
-    trailing = ' ' * max(0, len(title) - len(top))
+    max_w = max(len(top), len(title))
+    trailing = ' ' * (max_w - len(top))
 
-    out = [
-        (colorStr(title, style=BOLD) if selected else title) +
-            ' ' * max(0, len(top) - len(title)),
-        top + trailing
-    ]
+    out = []
+    out.append((colorStr(title, style=BOLD) if selected else title) +
+                   ' ' * (max_w - len(title)))
+    out.append(top + trailing)
 
     for i, slot in enumerate(grid):
         if slot is not None:
@@ -241,9 +241,9 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
     return inv, inv_sel, crafting_list, dcraft
 
 
-def inv_label(inv, inv_sel, blocks):
+def label(list, sel, blocks):
     try:
-        return blocks[inv[inv_sel]['block']]['name']
+        return blocks[list[sel]['block']]['name']
     except IndexError:
         return ''
 

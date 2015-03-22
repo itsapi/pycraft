@@ -16,7 +16,7 @@ blocks = {
     },
     '-': {
         'char': '░ᚇ~',
-        'name': 'Grass',
+        'name': 'Really Long Grass',
         'colours': {
             'fg': GREEN,
             'bg': GREEN,

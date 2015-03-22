@@ -118,6 +118,19 @@ def game(blocks, meta, map_, save):
                     c_hidden
                 )
 
+                if crafting:
+                    label = player.label(
+                        crafting_list,
+                        crafting_sel,
+                        blocks
+                    )
+                else:
+                    label = player.label(
+                        meta['inv'],
+                        inv_sel,
+                        blocks
+                    )
+
                 crafting_grid = player.render_grid(
                     player.CRAFT_TITLE,
                     crafting,
@@ -134,19 +147,12 @@ def game(blocks, meta, map_, save):
                     None if crafting else inv_sel
                 )
 
-                label = player.inv_label(
-                    meta['inv'],
-                    inv_sel,
-                    blocks
-                )
-
                 lights = terrain.get_lights(extended_view, edges[0], blocks)
 
                 terrain.render_map(
                     view,
                     objects,
-                    [inv_grid, crafting_grid],
-                    label,
+                    [[inv_grid, crafting_grid], [[label]]],
                     blocks,
                     sun,
                     lights,
