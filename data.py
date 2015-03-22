@@ -178,7 +178,7 @@ blocks = {
         'char': '¡',
         'name': 'Torch',
         'colours': {
-            'fg': BLACK,
+            'fg': YELLOW,
             'bg': None,
             'style': BOLD
         },
@@ -242,6 +242,54 @@ blocks = {
         'solid': False,
         'breakable': False,
         'hierarchy': 1010
+    },
+    '1': {
+        'char': '⚒',
+        'name': 'Wooden Pickaxe',
+        'colours': {
+            'fg': MAGENTA,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 50,
+        'recipe': {
+            '/': 2,
+            '|': 3
+        }
+    },
+    '2': {
+        'char': '⚒',
+        'name': 'Stone Pickaxe',
+        'colours': {
+            'fg': BLACK,
+            'bg': None,
+            'style': LIGHT
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 60,
+        'recipe': {
+            '/': 2,
+            '#': 3
+        }
+    },
+    '3': {
+        'char': '⚒',
+        'name': 'Iron Pickaxe',
+        'colours': {
+            'fg': RED,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 80,
+        'recipe': {
+            '/': 2,
+            '+': 3
+        }
     }
 }
 
