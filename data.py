@@ -189,7 +189,8 @@ blocks = {
             '|': 1,
             'x': 1
         },
-        'crafts': 4
+        'crafts': 4,
+        'light': 6
     },
     '=': {
         'char': '=',

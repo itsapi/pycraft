@@ -146,8 +146,19 @@ def get_lights(_map, start_x):
     lights = []
 
     for x, slice_ in _map.items():
-        if 'i' in slice_:
-            lights.append({'radius': 6, 'x': x-start_x, 'y': slice_.index('i')})
+        # Get the lights and their y positions in this slice
+        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light'),
+            zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
+
+        # Convert light pixels to light objects
+        lights.extend(map(
+            lambda pixel: {
+                'radius': blocks[pixel[1]]['light'],
+                'x': x-start_x,
+                'y': pixel[0]
+            },
+            slice_lights
+        ))
 
     return lights
 
