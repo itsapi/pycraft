@@ -242,7 +242,10 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
 
 
 def inv_label(inv, inv_sel, blocks):
-    return blocks[inv[inv_sel]['block']]['name']
+    try:
+        return blocks[inv[inv_sel]['block']]['name']
+    except IndexError:
+        return ''
 
 
 def add_inv(inv, block, n=1):
