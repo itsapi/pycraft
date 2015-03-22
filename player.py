@@ -186,7 +186,10 @@ def get_crafting(inv, crafting_sel, blocks):
                 if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({'block': block['char'], 'num': block.get('crafts', 1)})
+                crafting.append({
+                    'block': block['char'],
+                    'num': block.get('crafts', 1)
+                })
 
     return crafting, max(crafting_sel, len(crafting) - 1)
 
