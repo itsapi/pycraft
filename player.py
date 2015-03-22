@@ -179,14 +179,14 @@ def get_crafting(inv, crafting_sel, blocks):
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
     crafting = []
 
-    for block in blocks.values():
+    for char, block in blocks.items():
         if 'recipe' in block:
             can_craft = True
             for ingredient, n in block['recipe'].items():
                 if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({'block': block['char'],
+                crafting.append({'block': char,
                                  'num': block.get('crafts', 1)})
 
     return crafting, max(crafting_sel, len(crafting) - 1)
