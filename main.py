@@ -165,7 +165,7 @@ def game(blocks, meta, map_, save):
 
             # Take inputs and change pos accordingly
             char = str(nbi.char()).lower()
-            # receive input if key pressed is w a d k j l i u o
+            # Receive input if a key is pressed
             inp = char if char in 'wadkjliuo-=' else None
 
             if time() >= (1/TPS) + last_inp and alive and inp:
