@@ -119,12 +119,13 @@ def game(blocks, meta, map_, save):
 
                 crafting_grid = player.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
+                    terrain.world_gen['height']-1,
                     crafting_sel if crafting else None
                 )
 
                 inv_grid = player.render_grid(
                     player.INV_TITLE, not crafting, meta['inv'], blocks,
-                    None if crafting else inv_sel
+                    terrain.world_gen['height']-1, None if crafting else inv_sel
                 )
 
                 lights = terrain.get_lights(extended_view, edges[0], blocks)

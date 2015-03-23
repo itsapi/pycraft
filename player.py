@@ -133,9 +133,14 @@ def render_player(x, y, cursor, colour, c_hidden):
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def render_grid(title, selected, grid, blocks, sel=None):
+def render_grid(title, selected, grid, blocks, max_height, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
+
+    # Figure out offset
+    bottom_pad = 2
+    max_height = int((max_height-2) / 2) # -2 for title, bottom
+    offset = sel - min(sel, max_height-bottom_pad-1) if sel else 0
 
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
@@ -151,7 +156,9 @@ def render_grid(title, selected, grid, blocks, sel=None):
                    ' ' * (max_w - len(title)))
     out.append(top + trailing)
 
-    for i, slot in enumerate(grid):
+    for c, slot in enumerate(grid[offset:offset+max_height]):
+        i = c + offset
+
         if slot is not None:
             block_char = blocks[slot['block']]['char']
             num = slot['num']
@@ -178,7 +185,7 @@ def render_grid(title, selected, grid, blocks, sel=None):
             trail=trailing
         ))
 
-        if not i == len(grid) - 1:
+        if not (c == max_height - 1 or i == len(grid) - 1):
             out.append(l + (h*3) + m + (h*(max_n_w+2)) + r + trailing)
 
     out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br + trailing)
