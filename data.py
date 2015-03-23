@@ -292,7 +292,7 @@ blocks = {
         }
     },
     '4': {
-        'char': '⚒',
+        'char': '⚒T',
         'name': 'Diamond Pickaxe',
         'colours': {
             'fg': CYAN,
