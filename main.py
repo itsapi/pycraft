@@ -4,7 +4,7 @@ import sys
 
 from console import CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player
+import saves, ui, terrain, player, render
 
 
 def main():
@@ -12,7 +12,7 @@ def main():
     print(CLS)
 
     saves.check_map_dir()
-    blocks = terrain.gen_blocks()
+    blocks = render.gen_blocks()
 
     # Menu loop
     try:
@@ -69,7 +69,7 @@ def game(blocks, meta, map_, save):
         while game:
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
-            extended_edges = (edges[0]-terrain.max_light, edges[1]+terrain.max_light)
+            extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
             # Generates new terrain
             slice_list = terrain.detect_edges(map_, extended_edges)
@@ -91,7 +91,7 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            sun = terrain.sun(meta['tick'], width)
+            sun = render.sun(meta['tick'], width)
             if not sun == old_sun:
                 old_sun = sun
                 redraw = True
@@ -128,9 +128,9 @@ def game(blocks, meta, map_, save):
                     terrain.world_gen['height']-1, None if crafting else inv_sel
                 )
 
-                lights = terrain.get_lights(extended_view, edges[0], blocks)
+                lights = render.get_lights(extended_view, edges[0], blocks)
 
-                terrain.render_map(
+                render.render_map(
                     view,
                     objects,
                     [[inv_grid, crafting_grid],
