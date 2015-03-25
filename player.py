@@ -148,7 +148,7 @@ def get_crafting(inv, crafting_sel, blocks):
                 crafting.append({'block': char,
                                  'num': block.get('crafts', 1)})
 
-    return crafting, max(crafting_sel, len(crafting) - 1)
+    return crafting, min(crafting_sel, len(crafting) - 1)
 
 
 def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
