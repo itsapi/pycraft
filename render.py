@@ -43,7 +43,7 @@ def render_map(map_, objects, grids, blocks, sun, lights, tick):
     #         [1, '### '],
     #         [2, '##  ']]
 
-    # Seperates the pos and data
+    # Separates the pos and data
     map_ = tuple(zip(*map_))[1]
 
     # Orientates the data
