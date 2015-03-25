@@ -28,10 +28,12 @@ def render_map(map_, objects, grids, blocks, sun, lights, tick):
     """
 
     # Sort out grids
+    # Gets row from grid if it exists, else pads with ' '
+    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(g[0])
     merged_grids = []
     for row in grids:
         for y in range(max(map(len, row))):
-            merged_grids.append(' '.join(map(lambda g: g[y] if y < len(g) else ' ' * len(g[0]), row)))
+            merged_grids.append(' '.join(map(lambda g: get_row(g, y), row)))
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -172,12 +174,18 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
-    # Figure out offset
-    bottom_pad = 2
     max_height = int((max_height-2) / 2) # -2 for title, bottom
 
-    # Magic! (https://docs.google.com/spreadsheets/d/14EFV3_baRL5MLMLlFrvlctE_JFXnlO7m9i-3Ksd3HG4/edit#gid=0)
-    offset = sel - max(min(sel, max_height - bottom_pad - 1), sel + min(0, max_height - len(grid))) if sel else 0
+    # Figure out offset
+    if sel:
+        bottom_pad = 2
+
+        offset = sel - max(
+            min(sel, max_height - bottom_pad - 1), # Beginning and middle
+            sel + min(0, max_height - len(grid)) # End positions
+        )
+    else:
+        offset = 0
 
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
@@ -189,8 +197,7 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
     trailing = ' ' * (max_w - len(top))
 
     out = []
-    out.append((colorStr(title, style=BOLD) if selected else title) +
-                   ' ' * (max_w - len(title)))
+    out.append(bold(title, selected) + ' ' * (max_w - len(title)))
     out.append(top + trailing)
 
     for c, slot in enumerate(grid[offset:offset+max_height]):

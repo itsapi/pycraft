@@ -37,6 +37,10 @@ def colorStr(text, fg=None, bg=None, style=None):
         return text
 
 
+def bold(t, yes=True):
+    return colorStr(t, style=BOLD) if yes else t
+
+
 if __name__ == '__main__':
     for style in range(10):
         print(colorStr('hello world', fg=RED, style=style))
