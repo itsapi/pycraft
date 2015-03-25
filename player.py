@@ -140,7 +140,9 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
     # Figure out offset
     bottom_pad = 2
     max_height = int((max_height-2) / 2) # -2 for title, bottom
-    offset = sel - min(sel, max_height-bottom_pad-1) if sel else 0
+
+    # Magic! (https://docs.google.com/spreadsheets/d/14EFV3_baRL5MLMLlFrvlctE_JFXnlO7m9i-3Ksd3HG4/edit#gid=0)
+    offset = sel - max(min(sel, max_height - bottom_pad - 1), sel + min(0, max_height - len(grid))) if sel else 0
 
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
