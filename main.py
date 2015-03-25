@@ -32,9 +32,9 @@ def game(blocks, meta, map_, save):
     dt = 0 # Tick
     df = 0 # Frame
     dc = 0 # Cursor
-    di = 0 # Inventory Selector
+    ds = 0 # Selector
     dinv = False # Inventory
-    dcraft = False
+    dcraft = False # Crafting
     width = 40
     FPS = 10
     TPS = 10
@@ -170,6 +170,7 @@ def game(blocks, meta, map_, save):
             # Receive input if a key is pressed
             inp = char if char in 'wadkjliuo-=' else None
 
+            # Input Frame
             if time() >= (1/TPS) + last_inp and alive and inp:
                 dx, dy, jump = player.get_pos_delta(
                     str(inp), map_, x, y, blocks, jump)
@@ -182,22 +183,19 @@ def game(blocks, meta, map_, save):
                         can_break, inv_sel, meta, blocks
                     )
 
+                map_.update(new_slices)
+
                 dcraft = False
                 if crafting:
-
                     # Craft if player pressed craft
                     meta['inv'], inv_sel, crafting_list, dcraftC = \
-                        player.crafting(
-                            str(inp), meta['inv'], inv_sel,
-                            crafting_list, crafting_sel, blocks
-                        )
+                        player.crafting(str(inp), meta['inv'], inv_sel,
+                            crafting_list, crafting_sel, blocks)
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
-                        player.craft_num(
-                            str(inp), meta['inv'], crafting_list,
-                            crafting_sel, blocks
-                        )
+                        player.craft_num(str(inp), meta['inv'], crafting_list,
+                            crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
 
@@ -207,20 +205,18 @@ def game(blocks, meta, map_, save):
                         player.get_crafting(meta['inv'], crafting_list,
                                             crafting_sel, blocks)
 
-                map_.update(new_slices)
-
                 dc = player.move_cursor(inp)
                 cursor = (cursor + dc) % 6
 
-                di = player.move_sel(inp)
+                ds = player.move_sel(inp)
                 if crafting:
-                    crafting_sel = ((crafting_sel + di) % len(crafting_list)
+                    crafting_sel = ((crafting_sel + ds) % len(crafting_list)
                                        if len(crafting_list) else 0)
                 else:
-                    inv_sel = ((inv_sel + di) % len(meta['inv'])
+                    inv_sel = ((inv_sel + ds) % len(meta['inv'])
                                   if len(meta['inv']) else 0)
 
-                if dx or dy or dc or di or dinv or dcraft:
+                if dx or dy or dc or ds or dinv or dcraft:
                     meta['player_x'], meta['player_y'] = x, y
                     saves.save_meta(save, meta)
                     redraw = True
