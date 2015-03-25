@@ -1,4 +1,5 @@
 import sys
+import re
 
 
 def _has_colors(stream):
@@ -19,6 +20,7 @@ NORMAL, BOLD, DARK, ITALICS, UNDERLINE,\
     _, _, INVERT, CLEAR, STRIKETHROUGH = list(range(10))
 LIGHT = 'light'
 _has_colors = _has_colors(sys.stdout)
+ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
 def colorStr(text, fg=None, bg=None, style=None):
@@ -39,6 +41,10 @@ def colorStr(text, fg=None, bg=None, style=None):
 
 def bold(t, yes=True):
     return colorStr(t, style=BOLD) if yes else t
+
+
+def unColorStr(text):
+    return ansi_escape.sub('', text)
 
 
 if __name__ == '__main__':

@@ -29,7 +29,7 @@ def render_map(map_, objects, grids, blocks, sun, lights, tick):
 
     # Sort out grids
     # Gets row from grid if it exists, else pads with ' '
-    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(g[0])
+    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
     merged_grids = []
     for row in grids:
         for y in range(max(map(len, row))):
