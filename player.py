@@ -132,12 +132,20 @@ def assemble_player(x, y, cursor, colour, c_hidden):
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def get_crafting(inv, crafting_sel, blocks):
+def get_crafting(inv, crafting_list, crafting_sel, blocks):
     """ Makes a list of blocks you can craft """
 
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
-    crafting = []
 
+    def old_n(recipe):
+        # Gets the old num, if exists
+        for old in crafting_list:
+            if old['block'] == recipe['block']:
+                recipe['num'] = old['num']
+                break
+        return recipe
+
+    crafting = []
     for char, block in blocks.items():
         if 'recipe' in block:
             can_craft = True
@@ -145,8 +153,10 @@ def get_crafting(inv, crafting_sel, blocks):
                 if not (ingredient in inv and n <= inv[ingredient]):
                     can_craft = False
             if can_craft:
-                crafting.append({'block': char,
-                                 'num': block.get('crafts', 1)})
+                crafting.append(old_n({
+                    'block': char,
+                    'num': block.get('crafts', 1)
+                }))
 
     return crafting, min(crafting_sel, len(crafting) - 1)
 

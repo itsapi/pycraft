@@ -59,6 +59,7 @@ def game(blocks, meta, map_, save):
 
     crafting_list, crafting_sel = player.get_crafting(
         meta['inv'],
+        crafting_list,
         crafting_sel,
         blocks
     )
@@ -181,27 +182,30 @@ def game(blocks, meta, map_, save):
                         can_break, inv_sel, meta, blocks
                     )
 
+                dcraft = False
                 if crafting:
 
-                    meta['inv'], inv_sel, crafting_list, dcraft = \
+                    # Craft if player pressed craft
+                    meta['inv'], inv_sel, crafting_list, dcraftC = \
                         player.crafting(
                             str(inp), meta['inv'], inv_sel,
                             crafting_list, crafting_sel, blocks
                         )
 
-
-                if dinv or dcraft:
-                    crafting_list, crafting_sel = \
-                        player.get_crafting(meta['inv'], crafting_sel, blocks)
-
-                if crafting:
-                    crafting_list, dcraftI = \
+                    # Increment/decrement craft no.
+                    crafting_list, dcraftN = \
                         player.craft_num(
                             str(inp), meta['inv'], crafting_list,
                             crafting_sel, blocks
                         )
 
-                    dcraft = dcraftI or dcraft
+                    dcraft = dcraftC or dcraftN
+
+                # Update crafting list
+                if dinv or dcraft:
+                    crafting_list, crafting_sel = \
+                        player.get_crafting(meta['inv'], crafting_list,
+                                            crafting_sel, blocks)
 
                 map_.update(new_slices)
 
