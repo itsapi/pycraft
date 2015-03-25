@@ -1,5 +1,4 @@
 import terrain
-from console import supported_chars, CLS
 from colors import *
 
 
