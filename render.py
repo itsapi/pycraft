@@ -106,7 +106,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
         return colorStr(
             blocks[pixel_f]['char'],
             bg = bg,
-            fg = obj_colour or blocks[pixel_f]['colours']['fg'],
+            fg = fg,
             style = blocks[pixel_f]['colours']['style']
         )
 
