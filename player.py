@@ -109,7 +109,7 @@ def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     return [RED, WHITE][can_break], can_break
 
 
-def render_player(x, y, cursor, colour, c_hidden):
+def assemble_player(x, y, cursor, colour, c_hidden):
 
     head = {
         'x': x,
@@ -131,71 +131,6 @@ def render_player(x, y, cursor, colour, c_hidden):
     }
 
     return (head, feet) if c_hidden else (head, feet, cursor)
-
-
-def render_grid(title, selected, grid, blocks, max_height, sel=None):
-    h, v, tl, t, tr, l, m, r, bl, b, br = \
-        supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
-
-    # Figure out offset
-    bottom_pad = 2
-    max_height = int((max_height-2) / 2) # -2 for title, bottom
-
-    # Magic! (https://docs.google.com/spreadsheets/d/14EFV3_baRL5MLMLlFrvlctE_JFXnlO7m9i-3Ksd3HG4/edit#gid=0)
-    offset = sel - max(min(sel, max_height - bottom_pad - 1), sel + min(0, max_height - len(grid))) if sel else 0
-
-    # Find maximum length of the num column.
-    max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
-
-    # Figure out number of trailing spaces to make the grid same width as the title.
-    #     |   block    |         num          |
-    top = tl + (h*3) + t + (h*(max_n_w+2)) + tr
-    max_w = max(len(top), len(title))
-    trailing = ' ' * (max_w - len(top))
-
-    out = []
-    out.append((colorStr(title, style=BOLD) if selected else title) +
-                   ' ' * (max_w - len(title)))
-    out.append(top + trailing)
-
-    for c, slot in enumerate(grid[offset:offset+max_height]):
-        i = c + offset
-
-        if slot is not None:
-            block_char = blocks[slot['block']]['char']
-            num = slot['num']
-        else:
-            block_char, num = ' ', ''
-
-        colour = blocks[slot['block']]['colours']
-        if colour['bg'] is None:
-            block_char = colorStr(
-                block_char,
-                fg=colour['fg'],
-                bg=None,
-                style=colour['style']
-            )
-
-        # Have to do the padding before colour because the colour
-        #   messes with the char count. (The block will always be 1 char wide.)
-        num = '{:{max}}'.format(num, max=max_n_w)
-
-        out.append('{v} {b} {v} {n} {v}{trail}'.format(
-            b=block_char,
-            n=colorStr(num, bg=RED) if i == sel else num,
-            v=v,
-            trail=trailing
-        ))
-
-        if not (c == max_height - 1 or i == len(grid) - 1):
-            out.append(l + (h*3) + m + (h*(max_n_w+2)) + r + trailing)
-
-    out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br + trailing)
-    return out
-
-
-def title(t, selected):
-    return colorStr(t, style=BOLD) if selected else t
 
 
 def get_crafting(inv, crafting_sel, blocks):

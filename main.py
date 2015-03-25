@@ -106,7 +106,7 @@ def game(blocks, meta, map_, save):
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
                 )
 
-                objects = player.render_player(
+                objects = player.assemble_player(
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
@@ -117,13 +117,13 @@ def game(blocks, meta, map_, save):
                     label = player.label(
                         meta['inv'], inv_sel, blocks)
 
-                crafting_grid = player.render_grid(
+                crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
                     terrain.world_gen['height']-1,
                     crafting_sel if crafting else None
                 )
 
-                inv_grid = player.render_grid(
+                inv_grid = render.render_grid(
                     player.INV_TITLE, not crafting, meta['inv'], blocks,
                     terrain.world_gen['height']-1, None if crafting else inv_sel
                 )
