@@ -36,8 +36,10 @@ def game(blocks, meta, map_, save):
     dinv = False # Inventory
     dcraft = False # Crafting
     width = 40
-    FPS = 10
-    TPS = 10
+    FPS = 30 # Max
+    TPS = 10 # Ticks
+    IPS = 30 # Input
+    MPS = 15 # Movement
     SUN_TICK = radians(1/32)
 
     old_sun = None
@@ -46,6 +48,7 @@ def game(blocks, meta, map_, save):
     last_out = time()
     last_tick = time()
     last_inp = time()
+    last_move = time()
     inp = None
     jump = 0
     cursor = 0
@@ -171,11 +174,15 @@ def game(blocks, meta, map_, save):
             inp = char if char in 'wadkjliuo-=' else None
 
             # Input Frame
-            if time() >= (1/TPS) + last_inp and alive and inp:
-                dx, dy, jump = player.get_pos_delta(
-                    str(inp), map_, x, y, blocks, jump)
-                y += dy
-                x += dx
+            if time() >= (1/IPS) + last_inp and alive and inp:
+
+                if time() >= (1/MPS) + last_move:
+                    dx, dy, jump = player.get_pos_delta(
+                        str(inp), map_, x, y, blocks, jump)
+                    y += dy
+                    x += dx
+
+                    last_move = time()
 
                 new_slices, meta['inv'], inv_sel, dinv = \
                     player.cursor_func(
