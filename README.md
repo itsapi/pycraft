@@ -10,6 +10,8 @@ Usage: `python3 main.py`
 Controls
 --------
 
+For the best control, you should set your keyboard repeat time to around 200-300ms.
+
 ```
 Menus:
    Move up                    - W or UP
