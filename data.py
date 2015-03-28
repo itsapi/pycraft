@@ -80,7 +80,7 @@ blocks = {
         'colours': {
             'fg': BLACK,
             'bg': BLACK,
-            'style': DARK
+            'style': LIGHT
         },
         'solid': True,
         'breakable': True,
@@ -164,7 +164,7 @@ blocks = {
         'colours': {
             'fg': BLACK,
             'bg': None,
-            'style': None
+            'style': LIGHT
         },
         'solid': False,
         'breakable': False,
@@ -198,7 +198,7 @@ blocks = {
         'colours': {
             'fg': BLACK,
             'bg': None,
-            'style': None
+            'style': LIGHT
         },
         'solid': False,
         'breakable': True,
