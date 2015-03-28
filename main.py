@@ -184,14 +184,6 @@ def game(blocks, meta, map_, save):
 
                     last_move = time()
 
-                new_slices, meta['inv'], inv_sel, dinv = \
-                    player.cursor_func(
-                        str(inp), map_, x, y, cursor,
-                        can_break, inv_sel, meta, blocks
-                    )
-
-                map_.update(new_slices)
-
                 dcraft = False
                 if crafting:
                     # Craft if player pressed craft
@@ -205,6 +197,15 @@ def game(blocks, meta, map_, save):
                             crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
+                else:
+                    # Don't allow breaking/placing blocks if in crafting menu
+                    new_slices, meta['inv'], inv_sel, dinv = \
+                        player.cursor_func(
+                            str(inp), map_, x, y, cursor,
+                            can_break, inv_sel, meta, blocks
+                        )
+
+                map_.update(new_slices)
 
                 # Update crafting list
                 if dinv or dcraft:
