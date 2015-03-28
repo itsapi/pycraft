@@ -168,15 +168,15 @@ def game(blocks, meta, map_, save):
             except IndexError:
                 alive = False
 
-            # Take inputs and change pos accordingly
-            char = str(nbi.char()).lower()
             # Receive input if a key is pressed
+            char = str(nbi.char()).lower()
             inp = char if char in 'wadkjliuo-=' else None
 
             # Input Frame
             if time() >= (1/IPS) + last_inp and alive and inp:
 
                 if time() >= (1/MPS) + last_move:
+                    # Update player position
                     dx, dy, jump = player.get_pos_delta(
                         str(inp), map_, x, y, blocks, jump)
                     y += dy
