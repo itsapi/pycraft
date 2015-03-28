@@ -32,7 +32,7 @@ blocks = {
         'colours': {
             'fg': GREEN,
             'bg': None,
-            'style': LIGHT
+            'style': DARK
         },
         'solid': False,
         'breakable': True,
