@@ -1,5 +1,4 @@
-Pycraft
-=======
+# Pycraft
 
 A console based 2D Minecraft, runs best on Unix with Python 3.3+. Built by [grit96](//github.com/grit96) and [olls](//github.com/olls).
 
@@ -7,8 +6,7 @@ Usage: `python3 main.py`
 
 ![Pycraft gameplay image](https://dl.dropboxusercontent.com/spa/3jurnyon2jw6230/pycraft2.png)
 
-Controls
---------
+## Controls
 
 For the best control, you should set your keyboard repeat time to around 200-300ms.
 
@@ -32,3 +30,31 @@ Movement:
    Move right                 - D
    Jump                       - W
 ```
+
+## Crafting
+
+A number of items are only obtainable through crafting them using the crafting system.
+Items that you can craft with the items in your inventory will automatically show up in the crafting grid.
+Press `C` to toggle your selection between inventory and crafting grid, press `I` to craft the currently selected item.
+
+#### Recipes:
+
+- 6 sticks:
+   - 1 wood
+- 4 torches:
+   - 1 wood
+   - 1 coal
+- ladder:
+   - 3 sticks
+- wooden pickaxe:
+   - 2 sticks
+   - 3 wood
+- stone pickaxe:
+   - 2 sticks
+   - 3 stone
+- iron pickaxe:
+   - 2 sticks
+   - 3 iron
+- diamond pickaxe:
+   - 2 sticks
+   - 3 diamonds
