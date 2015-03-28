@@ -58,3 +58,28 @@ Press `C` to toggle your selection between inventory and crafting grid, press `I
 - diamond pickaxe:
    - 2 sticks
    - 3 diamonds
+
+####  Tools:
+
+Certain blocks require you to craft the right tool before being able to mine it.
+The tool has to be selected in your inventory to be able to use it.
+Each tier of pickaxe allows you to break more blocks than the previous tier.
+
+- fist (i.e. don't need a tool):
+   - grass
+   - tall grass
+   - wood
+   - leaves
+   - torch
+   - ladder
+- wooden pickaxe:
+   - stone
+- stone pickaxe:
+   - coal
+   - iron
+- iron pickaxe:
+   - redstone
+   - gold
+   - diamond
+- diamond pickaxe:
+   - emerald
