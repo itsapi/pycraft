@@ -158,7 +158,7 @@ def get_crafting(inv, crafting_list, crafting_sel, blocks):
                     'num': block.get('crafts', 1)
                 }))
 
-    return crafting, min(crafting_sel, len(crafting) - 1)
+    return crafting, max(min(crafting_sel, len(crafting) - 1), 0)
 
 
 def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
@@ -207,7 +207,7 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
 
         add_inv(inv, craft['block'], craft['num'])
 
-    return inv, inv_sel, crafting_list, dcraft
+    return inv, max(inv_sel, 0), crafting_list, dcraft
 
 
 def label(list, sel, blocks):
