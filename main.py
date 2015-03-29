@@ -114,12 +114,9 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                if crafting:
-                    label = player.label(
-                        crafting_list, crafting_sel, blocks)
-                else:
-                    label = player.label(
-                        meta['inv'], inv_sel, blocks)
+                label = (player.label(crafting_list, crafting_sel, blocks)
+                        if crafting else
+                        player.label(meta['inv'], inv_sel, blocks))
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
