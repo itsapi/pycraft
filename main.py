@@ -1,6 +1,5 @@
 from time import time
 from math import radians
-import sys
 
 from console import CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
