@@ -36,9 +36,9 @@ def game(blocks, meta, map_, save):
     dinv = False # Inventory
     dcraft = False # Crafting
     width = 40
-    FPS = 30 # Max
+    FPS = 15 # Max
     TPS = 10 # Ticks
-    IPS = 30 # Input
+    IPS = 20 # Input
     MPS = 15 # Movement
     SUN_TICK = radians(1/32)
 
