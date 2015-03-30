@@ -5,7 +5,7 @@ import random
 from shutil import rmtree
 
 from terrain import world_gen
-from player import INV_SLOTS
+
 
 default_meta = {
     'name': 'Untitled',
@@ -13,8 +13,8 @@ default_meta = {
     'spawn': 0,
     'player_x': 0,
     'player_y': 1,
-    'inv': [None for i in range(INV_SLOTS)],
-    'ext_inv': []
+    'inv': [],
+    'tick': 0
 }
 
 SAVES_DIR = 'saves'
@@ -31,7 +31,6 @@ def check_map_dir():
 
 
 def new_save(meta):
-
     meta = check_meta(meta)
 
     # Find unique dir name
@@ -54,7 +53,6 @@ def delete_save(save):
 
 
 def load_save(save):
-
     try:
         meta = check_meta(get_meta(save))
     except FileNotFoundError:
@@ -94,7 +92,6 @@ def get_map(save):
 
 
 def check_meta(meta):
-
     # Create meta items if needed
     for key, default in default_meta.items():
         try:
@@ -109,7 +106,6 @@ def check_meta(meta):
 
 
 def check_map(data, meta):
-
     map_ = parse_slices(data)
 
     for key, slice_ in map_.items():
@@ -128,7 +124,6 @@ def check_map(data, meta):
 
 
 def parse_slices(data):
-
     slices = {}
 
     for line in data:
@@ -143,14 +138,12 @@ def parse_slices(data):
 
 
 def save_meta(save, meta):
-
     # Save meta file
     with open(meta_path(save), 'w') as f:
         json.dump(meta, f)
 
 
 def save_map(save, slices):
-
     # Group slices by chunk
     chunks = {}
     for pos, slice_ in slices.items():
@@ -176,6 +169,5 @@ def save_map(save, slices):
 
 
 def list_saves():
-
     return [(save, get_meta(save)) for save in os.listdir(SAVES_DIR)
         if os.path.isdir(save_path(save))]

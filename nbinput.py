@@ -26,7 +26,7 @@ class NonBlockingInput:
 
     def char(self):
         try:
-            return self.impl.char().replace('\r', '\n').replace('\r\n', '\n')
+            return self.impl.char().replace('\r\n', '\n').replace('\r', '\n')
         except:
             return None
 
