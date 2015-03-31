@@ -182,7 +182,7 @@ def game(blocks, meta, map_, save):
 
                     last_move = time()
 
-                dcraft = False
+                dcraft, dcraftC, dcraftN = False, False, False
                 if crafting:
                     # Craft if player pressed craft
                     meta['inv'], inv_sel, crafting_list, dcraftC = \
