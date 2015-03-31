@@ -106,11 +106,8 @@ def biome(pos, meta):
         if random.random() <= 0.05:
             biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
-    if not biome_type:
-        # If not plains or forest, it's normal
-        return .05
-    else:
-        return max(set(biome_type), key=biome_type.count)
+    # If not plains or forest, it's normal
+    return max(set(biome_type), key=biome_type.count) if biome_type else .05
 
 
 def add_ores(slice_, pos, meta, blocks, slice_height_):
