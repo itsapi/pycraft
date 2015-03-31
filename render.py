@@ -171,6 +171,8 @@ def get_lights(_map, start_x, blocks):
 
 
 def render_grid(title, selected, grid, blocks, max_height, sel=None):
+    selected_slot = lambda num: colorStr(num, bg=(RED if selected else BLUE))
+
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
@@ -224,7 +226,7 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=block_char,
-            n=colorStr(num, bg=RED) if selected and i == sel else num,
+            n=selected_slot(num) if i == sel else num,
             v=v,
             trail=trailing
         ))
