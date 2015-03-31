@@ -32,10 +32,7 @@ def slice_height(pos, meta):
             gradient_l = random.randint(1, world_gen['min_grad'])
             gradient_r = random.randint(1, world_gen['min_grad'])
 
-            if x < pos:
-                gradient = gradient_r
-            else:
-                gradient = gradient_l
+            gradient = gradient_r if x < pos else gradient_l
 
             # Check if still in range with new gradient
             if abs(pos-x) / gradient < world_gen['max_hill']:
@@ -103,7 +100,7 @@ def biome(pos, meta):
         random.seed(str(meta['seed']) + str(boime_x) + 'biome')
 
         # Generate a biome marker with a 5% chance
-        if random.random() <= 0.05:
+        if random.random() <= .05:
             biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
     # If not plains or forest, it's normal
