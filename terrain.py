@@ -171,10 +171,7 @@ def gen_slice(pos, meta, blocks):
 def detect_edges(map_, edges):
     slices = []
     for pos in range(*edges):
-        try:
-            # If it doesn't exist add the pos to the list
-            map_[str(pos)]
-        except KeyError:
+        if not str(pos) in map_:
             slices.append(pos)
 
     return slices
