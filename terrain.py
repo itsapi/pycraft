@@ -32,10 +32,7 @@ def slice_height(pos, meta):
             gradient_l = random.randint(1, world_gen['min_grad'])
             gradient_r = random.randint(1, world_gen['min_grad'])
 
-            if x < pos:
-                gradient = gradient_r
-            else:
-                gradient = gradient_l
+            gradient = gradient_r if x < pos else gradient_l
 
             # Check if still in range with new gradient
             if abs(pos-x) / gradient < world_gen['max_hill']:
@@ -103,14 +100,11 @@ def biome(pos, meta):
         random.seed(str(meta['seed']) + str(boime_x) + 'biome')
 
         # Generate a biome marker with a 5% chance
-        if random.random() <= 0.05:
+        if random.random() <= .05:
             biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
-    if not biome_type:
-        # If not plains or forest, it's normal
-        return .05
-    else:
-        return max(set(biome_type), key=biome_type.count)
+    # If not plains or forest, it's normal
+    return max(set(biome_type), key=biome_type.count) if biome_type else .05
 
 
 def add_ores(slice_, pos, meta, blocks, slice_height_):
@@ -171,10 +165,7 @@ def gen_slice(pos, meta, blocks):
 def detect_edges(map_, edges):
     slices = []
     for pos in range(*edges):
-        try:
-            # If it doesn't exist add the pos to the list
-            map_[str(pos)]
-        except KeyError:
+        if not str(pos) in map_:
             slices.append(pos)
 
     return slices
