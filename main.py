@@ -210,7 +210,7 @@ def game(blocks, meta, map_, save):
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
                         player.get_crafting(meta['inv'], crafting_list,
-                                            crafting_sel, blocks)
+                                            crafting_sel, blocks, dcraftC)
 
                 dc = player.move_cursor(inp)
                 cursor = (cursor + dc) % 6
