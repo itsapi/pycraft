@@ -224,7 +224,7 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=block_char,
-            n=colorStr(num, bg=RED) if i == sel else num,
+            n=colorStr(num, bg=RED) if selected and i == sel else num,
             v=v,
             trail=trailing
         ))
