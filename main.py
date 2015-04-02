@@ -23,7 +23,7 @@ def main():
         print(CLS)
 
 
-def game(blocks, meta, map_, save):
+def game(blocks, meta, save):
     x = meta['player_x']
     y = meta['player_y']
     dx = 0

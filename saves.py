@@ -52,21 +52,24 @@ def delete_save(save):
     rmtree(save_path(save))
 
 
-def load_save(save):
+def load_meta(save):
     try:
         meta = check_meta(get_meta(save))
     except FileNotFoundError:
         meta = default_meta
 
+    save_meta(save, meta)
+    return meta, save
+
+
+def load_chunk(save, chunk):
     try:
-        map_ = check_map(get_map(save), meta)
+        map_ = check_map(get_chunk(save, chunk))
     except FileNotFoundError:
         map_ = {}
 
-    save_map(save, map_)
-    save_meta(save, meta)
-
-    return meta, map_, save
+    save_map(save, chunk, map_)
+    return map_, save
 
 
 def get_meta(save):
@@ -76,19 +79,16 @@ def get_meta(save):
     return data
 
 
-def get_map(save):
-    map_ = []
+def get_chunk(save, chunk):
+    data = []
 
-    chunks = (file_ for file_ in os.listdir(save_path(save))
-              if file_.endswith(CHUNK_EXT))
-    for chunk in chunks:
+    chunk_file = save_path(save, chunk + CHUNK_EXT)
 
-        with open(save_path(save, chunk)) as f:
+    if os.path.isfile(chunk_file):
+        with open(chunk_file) as f:
             data = f.readlines()
 
-        map_ += data
-
-    return map_
+    return data
 
 
 def check_meta(meta):
@@ -105,7 +105,7 @@ def check_meta(meta):
     return meta
 
 
-def check_map(data, meta):
+def check_map(data):
     map_ = parse_slices(data)
 
     for key, slice_ in map_.items():
@@ -143,29 +143,21 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def save_map(save, slices):
-    # Group slices by chunk
-    chunks = {}
-    for pos, slice_ in slices.items():
-        try:
-            chunks[chunk_num(pos)].update({pos: slice_})
-        except KeyError:
-            chunks[chunk_num(pos)] = {pos: slice_}
+def save_map(save, chunk, new_slices):
+    chunk_file = save_path(save, chunk + CHUNK_EXT)
 
-    # Update chunk files
-    for num, chunk in chunks.items():
-        # Update slices in chunk file with new slices
-        try:
-            with open(save_path(save, str(num) + CHUNK_EXT)) as f:
-                slices = parse_slices(f.readlines())
-        except (OSError, IOError):
-            slices = {}
-        slices.update(chunk)
+    # Update slices in chunk file with new slices
+    try:
+        with open(chunk_file) as f:
+            slices = parse_slices(f.readlines())
+    except (OSError, IOError):
+        slices = {}
+    slices.update(new_slices)
 
-        # Write slices back to file
-        with open(save_path(save, str(num) + CHUNK_EXT), 'w') as f:
-            for pos, slice_ in slices.items():
-                f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
+    # Write slices back to file
+    with open(chunk_file, 'w') as f:
+        for pos, slice_ in slices.items():
+            f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
 
 
 def list_saves():
