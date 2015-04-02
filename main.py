@@ -57,6 +57,7 @@ def game(blocks, meta, save):
     inv_sel = 0
     c_hidden = True
     new_slices = {}
+    map_ = {}
     alive = True
 
     crafting_list, crafting_sel = player.get_crafting(
@@ -76,9 +77,15 @@ def game(blocks, meta, save):
 
             # Generates new terrain
             slice_list = terrain.detect_edges(map_, extended_edges)
-            for pos in slice_list:
-                new_slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
-                map_[str(pos)] = new_slices[str(pos)]
+            for chunk_num in set(i // terrain.world_gen['chunk_size'] for i in slice_list):
+                chunk = saves.load_chunk(save, chunk_num)
+                for i in range(terrain.world_gen['chunk_size']):
+                    pos = i + chunk_num * terrain.world_gen['chunk_size']
+                    if not str(pos) in chunk:
+                        slice_ = terrain.gen_slice(pos, meta, blocks)
+                        chunk[str(pos)] = slice_
+                        new_slices[str(pos)] = slice_
+                map_.update(chunk)
 
             # Save new terrain to file
             if new_slices:

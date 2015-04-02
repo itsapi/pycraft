@@ -68,8 +68,8 @@ def load_chunk(save, chunk):
     except FileNotFoundError:
         map_ = {}
 
-    save_map(save, chunk, map_)
-    return map_, save
+    save_map(save, map_)
+    return map_
 
 
 def get_meta(save):
@@ -82,7 +82,7 @@ def get_meta(save):
 def get_chunk(save, chunk):
     data = []
 
-    chunk_file = save_path(save, chunk + CHUNK_EXT)
+    chunk_file = save_path(save, str(chunk) + CHUNK_EXT)
 
     if os.path.isfile(chunk_file):
         with open(chunk_file) as f:
@@ -143,21 +143,31 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def save_map(save, chunk, new_slices):
-    chunk_file = save_path(save, chunk + CHUNK_EXT)
+def save_map(save, new_slices):
+    # Group slices by chunk
+    chunks = {}
+    for pos, slice_ in new_slices.items():
+        try:
+            chunks[chunk_num(pos)].update({pos: slice_})
+        except KeyError:
+            chunks[chunk_num(pos)] = {pos: slice_}
 
-    # Update slices in chunk file with new slices
-    try:
-        with open(chunk_file) as f:
-            slices = parse_slices(f.readlines())
-    except (OSError, IOError):
-        slices = {}
-    slices.update(new_slices)
+    # Update chunk files
+    for num, chunk in chunks.items():
+        chunk_file = save_path(save, str(num) + CHUNK_EXT)
 
-    # Write slices back to file
-    with open(chunk_file, 'w') as f:
-        for pos, slice_ in slices.items():
-            f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
+        # Update slices in chunk file with new slices
+        try:
+            with open(chunk_file) as f:
+                slices = parse_slices(f.readlines())
+        except (OSError, IOError):
+            slices = {}
+        slices.update(new_slices)
+
+        # Write slices back to file
+        with open(chunk_file, 'w') as f:
+            for pos, slice_ in slices.items():
+                f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
 
 
 def list_saves():
