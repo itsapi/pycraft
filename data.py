@@ -186,7 +186,7 @@ blocks = {
         'breakable': True,
         'hierarchy': 10,
         'recipe': {
-            '|': 1,
+            '/': 1,
             'x': 1
         },
         'crafts': 4,
