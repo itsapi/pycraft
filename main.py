@@ -1,7 +1,7 @@
 from time import time
 from math import radians
 
-from console import CLS, SHOW_CUR, HIDE_CUR
+from console import CLS, SHOW_CUR, HIDE_CUR, debug
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server
 
