@@ -1,5 +1,7 @@
 import sys
 
+DEBUG = True
+
 
 def getTerminalSize():
     import os
@@ -39,8 +41,7 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
     
 
-log = open('log', 'w')
-debug = lambda m: print(m, file=log)
+debug = lambda m: print(repr(m), file=open('log', 'a')) if DEBUG else None
 
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
