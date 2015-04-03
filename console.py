@@ -41,7 +41,8 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
     
 
-debug = lambda m: print(repr(m), file=open('log', 'a')) if DEBUG else None
+debug = lambda *m: print(*m, file=open('log', 'a')) if DEBUG else None
+
 
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
