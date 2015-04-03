@@ -9,6 +9,8 @@ import saves, ui, terrain, player, render, server
 def main():
     print(HIDE_CUR)
     print(CLS)
+    
+    debug('Start\n')
 
     # Menu loop
     try:

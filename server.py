@@ -3,6 +3,8 @@ from math import radians
 
 import terrain, saves, render, network
 
+from console import debug
+
 
 chunk_size = terrain.world_gen['chunk_size']
 blocks = render.gen_blocks()
@@ -81,6 +83,8 @@ class Server:
         self.login(name)
 
     def _handler(self, sock, data):
+        debug('Method: '+data['method'])
+        
         if data['method'] == 'login':
             return self.login(data['args'], sock)
         else:
@@ -127,9 +131,11 @@ class Server:
         return dt
 
     def login(self, name, sock=None):
+        debug('Lgging in: '+name)
         if name not in self._players:
             # Load new player if new
             self._meta = saves.load_player(name, self._meta)
+            debug('Creating: '+name)
             
             # Store socket
             if sock:

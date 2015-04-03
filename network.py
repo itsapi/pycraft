@@ -3,6 +3,8 @@ import threading
 import socketserver
 import json
 
+from console import debug
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
