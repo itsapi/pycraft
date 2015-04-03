@@ -29,11 +29,12 @@ def requestHandlerFactory(data_handler):
             super().__init__(*args)
 
         def handle(self):
-            data = json.loads(str(self.request.recv(1024), 'ascii'))
+            while True:
+                data = json.loads(str(self.request.recv(1024), 'ascii'))
+                if not data: break
 
-            response = self.data_handler(self.request, data)
-
-            self.request.sendall(bytes(json.dumps(response), 'ascii'))
+                response = self.data_handler(self.request, data)
+                self.request.sendall(bytes(json.dumps(response), 'ascii'))
 
     return ThreadedTCPRequestHandler
 
