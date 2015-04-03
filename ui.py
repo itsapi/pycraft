@@ -196,8 +196,8 @@ def name():
 
     name = None
     while not name:
-        name = input('Type your name: ')
-        print(REDRAW)
+        name = input('Type your name: ' + SHOW_CUR)
+        print(HIDE_CUR + REDRAW)
 
     print(CLS)
     return name
