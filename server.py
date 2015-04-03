@@ -12,11 +12,25 @@ SUN_TICK = radians(1/32)
 TPS = 10 # Ticks
 
 
+class RemoteServer:
+    def __init__(self, name, addr):
+        self._name = name
+        self._remote = addr
+
+    def load_chunks(self, slice_list):
+        pass
+
+
 class Server:
-    def __init__(self, save):
+    def __init__(self, save, name):
+        self._players = {}
+        self._name = name
         self._save = save
+        self._map = {}
         self._meta = saves.load_meta(save)
         self._last_tick = time()
+
+        self.login(name)
 
     def load_chunks(self, slice_list):
         new_slices = {}
@@ -37,7 +51,7 @@ class Server:
         if gen_slices:
             saves.save_map(self._save, gen_slices)
 
-        return new_slices
+        self._map.update(new_slices)
 
     def tick(self):
         # Increase tick
@@ -50,6 +64,11 @@ class Server:
 
         return dt
 
+    def login(self, name):
+        if name not in self._players:
+            self._players[name] = saves.load_player(name, self._meta)
+            return self._players[name]
+
     def get_meta(self, prop=None):
         return self._meta[prop] if prop else self._meta
 
@@ -59,3 +78,31 @@ class Server:
     @property
     def save(self):
         return self._save
+
+    @property
+    def me(self):
+        return self._players[self._name]
+
+    @property
+    def pos(self):
+        return self.me['player_x'], self.me['player_y']
+
+    @pos.setter
+    def pos(self, pos):
+        self.me['player_x'], self.me['player_y'] = pos
+
+    @property
+    def inv(self):
+        return self.me['inv']
+
+    @inv.setter
+    def inv(self, inv):
+        self.me['inv'] = inv
+
+    @property
+    def map_(self):
+        return self._map
+
+    def save_blocks(self, blocks):
+        self._map = saves.save_blocks(self._save, self._map, blocks)
+

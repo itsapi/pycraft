@@ -65,7 +65,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
             blocks[ inv[inv_sel]['block'] ]['breakable']):
 
             # Place block in world from selected inv slot
-            slices[block_x] = map_[block_x]
+            slices[block_x] = {}
             slices[block_x][block_y] = inv[inv_sel]['block']
             inv, inv_sel = rem_inv(inv, inv_sel)
             dinv = True
@@ -75,7 +75,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
 
             # Destroy block
             block = map_[block_x][block_y]
-            slices[block_x] = map_[block_x]
+            slices[block_x] = {}
             slices[block_x][block_y] = ' '
             inv = add_inv(inv, block)
             dinv = True

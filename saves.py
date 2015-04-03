@@ -11,10 +11,14 @@ default_meta = {
     'name': 'Untitled',
     'seed': '',
     'spawn': 0,
+    'tick': 0,
+    'players': {}
+}
+
+default_player = {
     'player_x': 0,
     'player_y': 1,
-    'inv': [],
-    'tick': 0
+    'inv': []
 }
 
 SAVES_DIR = 'saves'
@@ -50,6 +54,12 @@ def new_save(meta):
 
 def delete_save(save):
     rmtree(save_path(save))
+
+
+def load_player(name, meta):
+    if name not in meta['players']:
+        meta['players'][name] = default_player
+    return meta['players'][name]
 
 
 def load_meta(save):
@@ -168,6 +178,18 @@ def save_map(save, new_slices):
         with open(chunk_file, 'w') as f:
             for pos, slice_ in slices.items():
                 f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
+
+
+def save_blocks(save, map_, blocks):
+    new_slices = {}
+
+    for x, col in blocks.items():
+        for y, block in col.items():
+            new_slices[str(x)] = map_[str(x)]
+            map_[str(x)][y] = new_slices[str(x)][y] = block
+
+    save_map(save, new_slices)
+    return map_
 
 
 def list_saves():

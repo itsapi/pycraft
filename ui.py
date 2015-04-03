@@ -154,3 +154,15 @@ def help_():
 
     print(CLS)
     return None
+
+
+def name():
+    print(REDRAW)
+
+    name = None
+    while not name:
+        name = input('Type your name: ')
+        print(REDRAW)
+
+    print(CLS)
+    return name
