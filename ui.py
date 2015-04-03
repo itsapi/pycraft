@@ -123,13 +123,26 @@ def new():
     return save
 
 
-def pause():
+def pause(addr):
     print(CLS)
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
+        ('Multiplayer', lambda: multiplayer(addr)),
         ('Main Menu', lambda: 'exit')
     ))
+
+
+def multiplayer(port):
+    out = REDRAW + '\n'
+    out += 'Port: {}\n\n'.format(port)
+    out += 'Back...\n'
+    print(out)
+
+    wait_for_input()
+
+    print(CLS)
+    return None
 
 
 def help_():
@@ -148,9 +161,7 @@ def help_():
     out += 'Back...\n'
     print(out)
 
-    with BlockingInput() as bi:
-        while not str(bi.char()) in ' \n':
-            pass
+    wait_for_input()
 
     print(CLS)
     return None
@@ -166,3 +177,9 @@ def name():
 
     print(CLS)
     return name
+
+
+def wait_for_input():
+    with BlockingInput() as bi:
+        while not str(bi.char()) in ' \n':
+            pass

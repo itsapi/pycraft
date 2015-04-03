@@ -13,7 +13,7 @@ TPS = 10 # Ticks
 
 class RemoteServer:
     """ Comunicate with remote server. """
-    
+
     def __init__(self, name, ip, port):
         self._sock = network.connect(ip, port)
         self._map = {}
@@ -26,7 +26,7 @@ class RemoteServer:
 
     def load_chunks(self, slice_list):
         self._map.update(self._send('load_chunks', [slice_list]))
-        
+
     def tick(self):
         return self._send('tick')
 
@@ -72,7 +72,7 @@ class Server:
         self._meta = saves.load_meta(save)
         self._last_tick = time()
 
-        self.stop_server = network.start(self._handler)
+        self.port, self.stop_server = network.start(self._handler)
 
         self.login(name)
 

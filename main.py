@@ -238,7 +238,7 @@ def game(blocks, server):
                 server.pos = x, y
                 saves.save_meta(server.save, server.get_meta())
                 redraw = True
-                if ui.pause() == 'exit':
+                if ui.pause(server.port) == 'exit':
                     game = False
 
             dt = server.tick()

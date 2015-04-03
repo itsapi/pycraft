@@ -40,7 +40,7 @@ def requestHandlerFactory(data_handler):
 
 def start(data_handler):
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = 'localhost', 0
+    HOST, PORT = '0.0.0.0', 0
 
     server = ThreadedTCPServer((HOST, PORT), requestHandlerFactory(data_handler))
     ip, port = server.server_address
@@ -54,4 +54,4 @@ def start(data_handler):
 
     print('Server loop running in thread:', server_thread.name)
 
-    return server.shutdown
+    return port, server.shutdown
