@@ -10,10 +10,9 @@ def main():
     print(HIDE_CUR)
     print(CLS)
 
-    name = ui.name()
-
     # Menu loop
     try:
+        name = ui.name()
         saves.check_map_dir()
         blocks = server.blocks
 
