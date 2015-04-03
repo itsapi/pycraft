@@ -11,21 +11,22 @@ def main():
     print(CLS)
 
     saves.check_map_dir()
-    blocks = render.gen_blocks()
+    blocks = server.blocks
 
     # Menu loop
     try:
         while True:
-            game(blocks, *ui.main())
+            save = ui.main()
+            game(blocks, server.Server(save))
 
     finally:
         print(SHOW_CUR)
         print(CLS)
 
 
-def game(blocks, meta, save):
-    x = meta['player_x']
-    y = meta['player_y']
+def game(blocks, server):
+    x = server.meta['player_x']
+    y = server.meta['player_y']
     dx = 0
     dy = 0
     dt = 0 # Tick
@@ -36,16 +37,13 @@ def game(blocks, meta, save):
     dcraft = False # Crafting
     width = 40
     FPS = 15 # Max
-    TPS = 10 # Ticks
     IPS = 20 # Input
     MPS = 15 # Movement
-    SUN_TICK = radians(1/32)
 
     old_sun = None
     old_edges = None
     redraw = True
     last_out = time()
-    last_tick = time()
     last_inp = time()
     last_move = time()
     inp = None
@@ -61,7 +59,7 @@ def game(blocks, meta, save):
     alive = True
 
     crafting_list, crafting_sel = player.get_crafting(
-        meta['inv'],
+        server.meta['inv'],
         crafting_list,
         crafting_sel,
         blocks
@@ -76,7 +74,7 @@ def game(blocks, meta, save):
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
             slice_list = terrain.detect_edges(map_, extended_edges)
-            map_.update(server.load_chunks(save, meta, slice_list, blocks))
+            map_.update(server.load_chunks(slice_list))
 
             # Moving view
             if not edges == old_edges:
@@ -86,7 +84,7 @@ def game(blocks, meta, save):
                 redraw = True
 
             # Sun has moved
-            sun = render.sun(meta['tick'], width)
+            sun = render.sun(server.meta['tick'], width)
             if not sun == old_sun:
                 old_sun = sun
                 redraw = True
@@ -98,7 +96,7 @@ def game(blocks, meta, save):
                 last_out = time()
 
                 cursor_colour, can_break = player.cursor_colour(
-                    x, y, cursor, map_, blocks, meta['inv'], inv_sel
+                    x, y, cursor, map_, blocks, server.meta['inv'], inv_sel
                 )
 
                 objects = player.assemble_player(
@@ -110,7 +108,7 @@ def game(blocks, meta, save):
                         crafting_list, crafting_sel, blocks)
                 else:
                     label = player.label(
-                        meta['inv'], inv_sel, blocks)
+                        server.meta['inv'], inv_sel, blocks)
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -118,7 +116,7 @@ def game(blocks, meta, save):
                 )
 
                 inv_grid = render.render_grid(
-                    player.INV_TITLE, not crafting, meta['inv'], blocks,
+                    player.INV_TITLE, not crafting, server.meta['inv'], blocks,
                     terrain.world_gen['height']-1, inv_sel
                 )
 
@@ -132,7 +130,7 @@ def game(blocks, meta, save):
                     blocks,
                     sun,
                     lights,
-                    meta['tick']
+                    server.meta['tick']
                 )
             else:
                 df = 0
@@ -177,22 +175,22 @@ def game(blocks, meta, save):
                 dcraft, dcraftC, dcraftN = False, False, False
                 if crafting:
                     # Craft if player pressed craft
-                    meta['inv'], inv_sel, crafting_list, dcraftC = \
-                        player.crafting(str(inp), meta['inv'], inv_sel,
+                    server.meta['inv'], inv_sel, crafting_list, dcraftC = \
+                        player.crafting(str(inp), server.meta['inv'], inv_sel,
                             crafting_list, crafting_sel, blocks)
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
-                        player.craft_num(str(inp), meta['inv'], crafting_list,
+                        player.craft_num(str(inp), server.meta['inv'], crafting_list,
                             crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
                 else:
                     # Don't allow breaking/placing blocks if in crafting menu
-                    new_slices, meta['inv'], inv_sel, dinv = \
+                    new_slices, server.meta['inv'], inv_sel, dinv = \
                         player.cursor_func(
                             str(inp), map_, x, y, cursor,
-                            can_break, inv_sel, meta, blocks
+                            can_break, inv_sel, server.meta, blocks
                         )
 
                 map_.update(new_slices)
@@ -200,7 +198,7 @@ def game(blocks, meta, save):
                 # Update crafting list
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
-                        player.get_crafting(meta['inv'], crafting_list,
+                        player.get_crafting(server.meta['inv'], crafting_list,
                                             crafting_sel, blocks, dcraftC)
 
                 dc = player.move_cursor(inp)
@@ -211,12 +209,12 @@ def game(blocks, meta, save):
                     crafting_sel = ((crafting_sel + ds) % len(crafting_list)
                                        if len(crafting_list) else 0)
                 else:
-                    inv_sel = ((inv_sel + ds) % len(meta['inv'])
-                                  if len(meta['inv']) else 0)
+                    inv_sel = ((inv_sel + ds) % len(server.meta['inv'])
+                                  if len(server.meta['inv']) else 0)
 
                 if dx or dy or dc or ds or dinv or dcraft:
-                    meta['player_x'], meta['player_y'] = x, y
-                    saves.save_meta(save, meta)
+                    server.meta['player_x'], server.meta['player_y'] = x, y
+                    saves.save_meta(server.save, server.meta)
                     redraw = True
                 if dx or dy:
                     c_hidden = True
@@ -232,19 +230,13 @@ def game(blocks, meta, save):
 
             # Pause game
             if char in ' \n':
-                meta['player_x'], meta['player_y'] = x, y
-                saves.save_meta(save, meta)
+                server.meta['player_x'], server.meta['player_y'] = x, y
+                saves.save_meta(server.save, server.meta)
                 redraw = True
                 if ui.pause() == 'exit':
                     game = False
 
-            # Increase tick
-            if time() >= (1/TPS) + last_tick:
-                dt = 1
-                meta['tick'] += SUN_TICK
-                last_tick = time()
-            else:
-                dt = 0
+            dt = server.tick()
 
 
 if __name__ == '__main__':

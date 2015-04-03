@@ -59,7 +59,7 @@ def load_meta(save):
         meta = default_meta
 
     save_meta(save, meta)
-    return meta, save
+    return meta
 
 
 def load_chunk(save, chunk):

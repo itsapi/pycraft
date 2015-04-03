@@ -91,7 +91,7 @@ def load():
     saves_list = saves.list_saves()
     return menu(
         'Load save',
-        ([(save[1]['name'], lambda_gen(saves.load_meta, save[0]))
+        ([(save[1]['name'], lambda: save[0])
           for save in saves_list] + [back])
     )
 
@@ -120,7 +120,7 @@ def new():
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
-    return saves.load_meta(save)
+    return save
 
 
 def pause():
