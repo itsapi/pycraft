@@ -3,7 +3,7 @@ from math import radians
 
 from console import CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player, render
+import saves, ui, terrain, player, render, server
 
 
 def main():
@@ -43,7 +43,7 @@ def game(blocks, meta, save):
 
     old_sun = None
     old_edges = None
-    redraw = False
+    redraw = True
     last_out = time()
     last_tick = time()
     last_inp = time()
@@ -75,23 +75,8 @@ def game(blocks, meta, save):
             edges = (x - int(width / 2), x + int(width / 2))
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
-            # Generates new terrain
             slice_list = terrain.detect_edges(map_, extended_edges)
-            for chunk_num in set(i // terrain.world_gen['chunk_size'] for i in slice_list):
-                chunk = saves.load_chunk(save, chunk_num)
-                for i in range(terrain.world_gen['chunk_size']):
-                    pos = i + chunk_num * terrain.world_gen['chunk_size']
-                    if not str(pos) in chunk:
-                        slice_ = terrain.gen_slice(pos, meta, blocks)
-                        chunk[str(pos)] = slice_
-                        new_slices[str(pos)] = slice_
-                map_.update(chunk)
-
-            # Save new terrain to file
-            if new_slices:
-                saves.save_map(save, new_slices)
-                new_slices = {}
-                redraw = True
+            map_.update(server.load_chunks(save, meta, slice_list, blocks))
 
             # Moving view
             if not edges == old_edges:
