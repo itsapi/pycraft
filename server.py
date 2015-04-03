@@ -84,7 +84,7 @@ class Server:
 
     def _handler(self, sock, data):
         debug('Method: '+data['method'])
-        
+
         if data['method'] == 'login':
             return self.login(data['args'], sock)
         else:
@@ -136,11 +136,11 @@ class Server:
             # Load new player if new
             self._meta = saves.load_player(name, self._meta)
             debug('Creating: '+name)
-            
+
             # Store socket
             if sock:
                 self._players[name] = sock
-            
+
             return self._meta['players'][name]
 
     def get_meta(self, prop=None):

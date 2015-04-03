@@ -18,9 +18,13 @@ def connect(ip, port):
 
 def send(sock, data):
     try:
+        debug('Sending:', data)
         sock.sendall(bytes(json.dumps(data), 'ascii'))
         return json.loads(str(sock.rfile.read(), 'ascii'))
+        debug('Received:', data)
+        return data
     except OSError:
+        debug('Socket closing')
         sock.close()
 
 
