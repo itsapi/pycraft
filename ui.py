@@ -104,7 +104,7 @@ def delete():
         'Delete save',
         ([(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
           for save in saves_list] + [back])
-    )
+    ), True
 
 
 def new():
@@ -196,8 +196,8 @@ def name():
 
     name = None
     while not name:
-        name = input('Type your name: ')
-        print(REDRAW)
+        name = input('Type your name: ' + SHOW_CUR)
+        print(HIDE_CUR + REDRAW)
 
     print(CLS)
     return name
