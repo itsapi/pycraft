@@ -37,7 +37,10 @@ def supported_chars(*tests):
         except UnicodeEncodeError:
             pass
     return '?' * len(tests[0])
+    
 
+log = open('log', 'w')
+debug = lambda m: print(m, file=log)
 
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
