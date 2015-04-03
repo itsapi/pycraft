@@ -17,7 +17,10 @@ class RemoteServer:
     def __init__(self, name, ip, port):
         self._sock = network.connect(ip, int(port))
         self._map = {}
+
         self._name = name
+        self.login()
+
         self._meta = self._send('get_meta')
         self._me = self._send('get_player', [self._name])
 
