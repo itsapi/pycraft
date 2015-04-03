@@ -51,11 +51,10 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
+def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
     block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
     dinv = False
-    inv = meta['inv']
 
     slices = {}
 
@@ -84,8 +83,8 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     return slices, inv, inv_sel, dinv
 
 
-def respawn(meta):
-    return meta['spawn'], 1
+def respawn(spawn):
+    return spawn, 1
 
 
 def move_cursor(inp):

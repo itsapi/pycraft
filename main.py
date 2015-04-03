@@ -25,8 +25,8 @@ def main():
 
 
 def game(blocks, server):
-    x = server.meta['player_x']
-    y = server.meta['player_y']
+    x = server.get_meta('player_x')
+    y = server.get_meta('player_y')
     dx = 0
     dy = 0
     dt = 0 # Tick
@@ -59,7 +59,7 @@ def game(blocks, server):
     alive = True
 
     crafting_list, crafting_sel = player.get_crafting(
-        server.meta['inv'],
+        server.get_meta('inv'),
         crafting_list,
         crafting_sel,
         blocks
@@ -84,7 +84,7 @@ def game(blocks, server):
                 redraw = True
 
             # Sun has moved
-            sun = render.sun(server.meta['tick'], width)
+            sun = render.sun(server.get_meta('tick'), width)
             if not sun == old_sun:
                 old_sun = sun
                 redraw = True
@@ -96,7 +96,7 @@ def game(blocks, server):
                 last_out = time()
 
                 cursor_colour, can_break = player.cursor_colour(
-                    x, y, cursor, map_, blocks, server.meta['inv'], inv_sel
+                    x, y, cursor, map_, blocks, server.get_meta('inv'), inv_sel
                 )
 
                 objects = player.assemble_player(
@@ -108,7 +108,7 @@ def game(blocks, server):
                         crafting_list, crafting_sel, blocks)
                 else:
                     label = player.label(
-                        server.meta['inv'], inv_sel, blocks)
+                        server.get_meta('inv'), inv_sel, blocks)
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -116,7 +116,7 @@ def game(blocks, server):
                 )
 
                 inv_grid = render.render_grid(
-                    player.INV_TITLE, not crafting, server.meta['inv'], blocks,
+                    player.INV_TITLE, not crafting, server.get_meta('inv'), blocks,
                     terrain.world_gen['height']-1, inv_sel
                 )
 
@@ -130,7 +130,7 @@ def game(blocks, server):
                     blocks,
                     sun,
                     lights,
-                    server.meta['tick']
+                    server.get_meta('tick')
                 )
             else:
                 df = 0
@@ -138,7 +138,7 @@ def game(blocks, server):
             # Respawn player if dead
             if not alive and df:
                 alive = True
-                x, y = player.respawn(meta)
+                x, y = player.respawn(server.get_meta('spawn'))
 
             # Player falls when no solid block below it
             if dt and not terrain.is_solid(blocks, map_[str(x)][y+1]):
@@ -175,30 +175,32 @@ def game(blocks, server):
                 dcraft, dcraftC, dcraftN = False, False, False
                 if crafting:
                     # Craft if player pressed craft
-                    server.meta['inv'], inv_sel, crafting_list, dcraftC = \
-                        player.crafting(str(inp), server.meta['inv'], inv_sel,
+                    inv, inv_sel, crafting_list, dcraftC = \
+                        player.crafting(str(inp), server.get_meta('inv'), inv_sel,
                             crafting_list, crafting_sel, blocks)
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
-                        player.craft_num(str(inp), server.meta['inv'], crafting_list,
+                        player.craft_num(str(inp), server.get_meta('inv'), crafting_list,
                             crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
                 else:
                     # Don't allow breaking/placing blocks if in crafting menu
-                    new_slices, server.meta['inv'], inv_sel, dinv = \
+                    new_slices, inv, inv_sel, dinv = \
                         player.cursor_func(
                             str(inp), map_, x, y, cursor,
-                            can_break, inv_sel, server.meta, blocks
+                            can_break, inv_sel, server.get_meta('inv'), blocks
                         )
+
+                server.set_meta('inv', inv)
 
                 map_.update(new_slices)
 
                 # Update crafting list
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
-                        player.get_crafting(server.meta['inv'], crafting_list,
+                        player.get_crafting(server.get_meta('inv'), crafting_list,
                                             crafting_sel, blocks, dcraftC)
 
                 dc = player.move_cursor(inp)
@@ -209,12 +211,13 @@ def game(blocks, server):
                     crafting_sel = ((crafting_sel + ds) % len(crafting_list)
                                        if len(crafting_list) else 0)
                 else:
-                    inv_sel = ((inv_sel + ds) % len(server.meta['inv'])
-                                  if len(server.meta['inv']) else 0)
+                    inv_sel = ((inv_sel + ds) % len(server.get_meta('inv'))
+                                  if len(server.get_meta('inv')) else 0)
 
                 if dx or dy or dc or ds or dinv or dcraft:
-                    server.meta['player_x'], server.meta['player_y'] = x, y
-                    saves.save_meta(server.save, server.meta)
+                    server.set_meta('player_x', x)
+                    server.set_meta('player_y', y)
+                    saves.save_meta(server.save, server.get_meta())
                     redraw = True
                 if dx or dy:
                     c_hidden = True
@@ -230,8 +233,9 @@ def game(blocks, server):
 
             # Pause game
             if char in ' \n':
-                server.meta['player_x'], server.meta['player_y'] = x, y
-                saves.save_meta(server.save, server.meta)
+                server.set_meta('player_x', x)
+                server.set_meta('player_y', y)
+                saves.save_meta(server.save, server.get_meta())
                 redraw = True
                 if ui.pause() == 'exit':
                     game = False
