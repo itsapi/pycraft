@@ -31,7 +31,7 @@ class RemoteServer:
         return self._send('tick')
 
     def login(self):
-        self._player = self._send('login', [self._name])
+        self._player = self._send('login', self._name)
 
     def get_meta(self, prop=None):
         return self._send('get_meta', [prop])
@@ -65,9 +65,10 @@ class RemoteServer:
 class Server:
     """ The 'remote' server. """
     def __init__(self, save, name):
-        self._players = {}
         self._name = name
         self._save = save
+        # {Loggedin player: socket}
+        self._players = {}
         self._map = {}
         self._meta = saves.load_meta(save)
         self._last_tick = time()
@@ -76,17 +77,18 @@ class Server:
 
         self.login(name)
 
-    def _handler(self, data):
-        return {
-            'load_chunks': self.load_chunks,
-            'tick': self.tick,
-            'login': self.login,
-            'get_meta': self.get_meta,
-            'set_meta': self.set_meta,
-            'get_player': self.get_player,
-            'set_player': self.set_player,
-            'save_blocks': self.save_blocks
-        }[data['method']](*data.get('args', []))
+    def _handler(self, sock, data):
+        if data['method'] == 'login':
+            return self.login(data['args'], sock)
+        else:
+            return {
+                'load_chunks': self.load_chunks,
+                'tick': self.tick,
+                'get_meta': self.get_meta,
+                'get_player': self.get_player,
+                'set_player': self.set_player,
+                'save_blocks': self.save_blocks
+            }[data['method']](*data.get('args', []))
 
     def load_chunks(self, slice_list):
         new_slices = {}
@@ -121,22 +123,25 @@ class Server:
 
         return dt
 
-    def login(self, name):
+    def login(self, name, sock=None):
         if name not in self._players:
-            self._players[name] = saves.load_player(name, self._meta)
-            return self._players[name]
+            # Load new player if new
+            self._meta = saves.load_player(name, self._meta)
+            
+            # Store socket
+            if sock:
+                self._players[name] = sock
+            
+            return self._meta['players'][name]
 
     def get_meta(self, prop=None):
         return self._meta[prop] if prop else self._meta
 
-    def set_meta(self, prop, value):
-        self._meta[prop] = value
-
     def get_player(self, name):
-        return self._players[name]
+        return self._meta['players'][name]
 
     def set_player(self, name, player):
-        self._players[name] = player
+        self._meta['players'][name] = player
 
     @property
     def save(self):
@@ -144,7 +149,7 @@ class Server:
 
     @property
     def _me(self):
-        return self._players[self._name]
+        return self._meta['players'][self._name]
 
     @property
     def pos(self):
@@ -153,6 +158,7 @@ class Server:
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
+        saves.save_meta(self._save, self._meta)
 
     @property
     def inv(self):
