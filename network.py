@@ -19,24 +19,31 @@ def connect(ip, port):
 def send(sock, data):
     try:
         sock.sendall(bytes(json.dumps(data), 'ascii'))
-        return json.loads(str(sock.rfile.read(), 'ascii'))
+
+        data = ''
+        while not data.endswith('\n'):
+            data += str(sock.recv(1024), 'ascii')
+
+        return json.loads(data)
     except OSError:
         sock.close()
 
 
 def requestHandlerFactory(data_handler):
-    class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+    class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         def __init__(self, *args):
             self.data_handler = data_handler
             super().__init__(*args)
 
         def handle(self):
             while True:
-                data = json.loads(str(self.rfile.read(), 'ascii'))
+                data = self.rfile.readline()
                 if not data: break
+                
+                data = json.loads(str(self, 'ascii'))
 
                 response = self.data_handler(self.request, data)
-                self.request.sendall(bytes(json.dumps(response), 'ascii'))
+                self.request.sendall(bytes(json.dumps(response) + '\n', 'ascii'))
 
     return ThreadedTCPRequestHandler
 
