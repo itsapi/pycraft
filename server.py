@@ -1,5 +1,4 @@
 from time import time
-
 from math import radians
 
 import terrain, saves, render
