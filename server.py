@@ -2,7 +2,7 @@ from time import time
 
 from math import radians
 
-import terrain, saves, render
+import terrain, saves, render, network
 
 
 chunk_size = terrain.world_gen['chunk_size']
@@ -30,7 +30,20 @@ class Server:
         self._meta = saves.load_meta(save)
         self._last_tick = time()
 
+        self.stop_server = network.start(self._handler)
+
         self.login(name)
+
+    def _handler(self, data):
+        {
+            'load_chunks': self.load_chunks,
+            'tick': self.tick,
+            'login': self.login,
+            'get_meta': self.get_meta,
+            'set_meta': self.set_meta,
+            'get_player': self.get_player,
+            'set_player': self.set_player
+        }
 
     def load_chunks(self, slice_list):
         new_slices = {}
@@ -75,6 +88,12 @@ class Server:
     def set_meta(self, prop, value):
         self._meta[prop] = value
 
+    def get_player(self, name):
+        return self._players[name]
+
+    def set_player(self, name, player):
+        self._players[name] = player
+
     @property
     def save(self):
         return self._save
@@ -105,4 +124,3 @@ class Server:
 
     def save_blocks(self, blocks):
         self._map = saves.save_blocks(self._save, self._map, blocks)
-
