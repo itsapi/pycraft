@@ -17,9 +17,9 @@ def main():
         blocks = server.blocks
 
         while True:
-            data, load_save = ui.main()
+            data, local = ui.main()
 
-            if load_save:
+            if local:
                 # Local Server
                 game(blocks, server.Server(data, name))
             else:

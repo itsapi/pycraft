@@ -2,7 +2,7 @@ import sys
 import json
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
-from console import CLS, REDRAW, WIDTH, HEIGHT
+from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
 from colors import *
 
 import saves
@@ -58,9 +58,9 @@ def menu(name, options):
 def main():
     """ Loops the main menu until the user loads a save. """
 
-    save = None
-    while not save:
-        save = menu('Main menu', (
+    data = None
+    while not data:
+        data, local = menu('Main menu', (
             ('New Save', new),
             ('Load Save', load),
             ('Delete Save', delete),
@@ -69,7 +69,7 @@ def main():
             ('Exit', sys.exit)
         ))
 
-    return save
+    return data, local
 
 
 def lambda_gen(func, var):
@@ -113,13 +113,15 @@ def new():
     print(REDRAW + title('New save'), end='')
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
-                         + ' (leave blank to cancel): ')
+                         + ' (leave blank to cancel): ' + SHOW_CUR)
+    print(HIDE_CUR)
     if not meta['name']:
         print(CLS)
-        return None
+        return None, True
 
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
-                         + ' (leave blank to randomise): ')
+                         + ' (leave blank to randomise): ' + SHOW_CUR)
+    print(HIDE_CUR)
     save = saves.new_save(meta)
     return save, True
 
@@ -129,14 +131,18 @@ def multiplayer():
 
     print(REDRAW + title('Connect to server'), end='')
 
-    ip = input(colorStr(' Server IP: ', style=BOLD))
+    ip = input(colorStr(' Server IP', style=BOLD)
+               + ' (leave blank to cancel): ' + SHOW_CUR)
+    print(HIDE_CUR)
     if not ip:
         print(CLS)
-        return None
-    port = input(colorStr(' Server port: ', style=BOLD))
+        return None, False
+    port = input(colorStr(' Server port', style=BOLD)
+               + ' (leave blank to cancel): ' + SHOW_CUR)
+    print(HIDE_CUR)
     if not port:
         print(CLS)
-        return None
+        return None, False
 
     return (ip, port), False
 
@@ -146,7 +152,7 @@ def pause(port):
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
-        ('Multiplayer', lambda: show_port(port)),
+        ('Show Port', lambda: show_port(port)),
         ('Main Menu', lambda: 'exit')
     ))
 
