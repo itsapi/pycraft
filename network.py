@@ -19,7 +19,7 @@ def connect(ip, port):
 def send(sock, data):
     try:
         sock.sendall(bytes(json.dumps(data), 'ascii'))
-        return json.loads(str(sock.recv(1024), 'ascii'))
+        return json.loads(str(sock.rfile.read(), 'ascii'))
     except OSError:
         sock.close()
 
@@ -32,7 +32,7 @@ def requestHandlerFactory(data_handler):
 
         def handle(self):
             while True:
-                data = json.loads(str(self.request.recv(1024), 'ascii'))
+                data = json.loads(str(self.rfile.read(), 'ascii'))
                 if not data: break
 
                 response = self.data_handler(self.request, data)
