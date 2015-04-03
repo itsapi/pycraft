@@ -52,6 +52,4 @@ def start(data_handler):
     server_thread.daemon = True
     server_thread.start()
 
-    print('Server loop running in thread:', server_thread.name)
-
     return port, server.shutdown
