@@ -8,14 +8,17 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
-def client(ip, port, message):
+def connect(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((ip, port))
+    return sock
+
+
+def send(sock, data):
     try:
-        sock.sendall(bytes(message, 'ascii'))
-        response = str(sock.recv(1024), 'ascii')
-        print('Received: {}'.format(response))
-    finally:
+        sock.sendall(bytes(json.dumps(data), 'ascii'))
+        return json.loads(str(sock.recv(1024), 'ascii'))
+    except OSError:
         sock.close()
 
 
@@ -26,12 +29,11 @@ def requestHandlerFactory(data_handler):
             super().__init__(*args)
 
         def handle(self):
-            data = json.load(str(self.request.recv(1024), 'ascii'))
+            data = json.loads(str(self.request.recv(1024), 'ascii'))
 
-            self.data_handler(data)
+            response = self.data_handler(data)
 
-            response = bytes('{}: {}'.format(cur_thread.name, data), 'ascii')
-            self.request.sendall(response)
+            self.request.sendall(bytes(json.dumps(response), 'ascii'))
 
     return ThreadedTCPRequestHandler
 

@@ -12,15 +12,58 @@ TPS = 10 # Ticks
 
 
 class RemoteServer:
-    def __init__(self, name, addr):
+    """ Comunicate with remote server. """
+    
+    def __init__(self, name, ip, port):
+        self._sock = network.connect(ip, port)
+        self._map = {}
         self._name = name
-        self._remote = addr
+        self._meta = self._send('get_meta')
+        self._me = self._send('get_player', [self._name])
+
+    def _send(self, method, args=[]):
+        return network.send(self._sock, {'method': method, 'args': args})
 
     def load_chunks(self, slice_list):
-        pass
+        self._map.update(self._send('load_chunks', [slice_list]))
+        
+    def tick(self):
+        return self._send('tick')
+
+    def login(self):
+        self._player = self._send('login', [self._name])
+
+    def get_meta(self, prop=None):
+        return self._send('get_meta', [prop])
+
+    @property
+    def pos(self):
+        return self._me['player_x'], self._me['player_y']
+
+    @pos.setter
+    def pos(self, pos):
+        self._me['player_x'], self._me['player_y'] = pos
+        self._send('set_player', [self._name, self._me])
+
+    @property
+    def inv(self):
+        return self._me['inv']
+
+    @inv.setter
+    def inv(self, inv):
+        self._me['inv'] = inv
+        self._send('set_player', [self._name, self._me])
+
+    @property
+    def map_(self):
+        return self._map
+
+    def save_blocks(self, blocks):
+        self._send('save_blocks', [blocks])
 
 
 class Server:
+    """ The 'remote' server. """
     def __init__(self, save, name):
         self._players = {}
         self._name = name
@@ -34,15 +77,16 @@ class Server:
         self.login(name)
 
     def _handler(self, data):
-        {
+        return {
             'load_chunks': self.load_chunks,
             'tick': self.tick,
             'login': self.login,
             'get_meta': self.get_meta,
             'set_meta': self.set_meta,
             'get_player': self.get_player,
-            'set_player': self.set_player
-        }
+            'set_player': self.set_player,
+            'save_blocks': self.save_blocks
+        }[data['method']](*data.get('args', []))
 
     def load_chunks(self, slice_list):
         new_slices = {}
@@ -64,6 +108,7 @@ class Server:
             saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
+        return new_slices
 
     def tick(self):
         # Increase tick
@@ -98,24 +143,24 @@ class Server:
         return self._save
 
     @property
-    def me(self):
+    def _me(self):
         return self._players[self._name]
 
     @property
     def pos(self):
-        return self.me['player_x'], self.me['player_y']
+        return self._me['player_x'], self._me['player_y']
 
     @pos.setter
     def pos(self, pos):
-        self.me['player_x'], self.me['player_y'] = pos
+        self._me['player_x'], self._me['player_y'] = pos
 
     @property
     def inv(self):
-        return self.me['inv']
+        return self._me['inv']
 
     @inv.setter
     def inv(self, inv):
-        self.me['inv'] = inv
+        self._me['inv'] = inv
 
     @property
     def map_(self):
@@ -123,3 +168,6 @@ class Server:
 
     def save_blocks(self, blocks):
         self._map = saves.save_blocks(self._save, self._map, blocks)
+
+    def update_clients(self, blocks):
+        pass
