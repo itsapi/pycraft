@@ -59,7 +59,7 @@ def delete_save(save):
 def load_player(name, meta):
     if name not in meta['players']:
         meta['players'][name] = default_player
-    return meta['players'][name]
+    return meta
 
 
 def load_meta(save):

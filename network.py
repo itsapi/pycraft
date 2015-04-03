@@ -31,7 +31,7 @@ def requestHandlerFactory(data_handler):
         def handle(self):
             data = json.loads(str(self.request.recv(1024), 'ascii'))
 
-            response = self.data_handler(data)
+            response = self.data_handler(self.request, data)
 
             self.request.sendall(bytes(json.dumps(response), 'ascii'))
 
