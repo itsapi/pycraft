@@ -64,6 +64,7 @@ def main():
             ('New Save', new),
             ('Load Save', load),
             ('Delete Save', delete),
+            ('Multiplayer', multiplayer),
             ('Help', help_),
             ('Exit', sys.exit)
         ))
@@ -93,7 +94,7 @@ def load():
         'Load save',
         ([(save[1]['name'], lambda: save[0])
           for save in saves_list] + [back])
-    )
+    ), True
 
 
 def delete():
@@ -120,20 +121,37 @@ def new():
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
-    return save
+    return save, True
 
 
-def pause(addr):
+def multiplayer():
+    """ Get ip and port of server to connect to, then load world from server. """
+
+    print(REDRAW + title('Connect to server'), end='')
+
+    ip = input(colorStr(' Server IP: ', style=BOLD))
+    if not ip:
+        print(CLS)
+        return None
+    port = input(colorStr(' Server port: ', style=BOLD))
+    if not port:
+        print(CLS)
+        return None
+
+    return (ip, port), False
+
+
+def pause(port):
     print(CLS)
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
-        ('Multiplayer', lambda: multiplayer(addr)),
+        ('Multiplayer', lambda: show_port(port)),
         ('Main Menu', lambda: 'exit')
     ))
 
 
-def multiplayer(port):
+def show_port(port):
     out = REDRAW + '\n'
     out += 'Port: {}\n\n'.format(port)
     out += 'Back...\n'

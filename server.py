@@ -15,7 +15,7 @@ class RemoteServer:
     """ Comunicate with remote server. """
 
     def __init__(self, name, ip, port):
-        self._sock = network.connect(ip, port)
+        self._sock = network.connect(ip, int(port))
         self._map = {}
         self._name = name
         self._meta = self._send('get_meta')

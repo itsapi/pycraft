@@ -17,13 +17,14 @@ def main():
         blocks = server.blocks
 
         while True:
-            save = ui.main()
+            data, load_save = ui.main()
 
-            # Local Server
-            game(blocks, server.Server(save, name))
-
-            # Remote Server
-            # TODO
+            if load_save:
+                # Local Server
+                game(blocks, server.Server(data, name))
+            else:
+                # Remote Server
+                game(blocks, server.RemoteServer(name, *data))
 
     finally:
         print(SHOW_CUR)
