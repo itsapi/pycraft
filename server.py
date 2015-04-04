@@ -61,6 +61,7 @@ class RemoteServer:
         """
         while True:
             data = network.receive(self._sock)
+            if data is None: break
             {
                 'blocks': self._set_blocks,
                 'slices': self._set_slices,
