@@ -71,9 +71,13 @@ def requestHandlerFactory(data_handler):
                 response = self.data_handler(self.request, data)
                 if not response: continue
 
-                response = bytes(json.dumps(response) + END, 'ascii')
-                debug('Sending:', repr(response))
-                self.request.sendall(response)
+                try:
+                    response = bytes(json.dumps(response) + END, 'ascii')
+                    debug('Sending:', repr(response))
+                    self.request.sendall(response)
+                except ValueError:
+                    pass
+
             debug('Closing Socket')
 
     return ThreadedTCPRequestHandler
