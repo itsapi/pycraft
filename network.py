@@ -37,7 +37,7 @@ def receive(sock):
     data = ''
     while True:
         debug('Waiting')
-        data = str(sock.recv(8192), 'ascii')
+        data = str(sock.recv(1024), 'ascii')
         if END in data:
             total_data.append(data[:data.find(END)])
             break
