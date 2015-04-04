@@ -59,7 +59,7 @@ def receive(the_socket):
                 total_data[-2] = last_pair[:last_pair.find(END)]
                 total_data.pop()
                 break
-    debug('Received:', repr(data))
+    debug('Received:', repr(json.loads(''.join(total_data)))
     return json.loads(''.join(total_data))
 
 
