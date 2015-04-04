@@ -19,7 +19,7 @@ def connect(ip, port):
 def send(sock, data):
     try:
         debug('Sending:', data)
-        sock.sendall(bytes(json.dumps(data), 'ascii'))
+        sock.sendall(bytes(json.dumps(data) + '\n', 'ascii'))
 
         data = ''
         while not data.endswith('\n'):
