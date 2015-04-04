@@ -60,6 +60,7 @@ class RemoteServer:
         """
         while True:
             data = network.receive(self._sock)
+            debug('Listener:', data)
             {
                 'blocks': self._set_blocks,
                 'slices': self._set_slices,

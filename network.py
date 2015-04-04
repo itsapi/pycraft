@@ -21,8 +21,8 @@ def connect(ip, port):
 
 def send(sock, data, async):
     try:
-        debug('Sending:', data)
-        sock.send(bytes(json.dumps(data) + END, 'ascii'))
+        debug('Sending:', repr(bytes(json.dumps(data) + END, 'ascii')))
+        sock.sendall(bytes(json.dumps(data) + END, 'ascii'))
 
         if not async:
             return receive(sock)
@@ -62,15 +62,15 @@ def requestHandlerFactory(data_handler):
             super().__init__(*args)
 
         def handle(self):
-            debug('-=-=-=-=-=-=-=-=-=-=-=-=-= New Handler =-=-=-=-=-=-=-=-=-=-=-=-=-')
-            self.request.setblocking(True)
             while True:
                 data = receive(self.request)
                 if not data: break
 
                 response = self.data_handler(self.request, data)
-                debug('Sending:', json.dumps(response))
-                self.request.send(bytes(json.dumps(response) + END, 'ascii'))
+                if not response: continue
+
+                debug('Sending:', repr(bytes(json.dumps(response) + END, 'ascii')))
+                self.request.sendall(bytes(json.dumps(response) + END, 'ascii'))
             debug('Closing Socket')
 
     return ThreadedTCPRequestHandler
