@@ -45,7 +45,7 @@ def requestHandlerFactory(data_handler):
                 data = self.rfile.readline()
                 if not data: break
 
-                data = json.loads(str(self, 'ascii'))
+                data = json.loads(str(data, 'ascii'))
 
                 response = self.data_handler(self.request, data)
                 self.request.sendall(bytes(json.dumps(response) + '\n', 'ascii'))
