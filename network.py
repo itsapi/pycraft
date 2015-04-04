@@ -31,28 +31,27 @@ def send(sock, data, async):
 
 def receive(sock):
     data = ''
-    while not data.endswith('\n'):
+    while not data.endswith('\n') and data is not None:
         data += str(sock.recv(1024), 'ascii')
 
     debug('Received:', data)
-    return json.loads(data)
+    return data if data is None else json.loads(data)
 
 
 def requestHandlerFactory(data_handler):
-    class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
+    class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         def __init__(self, *args):
             self.data_handler = data_handler
             super().__init__(*args)
 
         def handle(self):
             while True:
-                data = self.rfile.readline()
+                data = receive(self.request)
                 if not data: break
 
-                data = json.loads(str(data, 'ascii'))
-
                 response = self.data_handler(self.request, data)
-                self.wfile.write(bytes(json.dumps(response) + '\n', 'ascii'))
+                debug('Sending:', json.dumps(response))
+                self.request.sendall(bytes(json.dumps(response) + '\n', 'ascii'))
 
     return ThreadedTCPRequestHandler
 
