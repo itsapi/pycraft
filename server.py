@@ -154,8 +154,16 @@ class Server:
                 'load_chunks': self.load_chunks,
                 'get_meta': self.get_meta,
                 'set_player': self.set_player,
-                'save_blocks': self.save_blocks
+                'save_blocks': self.save_blocks,
+                'logout': lambda: self._logout(sock)
             }[data['method']](*data.get('args', []))
+
+    def _logout(self, sock):
+        saves.save_meta(self._save, self._meta)
+        self._players = {
+            name: conn for name, conn in self._players.items()
+                if conn != sock
+        }
 
     def load_chunks(self, slice_list):
         new_slices = {}

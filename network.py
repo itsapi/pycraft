@@ -79,6 +79,7 @@ def requestHandlerFactory(data_handler):
                 self.request.sendall(response)
 
             debug('Closing Socket')
+            data_handler(self.request, { 'method': 'logout' })
 
     return ThreadedTCPRequestHandler
 
