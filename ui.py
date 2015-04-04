@@ -22,6 +22,7 @@ def menu(name, options):
     """
 
     STAR = colorStr('*', YELLOW)
+    options = [x for x in options if x is not None]
 
     selection = 0
     char = None
@@ -147,12 +148,19 @@ def multiplayer():
     return (ip, port), False
 
 
-def pause(port):
+def pause(server):
     print(CLS)
+
+    try:
+        server.port
+        port_item = ('Show Port', lambda: show_port(server.port))
+    except AttributeError:
+        port_item = None
+
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
-        ('Show Port', lambda: show_port(port)),
+        port_item,
         ('Main Menu', lambda: 'exit')
     ))
 

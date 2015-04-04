@@ -238,7 +238,7 @@ def game(blocks, server):
             if char in ' \n':
                 server.pos = x, y
                 redraw = True
-                if ui.pause(server.port) == 'exit':
+                if ui.pause(server) == 'exit':
                     game = False
 
             dt = server.tick()
