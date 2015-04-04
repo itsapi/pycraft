@@ -39,7 +39,7 @@ def supported_chars(*tests):
         except UnicodeEncodeError:
             pass
     return '?' * len(tests[0])
-    
+
 
 debug = lambda *m: print(*m, file=open('log', 'a')) if DEBUG else None
 

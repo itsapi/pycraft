@@ -170,7 +170,7 @@ class Server:
             saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
-        return new_slices
+        return { 'event': 'slices', 'data': new_slices }
 
     def dt(self):
         dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
@@ -181,7 +181,7 @@ class Server:
         return self._meta['tick']
 
     def login(self, name, sock=None):
-        debug('Lgging in: '+name)
+        debug('Logging in: '+name)
         if name not in self._players:
             # Load new player if new
             self._meta = saves.load_player(name, self._meta)
