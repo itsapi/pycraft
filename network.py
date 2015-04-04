@@ -6,6 +6,9 @@ import json
 from console import debug
 
 
+END = '<END>'
+
+
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
@@ -19,7 +22,7 @@ def connect(ip, port):
 def send(sock, data, async):
     try:
         debug('Sending:', data)
-        sock.sendall(bytes(json.dumps(data) + '\n', 'ascii'))
+        sock.sendall(bytes(json.dumps(data) + END, 'ascii'))
 
         if not async:
             return receive(sock)
@@ -39,11 +42,11 @@ def send(sock, data, async):
 #     debug('Received:', data)
 #     return data if data is None else json.loads(data)
 
-END = '\n'
 def receive(the_socket):
     total_data = []
     data = ''
     while True:
+        debug('Waiting')
         data = str(the_socket.recv(8192), 'ascii')
         if END in data:
             total_data.append(data[:data.find(END)])
@@ -56,7 +59,7 @@ def receive(the_socket):
                 total_data[-2] = last_pair[:last_pair.find(END)]
                 total_data.pop()
                 break
-    debug('Received:', data)
+    debug('Received:', repr(data))
     return json.loads(''.join(total_data))
 
 
@@ -67,13 +70,15 @@ def requestHandlerFactory(data_handler):
             super().__init__(*args)
 
         def handle(self):
+            debug('-=-=-=-=-=-=-=-=-=-=-=-=-= New Handler =-=-=-=-=-=-=-=-=-=-=-=-=-')
+            self.request.setblocking(True)
             while True:
                 data = receive(self.request)
                 if not data: break
 
                 response = self.data_handler(self.request, data)
                 debug('Sending:', json.dumps(response))
-                self.request.sendall(bytes(json.dumps(response) + '\n', 'ascii'))
+                self.request.sendall(bytes(json.dumps(response) + END, 'ascii'))
 
     return ThreadedTCPRequestHandler
 

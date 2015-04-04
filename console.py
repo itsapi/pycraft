@@ -40,7 +40,7 @@ def supported_chars(*tests):
             pass
     return '?' * len(tests[0])
 
-
+open('log', 'w').close()
 debug = lambda *m: print(*m, file=open('log', 'a')) if DEBUG else None
 
 
