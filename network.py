@@ -48,7 +48,7 @@ def requestHandlerFactory(data_handler):
                 data = json.loads(str(data, 'ascii'))
 
                 response = self.data_handler(self.request, data)
-                self.request.sendall(bytes(json.dumps(response) + '\n', 'ascii'))
+                self.wfile.write(bytes(json.dumps(response) + '\n', 'ascii'))
 
     return ThreadedTCPRequestHandler
 
