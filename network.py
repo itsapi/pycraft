@@ -22,7 +22,7 @@ def connect(ip, port):
 def send(sock, data, async):
     try:
         debug('Sending:', data)
-        sock.send(bytes(json.dumps(data) + END, 'ascii'))
+        sock.sendall(bytes(json.dumps(data) + END, 'ascii'))
 
         if not async:
             return receive(sock)
@@ -70,7 +70,7 @@ def requestHandlerFactory(data_handler):
 
                 response = self.data_handler(self.request, data)
                 debug('Sending:', json.dumps(response))
-                self.request.send(bytes(json.dumps(response) + END, 'ascii'))
+                self.request.sendall(bytes(json.dumps(response) + END, 'ascii'))
             debug('Closing Socket')
 
     return ThreadedTCPRequestHandler
