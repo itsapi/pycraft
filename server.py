@@ -241,7 +241,7 @@ class Server:
     def save_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
-        self.redraw = True
+        self.view_change = True
 
     def update_clients(self, blocks):
         pass
