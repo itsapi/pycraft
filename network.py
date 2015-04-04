@@ -29,13 +29,35 @@ def send(sock, data, async):
         sock.close()
 
 
-def receive(sock):
-    data = ''
-    while not data.endswith('\n') and data is not None:
-        data += str(sock.recv(1024), 'ascii')
+# def receive(sock):
+#     data = ''
+#     while not data.endswith('\n') and data is not None:
+#         d=sock.recv(1024)
+#         debug('  D:', repr(d))
+#         data += str(d, 'ascii')
 
+#     debug('Received:', data)
+#     return data if data is None else json.loads(data)
+
+END = '\n'
+def receive(the_socket):
+    total_data = []
+    data = ''
+    while True:
+        data = str(the_socket.recv(8192), 'ascii')
+        if END in data:
+            total_data.append(data[:data.find(END)])
+            break
+        total_data.append(data)
+        if len(total_data) > 1:
+            # Check if end_of_data was split
+            last_pair = total_data[-2] + total_data[-1]
+            if END in last_pair:
+                total_data[-2] = last_pair[:last_pair.find(END)]
+                total_data.pop()
+                break
     debug('Received:', data)
-    return data if data is None else json.loads(data)
+    return json.loads(''.join(total_data))
 
 
 def requestHandlerFactory(data_handler):
