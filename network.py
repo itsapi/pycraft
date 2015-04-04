@@ -65,18 +65,18 @@ def requestHandlerFactory(data_handler):
 
         def handle(self):
             while True:
-                data = receive(self.request)
-                if not data: break
+                try:
+                    data = receive(self.request)
+                    if not data: break
+                except ValueError:
+                    pass
 
                 response = self.data_handler(self.request, data)
                 if not response: continue
 
-                try:
-                    response = bytes(json.dumps(response) + END, 'ascii')
-                    debug('Sending:', repr(response))
-                    self.request.sendall(response)
-                except ValueError:
-                    pass
+                response = bytes(json.dumps(response) + END, 'ascii')
+                debug('Sending:', repr(response))
+                self.request.sendall(response)
 
             debug('Closing Socket')
 
