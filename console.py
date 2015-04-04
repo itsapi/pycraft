@@ -40,6 +40,7 @@ def supported_chars(*tests):
             pass
     return '?' * len(tests[0])
 
+
 open('log', 'w').close()
 def debug(*args):
     if DEBUG:
