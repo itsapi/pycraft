@@ -22,7 +22,7 @@ def connect(ip, port):
 def send(sock, data, async):
     try:
         debug('Sending:', data)
-        sock.sendall(bytes(json.dumps(data) + END, 'ascii'))
+        sock.send(bytes(json.dumps(data) + END, 'ascii'))
 
         if not async:
             return receive(sock)
@@ -32,22 +32,12 @@ def send(sock, data, async):
         sock.close()
 
 
-# def receive(sock):
-#     data = ''
-#     while not data.endswith('\n') and data is not None:
-#         d=sock.recv(1024)
-#         debug('  D:', repr(d))
-#         data += str(d, 'ascii')
-
-#     debug('Received:', data)
-#     return data if data is None else json.loads(data)
-
-def receive(the_socket):
+def receive(sock):
     total_data = []
     data = ''
     while True:
         debug('Waiting')
-        data = str(the_socket.recv(8192), 'ascii')
+        data = str(sock.recv(8192), 'ascii')
         if END in data:
             total_data.append(data[:data.find(END)])
             break
@@ -59,8 +49,10 @@ def receive(the_socket):
                 total_data[-2] = last_pair[:last_pair.find(END)]
                 total_data.pop()
                 break
-    debug('Received:', repr(json.loads(''.join(total_data))))
-    return json.loads(''.join(total_data))
+        else:
+            break
+    debug('Received:', repr(''.join(total_data)))
+    return json.loads(''.join(total_data)) if total_data else None
 
 
 def requestHandlerFactory(data_handler):
@@ -78,7 +70,8 @@ def requestHandlerFactory(data_handler):
 
                 response = self.data_handler(self.request, data)
                 debug('Sending:', json.dumps(response))
-                self.request.sendall(bytes(json.dumps(response) + END, 'ascii'))
+                self.request.send(bytes(json.dumps(response) + END, 'ascii'))
+            debug('Closing Socket')
 
     return ThreadedTCPRequestHandler
 
