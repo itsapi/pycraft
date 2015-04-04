@@ -200,7 +200,8 @@ def game(blocks, server):
                             can_break, inv_sel, server.inv, blocks
                         )
 
-                    server.save_blocks(new_blocks)
+                    if new_blocks:
+                        server.save_blocks(new_blocks)
 
                 # Update crafting list
                 if dinv or dcraft:
