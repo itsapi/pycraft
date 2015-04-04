@@ -9,7 +9,7 @@ import saves, ui, terrain, player, render, server
 def main():
     print(HIDE_CUR)
     print(CLS)
-    
+
     debug('Start\n')
 
     # Menu loop
@@ -221,7 +221,6 @@ def game(blocks, server):
 
                 if dx or dy or dc or ds or dinv or dcraft:
                     server.pos = x, y
-                    saves.save_meta(server.save, server.get_meta())
                     redraw = True
                 if dx or dy:
                     c_hidden = True
@@ -238,7 +237,6 @@ def game(blocks, server):
             # Pause game
             if char in ' \n':
                 server.pos = x, y
-                saves.save_meta(server.save, server.get_meta())
                 redraw = True
                 if ui.pause(server.port) == 'exit':
                     game = False
