@@ -145,7 +145,7 @@ def game(blocks, server):
             # Respawn player if dead
             if not alive and df:
                 alive = True
-                x, y = player.respawn(server.spawn)
+                x, y = player.respawn(server.get_meta('spawn'))
 
             # Player falls when no solid block below it
             if dt and not terrain.is_solid(blocks, server.map_[str(x)][y+1]):
