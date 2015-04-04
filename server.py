@@ -42,7 +42,8 @@ class RemoteServer:
         self._me = self._meta['players'][self._name]
         self._last_tick = time()
 
-        self.redraw = True
+        self.redraw = False
+        self.view_change = False
 
         self.listener_t = Thread(target=self.listener)
         self.listener_t.daemon = True
@@ -71,6 +72,7 @@ class RemoteServer:
     def load_chunks(self, slice_list):
         self._map.update({ str(i): terrain.EMPTY_SLICE for i in slice_list })
         self._send('load_chunks', [slice_list], async=True)
+        self.view_change = True
 
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
@@ -114,11 +116,11 @@ class RemoteServer:
 
     def _set_blocks(self, blocks):
         self._map, _ = saves.set_blocks(self._map, blocks)
-        self.redraw = True
+        self.view_change = True
 
     def _set_slices(self, new_slices):
         self._map.update(new_slices)
-        self.redraw = True
+        self.view_change = True
 
     def _set_player(self, player):
         pass

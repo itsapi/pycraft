@@ -84,7 +84,7 @@ def game(blocks, server):
                 server.load_chunks(slice_list)
 
             # Moving view
-            if not edges == old_edges:
+            if not edges == old_edges or server.view_change:
                 view = terrain.move_map(server.map_, edges)
                 extended_view = terrain.move_map(server.map_, extended_edges)
                 old_edges = edges
