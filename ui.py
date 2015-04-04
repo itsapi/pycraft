@@ -93,7 +93,7 @@ def load():
     saves_list = saves.list_saves()
     return menu(
         'Load save',
-        ([(save[1]['name'], lambda: save[0])
+        ([(save[1]['name'], lambda_gen(lambda s: s, save[0]))
           for save in saves_list] + [back])
     ), True
 
