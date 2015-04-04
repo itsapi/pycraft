@@ -49,7 +49,7 @@ def receive(sock):
                 total_data[-2] = last_pair[:last_pair.find(END)]
                 total_data.pop()
                 break
-        else:
+        elif len(total_data) == 0:
             break
     debug('Received:', repr(''.join(total_data)))
     return json.loads(''.join(total_data)) if total_data else None
