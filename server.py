@@ -30,6 +30,7 @@ class RemoteServer:
 
     def __init__(self, name, ip, port):
         self._sock = network.connect(ip, int(port))
+        self._sock.setblocking(True)
         self._map = {}
 
         self._name = name
