@@ -50,10 +50,11 @@ def receive(sock):
                 total_data[-2] = last_pair[:last_pair.find(END)]
                 total_data.pop()
                 break
-        elif len(total_data) == 0:
-            break
+        elif len(data) == 0:
+            return None
+
     debug('Received:', repr(''.join(total_data)))
-    return json.loads(''.join(total_data)) if total_data else None
+    return json.loads(''.join(total_data))
 
 
 def requestHandlerFactory(data_handler):
