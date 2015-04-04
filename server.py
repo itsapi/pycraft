@@ -137,7 +137,8 @@ class Server:
         self._meta = saves.load_meta(save)
         self._last_tick = time()
 
-        self.redraw = True
+        self.redraw = False
+        self.view_change = False
 
         self.port, self.stop_server = network.start(self._handler)
 
