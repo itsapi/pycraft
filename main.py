@@ -80,7 +80,8 @@ def game(blocks, server):
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
             slice_list = terrain.detect_edges(server.map_, extended_edges)
-            server.load_chunks(slice_list)
+            if slice_list:
+                server.load_chunks(slice_list)
 
             # Moving view
             if not edges == old_edges:

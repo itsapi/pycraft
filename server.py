@@ -67,7 +67,7 @@ class RemoteServer:
             }[data['event']](data['data'])
 
     def load_chunks(self, slice_list):
-        self._map.update(self._send('load_chunks', [slice_list]))
+        self._send('load_chunks', [slice_list], async=True)
 
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
