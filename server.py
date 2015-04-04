@@ -39,6 +39,7 @@ class RemoteServer:
 
         self._meta = self._send('get_meta')
         self._me = self._meta['players'][self._name]
+        self._last_tick = time()
 
         self.redraw = True
 
@@ -58,7 +59,7 @@ class RemoteServer:
              'data':  'some data'}
         """
         while True:
-            data = receive(self._sock)
+            data = network.receive(self._sock)
             {
                 'blocks': self._set_blocks,
                 'slices': self._set_slices,
@@ -74,7 +75,7 @@ class RemoteServer:
 
     @property
     def tick(self):
-        return self._tick
+        return self._meta['tick']
 
     def login(self):
         self._player = self._send('login', self._name)
@@ -89,7 +90,7 @@ class RemoteServer:
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
-        self._async_send('set_player', [self._name, self._me])
+        self._send('set_player', [self._name, self._me], async=True)
 
     @property
     def inv(self):
@@ -98,7 +99,7 @@ class RemoteServer:
     @inv.setter
     def inv(self, inv):
         self._me['inv'] = inv
-        self._async_send('set_player', [self._name, self._me])
+        self._send('set_player', [self._name, self._me], async=True)
 
     @property
     def map_(self):
