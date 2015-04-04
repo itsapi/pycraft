@@ -67,6 +67,7 @@ class RemoteServer:
             }[data['event']](data['data'])
 
     def load_chunks(self, slice_list):
+        self._map.update({ str(i): terrain.EMPTY_SLICE for i in slice_list })
         self._send('load_chunks', [slice_list], async=True)
 
     def dt(self):

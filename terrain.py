@@ -6,6 +6,7 @@ from data import world_gen
 
 # Maximum width of half a tree
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
+EMPTY_SLICE = ' ' * world_gen['height']
 
 
 def move_map(map_, edges):
