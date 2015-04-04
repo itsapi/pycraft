@@ -186,7 +186,7 @@ def save_blocks(save, map_, blocks):
     for x, col in blocks.items():
         for y, block in col.items():
             new_slices[str(x)] = map_[str(x)]
-            map_[str(x)][y] = new_slices[str(x)][y] = block
+            map_[str(x)][int(y)] = new_slices[str(x)][int(y)] = block
 
     save_map(save, new_slices)
     return map_
