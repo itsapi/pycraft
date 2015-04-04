@@ -1,5 +1,6 @@
 from time import time
 from math import radians
+from threading import Thread
 
 import terrain, saves, render, network
 
@@ -12,6 +13,17 @@ blocks = render.gen_blocks()
 SUN_TICK = radians(1/32)
 TPS = 10 # Ticks
 
+def update_tick(last_tick, cur_tick):
+    # Increase tick
+    if time() >= (1/TPS) + last_tick:
+        dt = 1
+        cur_tick += SUN_TICK
+        last_tick = time()
+    else:
+        dt = 0
+
+    return dt, last_tick, cur_tick
+
 
 class RemoteServer:
     """ Comunicate with remote server. """
@@ -23,23 +35,52 @@ class RemoteServer:
         self._name = name
         self.login()
 
-        self._meta = self._send('get_meta')
-        self._me = self._send('get_player', [self._name])
+        self._dt = False
 
-    def _send(self, method, args=[]):
-        return network.send(self._sock, {'method': method, 'args': args})
+        self._meta = self._send('get_meta')
+        self._me = self._meta['players'][self._name]
+
+        self.redraw = True
+
+        self.listener_t = Thread(target=self.listener)
+        self.listener_t.daemon = True
+        self.listener_t.start()
+
+    def _send(self, method, args=[], async=False):
+        # Sync cannot be used once self.listener thread starts
+        return network.send(self._sock, {'method': method, 'args': args}, async)
+
+    def listener(self):
+        """
+            Data comes in in the form:
+
+            {'event': 'event_name',
+             'data':  'some data'}
+        """
+        while True:
+            data = receive(self._sock)
+            {
+                'blocks': self._set_blocks,
+                'slices': self._set_slices,
+                'player': self._set_player
+            }[data['event']](data['data'])
 
     def load_chunks(self, slice_list):
         self._map.update(self._send('load_chunks', [slice_list]))
 
+    def dt(self):
+        self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
+        return self._dt
+
+    @property
     def tick(self):
-        return self._send('tick')
+        return self._tick
 
     def login(self):
         self._player = self._send('login', self._name)
 
     def get_meta(self, prop=None):
-        return self._send('get_meta', [prop])
+        return self._meta[prop] if prop else self._meta
 
     @property
     def pos(self):
@@ -48,7 +89,7 @@ class RemoteServer:
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
-        self._send('set_player', [self._name, self._me])
+        self._async_send('set_player', [self._name, self._me])
 
     @property
     def inv(self):
@@ -57,14 +98,26 @@ class RemoteServer:
     @inv.setter
     def inv(self, inv):
         self._me['inv'] = inv
-        self._send('set_player', [self._name, self._me])
+        self._async_send('set_player', [self._name, self._me])
 
     @property
     def map_(self):
         return self._map
 
     def save_blocks(self, blocks):
-        self._send('save_blocks', [blocks])
+        self._send('save_blocks', [blocks], async=True)
+        self._set_blocks(blocks)
+
+    def _set_blocks(self, blocks):
+        self._map, _ = saves.set_blocks(self._map, blocks)
+        self.redraw = True
+
+    def _set_slices(self, new_slices):
+        self._map.update(new_slices)
+        self.redraw = True
+
+    def _set_player(self, player):
+        pass
 
 
 class Server:
@@ -78,6 +131,8 @@ class Server:
         self._meta = saves.load_meta(save)
         self._last_tick = time()
 
+        self.redraw = True
+
         self.port, self.stop_server = network.start(self._handler)
 
         self.login(name)
@@ -90,9 +145,7 @@ class Server:
         else:
             return {
                 'load_chunks': self.load_chunks,
-                'tick': self.tick,
                 'get_meta': self.get_meta,
-                'get_player': self.get_player,
                 'set_player': self.set_player,
                 'save_blocks': self.save_blocks
             }[data['method']](*data.get('args', []))
@@ -119,16 +172,13 @@ class Server:
         self._map.update(new_slices)
         return new_slices
 
-    def tick(self):
-        # Increase tick
-        if time() >= (1/TPS) + self._last_tick:
-            dt = 1
-            self._meta['tick'] += SUN_TICK
-            self._last_tick = time()
-        else:
-            dt = 0
-
+    def dt(self):
+        dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return dt
+
+    @property
+    def tick(self):
+        return self._meta['tick']
 
     def login(self, name, sock=None):
         debug('Lgging in: '+name)
@@ -182,7 +232,9 @@ class Server:
         return self._map
 
     def save_blocks(self, blocks):
-        self._map = saves.save_blocks(self._save, self._map, blocks)
+        self._map, new_slices = saves.set_blocks(self._map, blocks)
+        saves.save_map(self._save, new_slices)
+        self.redraw = True
 
     def update_clients(self, blocks):
         pass

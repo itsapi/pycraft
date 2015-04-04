@@ -180,7 +180,7 @@ def save_map(save, new_slices):
                 f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
 
 
-def save_blocks(save, map_, blocks):
+def set_blocks(map_, blocks):
     new_slices = {}
 
     for x, col in blocks.items():
@@ -188,8 +188,7 @@ def save_blocks(save, map_, blocks):
             new_slices[str(x)] = map_[str(x)]
             map_[str(x)][int(y)] = new_slices[str(x)][int(y)] = block
 
-    save_map(save, new_slices)
-    return map_
+    return map_, new_slices
 
 
 def list_saves():

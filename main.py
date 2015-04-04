@@ -50,7 +50,6 @@ def game(blocks, server):
 
     old_sun = None
     old_edges = None
-    redraw = True
     last_out = time()
     last_inp = time()
     last_move = time()
@@ -88,18 +87,18 @@ def game(blocks, server):
                 view = terrain.move_map(server.map_, edges)
                 extended_view = terrain.move_map(server.map_, extended_edges)
                 old_edges = edges
-                redraw = True
+                server.redraw = True
 
             # Sun has moved
-            sun = render.sun(server.get_meta('tick'), width)
+            sun = render.sun(server.tick, width)
             if not sun == old_sun:
                 old_sun = sun
-                redraw = True
+                server.redraw = True
 
             # Draw view
-            if redraw and time() >= 1/FPS + last_out:
+            if server.redraw and time() >= 1/FPS + last_out:
                 df = 1
-                redraw = False
+                server.redraw = False
                 last_out = time()
 
                 cursor_colour, can_break = player.cursor_colour(
@@ -137,7 +136,7 @@ def game(blocks, server):
                     blocks,
                     sun,
                     lights,
-                    server.get_meta('tick')
+                    server.tick
                 )
             else:
                 df = 0
@@ -145,7 +144,7 @@ def game(blocks, server):
             # Respawn player if dead
             if not alive and df:
                 alive = True
-                x, y = player.respawn(server.get_meta('spawn'))
+                x, y = player.respawn(server.spawn)
 
             # Player falls when no solid block below it
             if dt and not terrain.is_solid(blocks, server.map_[str(x)][y+1]):
@@ -155,7 +154,7 @@ def game(blocks, server):
                 else:
                     # Fall
                     y += 1
-                    redraw = True
+                    server.redraw = True
 
             # If no block below, kill player
             try:
@@ -221,7 +220,7 @@ def game(blocks, server):
 
                 if dx or dy or dc or ds or dinv or dcraft:
                     server.pos = x, y
-                    redraw = True
+                    server.redraw = True
                 if dx or dy:
                     c_hidden = True
                 if dc:
@@ -231,17 +230,17 @@ def game(blocks, server):
                 inp = None
 
             if char in 'c':
-                redraw = True
+                server.redraw = True
                 crafting = not crafting
 
             # Pause game
             if char in ' \n':
                 server.pos = x, y
-                redraw = True
+                server.redraw = True
                 if ui.pause(server) == 'exit':
                     game = False
 
-            dt = server.tick()
+            dt = server.dt()
 
 
 if __name__ == '__main__':

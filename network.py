@@ -16,22 +16,26 @@ def connect(ip, port):
     return sock
 
 
-def send(sock, data):
+def send(sock, data, async):
     try:
         debug('Sending:', data)
         sock.sendall(bytes(json.dumps(data) + '\n', 'ascii'))
 
-        data = ''
-        while not data.endswith('\n'):
-            data += str(sock.recv(1024), 'ascii')
-
-        debug('Received:', data)
-
-        return json.loads(data)
+        if not async:
+            return receive(sock)
 
     except OSError:
         debug('Socket closing')
         sock.close()
+
+
+def receive(sock):
+    data = ''
+    while not data.endswith('\n'):
+        data += str(sock.recv(1024), 'ascii')
+
+    debug('Received:', data)
+    return json.loads(data)
 
 
 def requestHandlerFactory(data_handler):
