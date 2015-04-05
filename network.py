@@ -74,9 +74,7 @@ def requestHandlerFactory(data_handler):
                 response = self.data_handler(self.request, data)
                 if not response: continue
 
-                response = bytes(json.dumps(response) + END, 'ascii')
-                debug('Sending:', repr(response))
-                self.request.sendall(response)
+                send(self.request, response, True)
 
             debug('Closing Socket')
             data_handler(self.request, { 'method': 'logout' })
