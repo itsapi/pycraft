@@ -267,7 +267,7 @@ class Game:
             self.inv_sel = ((self.inv_sel + self.ds) % len(self.meta['inv'])
                           if len(self.meta['inv']) else 0)
 
-        if self.dx or self.dy or self.dc or self.ds or self.dinv or self.dcraft:
+        if any((self.dx, self.dy, self.dc, self.ds, self.dinv, self.dcraft)):
             self.meta['player_x'], self.meta['player_y'] = self.x, self.y
             saves.save_meta(self.save, self.meta)
             self.redraw = True
