@@ -222,7 +222,7 @@ def game(blocks, meta, map_, save):
                     inv_sel = ((inv_sel + ds) % len(meta['inv'])
                                   if len(meta['inv']) else 0)
 
-                if dx or dy or dc or ds or dinv or dcraft:
+                if any((dx, dy, dc, ds, dinv, dcraft)):
                     meta['player_x'], meta['player_y'] = x, y
                     saves.save_meta(save, meta)
                     redraw = True
