@@ -51,9 +51,13 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
+def cursor_pos(x, y, cursor):
+    return str(x+cursor_x[cursor]), y+cursor_y[cursor]
+
+
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
-    block_x = str(x + cursor_x[cursor])
-    block_y = y + cursor_y[cursor]
+    block_x, block_y = cursor_pos(x, y, cursor)
+
     dinv = False
     inv = meta['inv']
 
@@ -97,7 +101,8 @@ def move_sel(inp):
 
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
-    block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
+    block_x, block_y = cursor_pos(x, y, cursor)
+    block = blocks[ map_[block_x][block_y] ]
 
     try:
         strength = blocks[inv[inv_sel]['block']]['strength']
