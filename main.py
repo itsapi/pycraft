@@ -76,24 +76,17 @@ class Game:
     def game_loop(self):
         # Finds display boundaries
         self.edges = (self.x - int(self.width / 2), self.x + int(self.width / 2))
-        self.extended_edges = (self.edges[0]-render.max_light, self.edges[1]+render.max_light)
+        extended_edges = (self.edges[0]-render.max_light, self.edges[1]+render.max_light)
 
         # Generates new terrain
-        self.slice_list = terrain.detect_edges(self.map_, self.extended_edges)
-        for pos in self.slice_list:
+        for pos in terrain.unloaded_edges(self.map_, extended_edges):
             self.new_slices[str(pos)] = terrain.gen_slice(pos, self.meta, self.blocks)
             self.map_[str(pos)] = self.new_slices[str(pos)]
-
-        # Save new terrain to file
-        if self.new_slices:
-            saves.save_map(self.save, self.new_slices)
-            self.new_slices = {}
-            self.redraw = True
 
         # Moving view
         if not self.edges == self.old_edges:
             self.view = terrain.move_map(self.map_, self.edges)
-            self.extended_view = terrain.move_map(self.map_, self.extended_edges)
+            self.extended_view = terrain.move_map(self.map_, extended_edges)
             self.old_edges = self.edges
             self.redraw = True
 
@@ -120,7 +113,13 @@ class Game:
         if time() >= (1/self.IPS) + self.last_inp and self.alive and game_inp:
             self.input_frame(game_inp)
 
-        self.map_.update(self.new_slices)
+        # Save new terrain to file
+        if self.new_slices:
+            self.map_.update(self.new_slices)
+
+            saves.save_map(self.save, self.new_slices)
+            self.new_slices = {}
+            self.redraw = True
 
         self.pause(inp)
         self.inc_tick()

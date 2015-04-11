@@ -155,7 +155,7 @@ def get_lights(_map, start_x, blocks):
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
         slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light'),
-            zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
+            zip(range(len(slice_)), slice_)) # Zips the light with it's y pos
 
         # Convert light pixels to light objects
         lights.extend(map(

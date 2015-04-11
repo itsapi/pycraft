@@ -162,7 +162,7 @@ def gen_slice(pos, meta, blocks):
     return slice_
 
 
-def detect_edges(map_, edges):
+def unloaded_edges(map_, edges):
     slices = []
     for pos in range(*edges):
         if not str(pos) in map_:
