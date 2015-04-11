@@ -33,14 +33,8 @@ class Game:
 
         self.x = meta['player_x']
         self.y = meta['player_y']
-        self.dx = 0
-        self.dy = 0
         self.dt = 0 # Tick
         self.df = 0 # Frame
-        self.dc = 0 # Cursor
-        self.ds = 0 # Selector
-        self.dinv = False # Inventory
-        self.dcraft = False # Crafting
         self.width = 40
         self.FPS = 15 # Max
         self.TPS = 10 # Ticks
@@ -126,9 +120,7 @@ class Game:
         if time() >= (1/self.IPS) + self.last_inp and self.alive and game_inp:
             self.input_frame(game_inp)
 
-        if inp in 'c':
-            self.redraw = True
-            self.crafting = not self.crafting
+        self.map_.update(self.new_slices)
 
         self.pause(inp)
         self.inc_tick()
@@ -151,7 +143,7 @@ class Game:
 
         # If no block below, kill player
         try:
-            self.block = self.map_[str(self.x)][self.y+1]
+            self.map_[str(self.x)][self.y+1]
         except IndexError:
             self.alive = False
 
@@ -160,47 +152,47 @@ class Game:
         self.redraw = False
         self.last_out = time()
 
-        self.cursor_colour, self.can_break = player.cursor_colour(
+        cursor_colour, self.can_break = player.cursor_colour(
             self.x, self.y, self.cursor, self.map_, self.blocks, self.meta['inv'], self.inv_sel
         )
 
-        self.objects = player.assemble_player(
-            int(self.width / 2), self.y, self.cursor, self.cursor_colour, self.c_hidden
+        objects = player.assemble_player(
+            int(self.width / 2), self.y, self.cursor, cursor_colour, self.c_hidden
         )
 
         if self.crafting:
-            self.label = player.label(
+            label = player.label(
                 self.crafting_list, self.crafting_sel, self.blocks)
         else:
-            self.label = player.label(
+            label = player.label(
                 self.meta['inv'], self.inv_sel, self.blocks)
 
-        self.crafting_grid = render.render_grid(
+        crafting_grid = render.render_grid(
             player.CRAFT_TITLE, self.crafting, self.crafting_list, self.blocks,
             terrain.world_gen['height']-1, self.crafting_sel
         )
 
-        self.inv_grid = render.render_grid(
+        inv_grid = render.render_grid(
             player.INV_TITLE, not self.crafting, self.meta['inv'], self.blocks,
             terrain.world_gen['height']-1, self.inv_sel
         )
 
-        self.lights = render.get_lights(self.extended_view, self.edges[0], self.blocks)
+        lights = render.get_lights(self.extended_view, self.edges[0], self.blocks)
 
         render.render_map(
             self.view,
-            self.objects,
-            [[self.inv_grid, self.crafting_grid],
-             [[self.label]]],
+            objects,
+            [[inv_grid, crafting_grid],
+             [[label]]],
             self.blocks,
             self.sun,
-            self.lights,
+            lights,
             self.meta['tick']
         )
 
     def input_(self):
         char = str(self.nbi.char()).lower()
-        game_inp = char if char in 'wadkjliuo-=' else None
+        game_inp = char if char in 'wadkjliuoc-=' else None
 
         return game_inp, char
 
@@ -221,68 +213,69 @@ class Game:
             self.dt = 0
 
     def input_frame(self, inp):
-        self.dx, self.dy = 0, 0
+        dx, dy = 0, 0
 
         if time() >= (1/self.MPS) + self.last_move:
             # Update player position
-            self.dx, self.dy, self.jump = player.get_pos_delta(
+            dx, dy, self.jump = player.get_pos_delta(
                 str(inp), self.map_, self.x, self.y, self.blocks, self.jump)
-            self.y += self.dy
-            self.x += self.dx
+            self.y += dy
+            self.x += dx
 
             self.last_move = time()
 
-        self.dcraft, self.dcraftC, self.dcraftN = False, False, False
+        dcraft, dcraftC, dcraftN = False, False, False
         if self.crafting:
             # Craft if player pressed craft
-            self.meta['inv'], self.inv_sel, self.crafting_list, self.dcraftC = \
+            self.meta['inv'], self.inv_sel, self.crafting_list, dcraftC = \
                 player.crafting(str(inp), self.meta['inv'], self.inv_sel,
                     self.crafting_list, self.crafting_sel, self.blocks)
 
             # Increment/decrement craft no.
-            self.crafting_list, self.dcraftN = \
+            self.crafting_list, dcraftN = \
                 player.craft_num(str(inp), self.meta['inv'], self.crafting_list,
                     self.crafting_sel, self.blocks)
 
-            self.dcraft = self.dcraftC or self.dcraftN
+            dcraft = dcraftC or dcraftN
         else:
             # Don't allow breaking/placing blocks if in crafting menu
-            self.new_slices, self.meta['inv'], self.inv_sel, self.dinv = \
+            self.new_slices, self.meta['inv'], self.inv_sel, dinv = \
                 player.cursor_func(
                     str(inp), self.map_, self.x, self.y, self.cursor,
                     self.can_break, self.inv_sel, self.meta, self.blocks
                 )
 
-        self.map_.update(self.new_slices)
-
         # Update crafting list
-        if self.dinv or self.dcraft:
+        if dinv or dcraft:
             self.crafting_list, self.crafting_sel = \
                 player.get_crafting(self.meta['inv'], self.crafting_list,
-                                    self.crafting_sel, self.blocks, self.dcraftC)
+                                    self.crafting_sel, self.blocks, dcraftC)
 
-        self.dc = player.move_cursor(inp)
-        self.cursor = (self.cursor + self.dc) % 6
+        dc = player.move_cursor(inp)
+        self.cursor = (self.cursor + dc) % 6
 
-        self.ds = player.move_sel(inp)
+        ds = player.move_sel(inp)
         if self.crafting:
-            self.crafting_sel = ((self.crafting_sel + self.ds) % len(self.crafting_list)
+            self.crafting_sel = ((self.crafting_sel + ds) % len(self.crafting_list)
                                if len(self.crafting_list) else 0)
         else:
-            self.inv_sel = ((self.inv_sel + self.ds) % len(self.meta['inv'])
+            self.inv_sel = ((self.inv_sel + ds) % len(self.meta['inv'])
                           if len(self.meta['inv']) else 0)
 
-        if any((self.dx, self.dy, self.dc, self.ds, self.dinv, self.dcraft)):
+        if any((dx, dy, dc, ds, dinv, dcraft)):
             self.meta['player_x'], self.meta['player_y'] = self.x, self.y
             saves.save_meta(self.save, self.meta)
             self.redraw = True
-        if self.dx or self.dy:
+        if dx or dy:
             self.c_hidden = True
-        if self.dc:
+        if dc:
             self.c_hidden = False
 
+        if inp in 'c':
+            self.redraw = True
+            self.crafting = not self.crafting
+
         self.last_inp = time()
-        inp = None
 
 
 if __name__ == '__main__':
