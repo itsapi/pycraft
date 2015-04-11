@@ -221,6 +221,8 @@ class Game:
             self.dt = 0
 
     def input_frame(self, inp):
+        self.dx, self.dy = 0, 0
+
         if time() >= (1/self.MPS) + self.last_move:
             # Update player position
             self.dx, self.dy, self.jump = player.get_pos_delta(
