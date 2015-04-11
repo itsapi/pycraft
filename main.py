@@ -109,8 +109,16 @@ class Game:
             self.old_sun = self.sun
             self.redraw = True
 
-        self.frame()
-        self.respawn()
+        # Draw view
+        if self.redraw and time() >= 1/self.FPS + self.last_out:
+            self.frame()
+        else:
+            self.df = 0
+
+        # Respawn player if dead
+        if not self.alive and self.df:
+            self.respawn()
+
         self.fall()
 
         # Receive input if a key is pressed
@@ -126,14 +134,13 @@ class Game:
         self.inc_tick()
 
     def respawn(self):
-        # Respawn player if dead
-        if not self.alive and self.df:
-            self.alive = True
-            self.x, self.y = player.respawn(self.meta)
+        self.alive = True
+        self.x, self.y = player.respawn(self.meta)
 
     def fall(self):
         # Player falls when no solid block below it
-        if self.dt and not terrain.is_solid(self.blocks, self.map_[str(self.x)][self.y+1]):
+        if self.dt and not terrain.is_solid(self.blocks,
+                               player.standing_on(self.x, self.y, self.map_)):
             if self.jump > 0:
                 # Countdown till fall
                 self.jump -= 1
@@ -149,51 +156,47 @@ class Game:
             self.alive = False
 
     def frame(self):
-        # Draw view
-        if self.redraw and time() >= 1/self.FPS + self.last_out:
-            self.df = 1
-            self.redraw = False
-            self.last_out = time()
+        self.df = 1
+        self.redraw = False
+        self.last_out = time()
 
-            self.cursor_colour, self.can_break = player.cursor_colour(
-                self.x, self.y, self.cursor, self.map_, self.blocks, self.meta['inv'], self.inv_sel
-            )
+        self.cursor_colour, self.can_break = player.cursor_colour(
+            self.x, self.y, self.cursor, self.map_, self.blocks, self.meta['inv'], self.inv_sel
+        )
 
-            self.objects = player.assemble_player(
-                int(self.width / 2), self.y, self.cursor, self.cursor_colour, self.c_hidden
-            )
+        self.objects = player.assemble_player(
+            int(self.width / 2), self.y, self.cursor, self.cursor_colour, self.c_hidden
+        )
 
-            if self.crafting:
-                self.label = player.label(
-                    self.crafting_list, self.crafting_sel, self.blocks)
-            else:
-                self.label = player.label(
-                    self.meta['inv'], self.inv_sel, self.blocks)
-
-            self.crafting_grid = render.render_grid(
-                player.CRAFT_TITLE, self.crafting, self.crafting_list, self.blocks,
-                terrain.world_gen['height']-1, self.crafting_sel
-            )
-
-            self.inv_grid = render.render_grid(
-                player.INV_TITLE, not self.crafting, self.meta['inv'], self.blocks,
-                terrain.world_gen['height']-1, self.inv_sel
-            )
-
-            self.lights = render.get_lights(self.extended_view, self.edges[0], self.blocks)
-
-            render.render_map(
-                self.view,
-                self.objects,
-                [[self.inv_grid, self.crafting_grid],
-                 [[self.label]]],
-                self.blocks,
-                self.sun,
-                self.lights,
-                self.meta['tick']
-            )
+        if self.crafting:
+            self.label = player.label(
+                self.crafting_list, self.crafting_sel, self.blocks)
         else:
-            self.df = 0
+            self.label = player.label(
+                self.meta['inv'], self.inv_sel, self.blocks)
+
+        self.crafting_grid = render.render_grid(
+            player.CRAFT_TITLE, self.crafting, self.crafting_list, self.blocks,
+            terrain.world_gen['height']-1, self.crafting_sel
+        )
+
+        self.inv_grid = render.render_grid(
+            player.INV_TITLE, not self.crafting, self.meta['inv'], self.blocks,
+            terrain.world_gen['height']-1, self.inv_sel
+        )
+
+        self.lights = render.get_lights(self.extended_view, self.edges[0], self.blocks)
+
+        render.render_map(
+            self.view,
+            self.objects,
+            [[self.inv_grid, self.crafting_grid],
+             [[self.label]]],
+            self.blocks,
+            self.sun,
+            self.lights,
+            self.meta['tick']
+        )
 
     def input_(self):
         char = str(self.nbi.char()).lower()
