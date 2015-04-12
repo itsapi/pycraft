@@ -188,6 +188,7 @@ def game(blocks, meta, map_, save):
                 map_.update(new_slices)
 
                 dcraft, dcraftC = False, False
+                if dinv: crafting = False
                 if crafting:
                     # Craft if player pressed craft
                     meta['inv'], inv_sel, crafting_list, dcraftC = \
