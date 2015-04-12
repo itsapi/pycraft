@@ -113,12 +113,9 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                if crafting:
-                    label = player.label(
-                        crafting_list, crafting_sel, blocks)
-                else:
-                    label = player.label(
-                        meta['inv'], inv_sel, blocks)
+                label = (player.label(crafting_list, crafting_sel, blocks)
+                        if crafting else
+                        player.label(meta['inv'], inv_sel, blocks))
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -182,7 +179,16 @@ def game(blocks, meta, map_, save):
 
                     last_move = time()
 
+                new_slices, meta['inv'], inv_sel, dinv = \
+                    player.cursor_func(
+                        str(inp), map_, x, y, cursor,
+                        can_break, inv_sel, meta, blocks
+                    )
+
+                map_.update(new_slices)
+
                 dcraft, dcraftC, dcraftN = False, False, False
+                if dinv: crafting = False
                 if crafting:
                     # Craft if player pressed craft
                     meta['inv'], inv_sel, crafting_list, dcraftC = \
@@ -195,15 +201,6 @@ def game(blocks, meta, map_, save):
                             crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
-                else:
-                    # Don't allow breaking/placing blocks if in crafting menu
-                    new_slices, meta['inv'], inv_sel, dinv = \
-                        player.cursor_func(
-                            str(inp), map_, x, y, cursor,
-                            can_break, inv_sel, meta, blocks
-                        )
-
-                map_.update(new_slices)
 
                 # Update crafting list
                 if dinv or dcraft:
