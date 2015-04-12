@@ -8,14 +8,6 @@ from data import world_gen
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
 
-def move_map(map_, edges):
-    # Create subset of slices from map_ between edges
-    slices = {}
-    for pos in range(*edges):
-        slices[pos] = map_[str(pos)]
-    return slices
-
-
 def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 
@@ -160,6 +152,14 @@ def gen_slice(pos, meta, blocks):
     slice_ = add_tall_grass(slice_, pos, meta, blocks, slice_height_)
 
     return slice_
+
+
+def move_map(map_, edges):
+    # Create subset of slices from map_ between edges
+    slices = {}
+    for pos in range(*edges):
+        slices[pos] = map_[str(pos)]
+    return slices
 
 
 def unloaded_edges(map_, edges):
