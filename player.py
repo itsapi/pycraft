@@ -174,11 +174,8 @@ def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
         block = blocks[craft['block']]
 
         n_crafts = max(1, dn + int(craft['num'] / block.get('crafts', 1)))
-
-        can_craft = True
-        for ingredient, n in block['recipe'].items():
-            if not (ingredient in inv and (n * n_crafts) <= inv[ingredient]):
-                can_craft = False
+        can_craft = all(ingredient in inv and (n * n_crafts) <= inv[ingredient]
+                        for ingredient, n in block['recipe'].items())
 
         if can_craft:
             crafting_list[crafting_sel]['num'] = n_crafts * block.get('crafts', 1)
