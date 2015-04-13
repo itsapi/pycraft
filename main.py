@@ -207,6 +207,7 @@ def game(blocks, meta, map_, save):
                     crafting_list, crafting_sel = \
                         player.get_crafting(meta['inv'], crafting_list,
                                             crafting_sel, blocks, dcraftC)
+                    if not len(crafting_list): crafting = False
 
                 dc = player.move_cursor(inp)
                 cursor = (cursor + dc) % 6
@@ -233,7 +234,7 @@ def game(blocks, meta, map_, save):
 
             if char in 'c':
                 redraw = True
-                crafting = not crafting
+                crafting = not crafting and len(crafting_list)
 
             # Pause game
             if char in ' \n':
