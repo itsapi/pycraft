@@ -42,7 +42,7 @@ Press `C` to toggle your selection between inventory and crafting grid, press `I
 - 6 sticks:
    - 1 wood
 - 4 torches:
-   - 1 wood
+   - 1 stick
    - 1 coal
 - ladder:
    - 3 sticks

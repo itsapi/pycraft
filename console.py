@@ -1,6 +1,5 @@
 import sys
-
-DEBUG = True
+import os
 
 
 def getTerminalSize():
@@ -41,13 +40,14 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
 
 
-open('log', 'w').close()
-def debug(*args):
+def debug (*args):
     if DEBUG:
-        with open('log', 'a') as f:
+        with open(LOG, 'a') as f:
             print(*args, file=f)
 
 
+LOG = 'pycraft.log'
+DEBUG = os.getenv('PYCRAFT_DEBUG')
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
 CLS_END = '\033[0J'
@@ -55,3 +55,6 @@ CLS_END_LN = '\033[0K'
 REDRAW = '\033[0;0f'
 HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
+
+
+open(LOG, 'w').close()

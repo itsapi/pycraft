@@ -110,12 +110,9 @@ def game(blocks, server):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                if crafting:
-                    label = player.label(
-                        crafting_list, crafting_sel, blocks)
-                else:
-                    label = player.label(
-                        server.inv, inv_sel, blocks)
+                label = (player.label(crafting_list, crafting_sel, blocks)
+                        if crafting else
+                        player.label(server.inv, inv_sel, blocks))
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -179,7 +176,17 @@ def game(blocks, server):
 
                     last_move = time()
 
+                new_blocks, server.inv, inv_sel, dinv = \
+                    player.cursor_func(
+                        str(inp), server.map_, x, y, cursor,
+                        can_break, inv_sel, server.inv, blocks
+                    )
+
+                if new_blocks:
+                    server.save_blocks(new_blocks)
+
                 dcraft, dcraftC, dcraftN = False, False, False
+                if dinv: crafting = False
                 if crafting:
                     # Craft if player pressed craft
                     server.inv, inv_sel, crafting_list, dcraftC = \
@@ -192,22 +199,14 @@ def game(blocks, server):
                             crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
-                else:
-                    # Don't allow breaking/placing blocks if in crafting menu
-                    new_blocks, server.inv, inv_sel, dinv = \
-                        player.cursor_func(
-                            str(inp), server.map_, x, y, cursor,
-                            can_break, inv_sel, server.inv, blocks
-                        )
 
-                    if new_blocks:
-                        server.save_blocks(new_blocks)
 
                 # Update crafting list
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
                         player.get_crafting(server.inv, crafting_list,
                                             crafting_sel, blocks, dcraftC)
+                    if not len(crafting_list): crafting = False
 
                 dc = player.move_cursor(inp)
                 cursor = (cursor + dc) % 6
@@ -220,7 +219,7 @@ def game(blocks, server):
                     inv_sel = ((inv_sel + ds) % len(server.inv)
                                   if len(server.inv) else 0)
 
-                if dx or dy or dc or ds or dinv or dcraft:
+                if any((dx, dy, dc, ds, dinv, dcraft)):
                     server.pos = x, y
                     server.redraw = True
                 if dx or dy:
@@ -233,7 +232,7 @@ def game(blocks, server):
 
             if char in 'c':
                 server.redraw = True
-                crafting = not crafting
+                crafting = not crafting and len(crafting_list)
 
             # Pause game
             if char in ' \n':
