@@ -57,7 +57,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
     block = map_[block_x][block_y]
-    inv_block = inv[inv_sel]['block']
+    inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
 
     slices = {}
