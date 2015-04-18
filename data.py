@@ -36,7 +36,8 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
-        'hierarchy': 0
+        'hierarchy': 0,
+        'placed_on': '-v'
     },
     '|': {
         'char': '#',
@@ -190,7 +191,8 @@ blocks = {
             'x': 1
         },
         'crafts': 4,
-        'light': 7
+        'light': 7,
+        'placed_on_solid': True
     },
     '=': {
         'char': '=',
@@ -205,7 +207,9 @@ blocks = {
         'hierarchy': 10,
         'recipe': {
             '/': 3
-        }
+        },
+        'placed_on': '=',
+        'placed_on_solid': True
     },
     '*': {
         'char': '*',

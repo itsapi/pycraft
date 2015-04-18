@@ -53,27 +53,44 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
 
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
+    inv = meta['inv']
     block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
+    block = map_[block_x][block_y]
+    inv_block = inv[inv_sel]['block']
     dinv = False
-    inv = meta['inv']
 
     slices = {}
 
     if inp in 'k' and block_y >= 0:
 
         # If pressing k and block is air
-        if (map_[block_x][block_y] == ' ' and len(inv) and
-            blocks[ inv[inv_sel]['block'] ]['breakable']):
+        if (block == ' ' and len(inv) and
+            blocks[inv_block]['breakable']):
 
-            # Place block in world from selected inv slot
-            slices[block_x] = map_[block_x]
-            slices[block_x][block_y] = inv[inv_sel]['block']
-            inv, inv_sel = rem_inv(inv, inv_sel)
-            dinv = True
+            try:
+                block_below = map_[block_x][block_y + 1]
+            except IndexError:
+                block_below = None
+
+            placed_on = blocks[inv_block].get('placed_on')
+            placed_on_solid = blocks[inv_block].get('placed_on_solid')
+
+            if placed_on is None and placed_on_solid is None:
+                can_place = True
+            else:
+                can_place = (placed_on is not None and block_below in placed_on
+                             or placed_on_solid and blocks[block_below]['solid'])
+
+            if can_place:
+                # Place block in world from selected inv slot
+                slices[block_x] = map_[block_x]
+                slices[block_x][block_y] = inv_block
+                inv, inv_sel = rem_inv(inv, inv_sel)
+                dinv = True
 
         # If pressing k and block is not air and breakable
-        elif blocks[ map_[block_x][block_y] ]['breakable'] and can_break:
+        elif blocks[block]['breakable'] and can_break:
 
             # Destroy block
             block = map_[block_x][block_y]
