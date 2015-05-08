@@ -176,11 +176,14 @@ def game(blocks, server):
 
                     last_move = time()
 
-                new_blocks, server.inv, inv_sel, dinv = \
+                new_blocks, inv, inv_sel, dinv = \
                     player.cursor_func(
                         str(inp), server.map_, x, y, cursor,
                         can_break, inv_sel, server.inv, blocks
                     )
+
+                if dinv:
+                    server.inv = inv
 
                 if new_blocks:
                     server.save_blocks(new_blocks)
@@ -189,9 +192,11 @@ def game(blocks, server):
                 if dinv: crafting = False
                 if crafting:
                     # Craft if player pressed craft
-                    server.inv, inv_sel, crafting_list, dcraftC = \
+                    inv, inv_sel, crafting_list, dcraftC = \
                         player.crafting(str(inp), server.inv, inv_sel,
                             crafting_list, crafting_sel, blocks)
+                    if dcraftC:
+                        server.inv = inv
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
