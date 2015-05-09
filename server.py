@@ -124,7 +124,8 @@ class RemoteServer:
 
     def _set_slices(self, new_slices):
         self._map.update(new_slices)
-        this.chunks_requested.difference_update(terrain.get_chunk_list(new_slices))
+        self.chunks_requested.difference_update(terrain.get_chunk_list(new_slices))
+        self.chunks_requested.d
         self.view_change = True
 
     def _set_player(self, player):
