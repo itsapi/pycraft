@@ -130,6 +130,9 @@ class RemoteServer:
     def _set_player(self, player):
         pass
 
+    def chunk_loaded(self, x):
+        return (x // terrain.world_gen['chunk_size']) not in self.chunks_requested
+
 
 class Server:
     """ The 'remote' server. """
@@ -258,3 +261,6 @@ class Server:
 
     def update_clients(self, blocks):
         pass
+
+    def chunk_loaded(self, x):
+        return True

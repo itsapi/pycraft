@@ -146,7 +146,9 @@ def game(blocks, server):
                 x, y = player.respawn(server.get_meta('spawn'))
 
             # Player falls when no solid block below it
-            if dt and not terrain.is_solid(blocks, server.map_[str(x)][y+1]):
+            if (dt and not terrain.is_solid(blocks, server.map_[str(x)][y+1])
+                and server.chunk_loaded(x)):
+
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
