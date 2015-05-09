@@ -69,11 +69,11 @@ class RemoteServer:
                 'player': self._set_player
             }[data['event']](data['data'])
 
-    def load_chunks(self, slice_list):
-        slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in set(i // chunk_size for i in slice_list) for chunk_num in range(chunk_size))
+    def load_chunks(self, chunk_list):
+        slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
 
         self._map.update({ str(i): terrain.EMPTY_SLICE for i in slices_its_loading })
-        self._send('load_chunks', [slice_list], async=True)
+        self._send('load_chunks', [chunk_list], async=True)
         self.view_change = True
 
     def dt(self):
@@ -167,12 +167,12 @@ class Server:
                 if conn != sock
         }
 
-    def load_chunks(self, slice_list):
+    def load_chunks(self, chunk_list):
         new_slices = {}
         gen_slices = {}
 
         # Generates new terrain
-        for chunk_num in set(i // chunk_size for i in slice_list):
+        for chunk_num in chunk_list:
             chunk = saves.load_chunk(self._save, chunk_num)
             for i in range(chunk_size):
                 pos = i + chunk_num * chunk_size

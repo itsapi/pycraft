@@ -9,6 +9,9 @@ max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2
 EMPTY_SLICE = [' '] * world_gen['height']
 
 
+get_chunk_list = lambda slice_list: list(set(i // world_gen['chunk_size'] for i in slice_list))
+
+
 def move_map(map_, edges):
     # Create subset of slices from map_ between edges
     slices = {}
