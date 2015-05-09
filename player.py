@@ -53,15 +53,15 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
 
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
-    block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
-    block = map_[block_x][block_y]
-    inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
 
     slices = {}
 
-    if inp in 'k' and block_y >= 0:
+    if inp in 'k' and block_y >= 0 and block_y < terrain.world_gen['height']:
+        block_x = str(x + cursor_x[cursor])
+        block = map_[block_x][block_y]
+        inv_block = inv[inv_sel]['block'] if len(inv) else None
 
         # If pressing k and block is air
         if (block == ' ' and len(inv) and
@@ -114,7 +114,12 @@ def move_sel(inp):
 
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
-    block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
+    c_x, c_y = x + cursor_x[cursor], y + cursor_y[cursor]
+
+    if c_y < 0 or c_y >= terrain.world_gen['height']:
+        return WHITE, False
+
+    block = blocks[ map_[ str(c_x) ][ c_y ] ]
 
     try:
         strength = blocks[inv[inv_sel]['block']]['strength']
