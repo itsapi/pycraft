@@ -72,7 +72,7 @@ class RemoteServer:
     def load_chunks(self, chunk_list):
         slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
 
-        self._map.update({ str(i): terrain.EMPTY_SLICE for i in slices_its_loading })
+        self._map.update({ str(i): list(terrain.EMPTY_SLICE) for i in slices_its_loading })
         self._send('load_chunks', [chunk_list], async=True)
         self.view_change = True
 
