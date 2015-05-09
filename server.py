@@ -44,6 +44,7 @@ class RemoteServer:
 
         self.redraw = False
         self.view_change = False
+        self.chunks_requested = set()
 
         self.listener_t = Thread(target=self.listener)
         self.listener_t.daemon = True
@@ -74,6 +75,7 @@ class RemoteServer:
 
         self._map.update({ str(i): list(terrain.EMPTY_SLICE) for i in slices_its_loading })
         self._send('load_chunks', [chunk_list], async=True)
+        self.chunks_requested.update(chunk_list)
         self.view_change = True
 
     def dt(self):
@@ -122,6 +124,7 @@ class RemoteServer:
 
     def _set_slices(self, new_slices):
         self._map.update(new_slices)
+        this.chunks_requested.difference_update(terrain.get_chunk_list(new_slices))
         self.view_change = True
 
     def _set_player(self, player):
