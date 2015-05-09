@@ -1,13 +1,13 @@
 import terrain
-from console import supported_chars
 from colors import *
+from console import debug
 
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
-INV_SLOTS = 10
-MAX_ITEM = 64
+INV_TITLE = 'Inventory'
+CRAFT_TITLE = 'Crafting'
 
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
@@ -28,23 +28,23 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
     # Calculate change in x pos for left and right movement
     for test_char, dir_, func in (('a', -1, left_slice), ('d', 1, right_slice)):
-        if (char in test_char
-            and not is_solid( func[head_y] )):
+        if ( char in test_char
+             and not is_solid( func[head_y] )):
 
             if is_solid( func[feet_y] ):
-                if (not is_solid( func[above_y] )
-                    and not is_solid( player_slice[above_y] )):
+                if ( not is_solid( func[above_y] )
+                     and not is_solid( player_slice[above_y] )):
+
                     dy = -1
                     dx = dir_
             else:
                 dx = dir_
 
     # Jumps if up pressed, block below, no block above
-    if (char in 'w' and y > 1
-        and not is_solid( player_slice[above_y] )
-            and (
-                is_solid( player_slice[below_y] )
-                or player_slice[feet_y] == '=' )):
+    if ( char in 'w' and y > 1
+         and not is_solid( player_slice[above_y] )
+         and ( is_solid( player_slice[below_y] )
+               or player_slice[feet_y] == '=' )):
 
         dy = -1
         jump = 5
@@ -52,40 +52,54 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
+def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
+    inv = meta['inv']
     block_x = str(x + cursor_x[cursor])
     block_y = y + cursor_y[cursor]
+    block = map_[block_x][block_y]
+    inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
-    inv = meta['inv']
-    ext_inv = meta['ext_inv']
 
     slices = {}
 
     if inp in 'k' and block_y >= 0:
+
         # If pressing k and block is air
-        if map_[block_x][block_y] == ' ' and inv[inv_sel] is not None:
-            # Place block in world from selected inv slot
-            slices[block_x] = map_[block_x]
-            slices[block_x][block_y] = inv[inv_sel]['block']
-            inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-            dinv = change or dinv
+        if (block == ' ' and len(inv) and
+            blocks[inv_block]['breakable']):
+
+            try:
+                block_below = map_[block_x][block_y + 1]
+            except IndexError:
+                block_below = None
+
+            placed_on = blocks[inv_block].get('placed_on')
+            placed_on_solid = blocks[inv_block].get('placed_on_solid')
+
+            if placed_on is None and placed_on_solid is None:
+                can_place = True
+            else:
+                can_place = (placed_on is not None and block_below in placed_on
+                             or placed_on_solid and blocks[block_below]['solid'])
+
+            if can_place:
+                # Place block in world from selected inv slot
+                slices[block_x] = map_[block_x]
+                slices[block_x][block_y] = inv_block
+                inv, inv_sel = rem_inv(inv, inv_sel)
+                dinv = True
+
         # If pressing k and block is not air and breakable
-        elif blocks[ map_[block_x][block_y] ]['breakable']:
-            # Distroy block
+        elif blocks[block]['breakable'] and can_break:
+
+            # Destroy block
             block = map_[block_x][block_y]
             slices[block_x] = map_[block_x]
             slices[block_x][block_y] = ' '
-            inv, ext_inv = add_inv(inv, ext_inv, block)
+            inv = add_inv(inv, block)
+            dinv = True
 
-    # If pressing b remove 1 item from inv slot
-    if inp in 'b':
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel)
-        dinv = change or dinv
-    # If pressing ctrl-b remove stack from inv slot
-    if ord(inp) == 2:
-        inv, ext_inv, change = rem_inv(inv, ext_inv, inv_sel, MAX_ITEM)
-        dinv = change or dinv
-    return slices, inv, ext_inv, dinv
+    return slices, inv, inv_sel, dinv
 
 
 def respawn(meta):
@@ -93,20 +107,26 @@ def respawn(meta):
 
 
 def move_cursor(inp):
+    return {'j': -1, 'l': 1}.get(inp, 0)
+
+
+def move_sel(inp):
+    return {'u': -1, 'o': 1}.get(inp, 0)
+
+
+def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
+    block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
+
     try:
-        return {'j': -1, 'l': 1}[inp]
-    except KeyError:
-        return 0
+        strength = blocks[inv[inv_sel]['block']]['strength']
+    except (IndexError, KeyError):
+        strength = 20
+
+    can_break = block['breakable'] and strength >= block['hierarchy']
+    return [RED, WHITE][can_break], can_break
 
 
-def move_inv_sel(inp):
-    try:
-        return {'h': -1, ';': 1}[inp]
-    except KeyError:
-        return 0
-
-
-def render_player(x, y, cursor, c_hidden):
+def assemble_player(x, y, cursor, colour, c_hidden):
 
     head = {
         'x': x,
@@ -123,81 +143,118 @@ def render_player(x, y, cursor, c_hidden):
     cursor = {
         'x': x + cursor_x[cursor],
         'y': y + cursor_y[cursor],
-        'char': 'X'
+        'char': 'X',
+        'colour': colour
     }
 
     return (head, feet) if c_hidden else (head, feet, cursor)
 
 
-def render_inv(inv_sel, inv, blocks):
-    h, v, tl, t, tr, l, m, r, bl, b, br = \
-        supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
+def get_crafting(inv, crafting_list, crafting_sel, blocks, reset=False):
+    """ Makes a list of blocks you can craft """
 
-    out = []
-    out.append(tl + (h*3) + t + (h*4) + tr)
-    for i, slot in enumerate(inv):
-        if slot is not None:
-            block_char = blocks[slot['block']]['char']
-            num = slot['num']
-        else:
-            block_char, num = ' ', ''
+    inv = dict(map(lambda a: (a['block'], a['num']), inv))
 
-        # Have to do the padding before color because the color
-        #   messes with the char count. (The block will allways be 1 char wide.)
-        num = '{:2}'.format(num)
+    def old_n(recipe):
+        if not reset:
+            # Gets the old num, if exists
+            for old in crafting_list:
+                if old['block'] == recipe['block']:
+                    recipe['num'] = old['num']
+                    break
+        return recipe
 
-        out.append('{v} {b} {v} {n} {v}'.format(
-            b=colorStr(block_char, bg=None),
-            n=colorStr(num, bg=RED) if i == inv_sel else num,
-            v=v
-        ))
+    crafting = []
+    for char, block in blocks.items():
+        if 'recipe' in block:
+            can_craft = True
+            for ingredient, n in block['recipe'].items():
+                if not (ingredient in inv and n <= inv[ingredient]):
+                    can_craft = False
+            if can_craft:
+                crafting.append(old_n({
+                    'block': char,
+                    'num': block.get('crafts', 1)
+                }))
 
-        if not i == len(inv) - 1:
-            out.append(l + (h*3) + m + (h*4) + r)
-        else:
-            out.append(bl + (h*3) + b + (h*4) + br)
-
-    return out
+    return crafting, max(min(crafting_sel, len(crafting) - 1), 0)
 
 
-def add_inv(inv, ext_inv, block):
-    empty = False
+def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
+    dcraft = False
+
+    if inp in '-=':
+        dn = '-='.find(inp)*2 - 1
+
+        inv = dict(map(lambda a: (a['block'], a['num']), inv))
+
+        craft = crafting_list[crafting_sel]
+        block = blocks[craft['block']]
+
+        n_crafts = max(1, dn + int(craft['num'] / block.get('crafts', 1)))
+        can_craft = all(ingredient in inv and (n * n_crafts) <= inv[ingredient]
+                        for ingredient, n in block['recipe'].items())
+
+        if can_craft:
+            crafting_list[crafting_sel]['num'] = n_crafts * block.get('crafts', 1)
+            dcraft = True
+
+    return crafting_list, dcraft
+
+
+def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
+    """ Crafts the selected item in crafting_list """
+
+    dcraft = False
+
+    if inp in 'i' and len(crafting_list):
+        dcraft = True
+        craft = crafting_list[crafting_sel]
+
+        block = blocks[craft['block']]
+        for ingredient, n in block['recipe'].items():
+            for i, b in enumerate(inv):
+                if b['block'] == ingredient:
+                    inv, _ = rem_inv(inv, i, n * int(craft['num'] / block.get('crafts', 1)))
+
+                    # Decrements inv_sel if you're at the end of the list
+                    #   or an item is removed below you in the list.
+                    inv_sel -= inv_sel > i or len(inv) == inv_sel
+
+        add_inv(inv, craft['block'], craft['num'])
+
+    return inv, max(inv_sel, 0), crafting_list, dcraft
+
+
+def label(list, sel, blocks):
+    try:
+        return blocks[list[sel]['block']]['name']
+    except IndexError:
+        return ''
+
+
+def add_inv(inv, block, n=1):
     placed = False
+
     for i, slot in enumerate(inv):
-        if slot is not None and slot['block'] == block and slot['num'] < MAX_ITEM:
-            inv[i]['num'] += 1
+        if slot['block'] == block:
+            inv[i]['num'] += n
             placed = True
             break
-        elif slot is None and empty is False:
-            empty = i
 
-    if placed is False and empty is not False:
-        inv[empty] = {'block': block, 'num': 1}
+    if placed is False:
+        inv.append({'block': block, 'num': n})
+
+    return inv
+
+
+def rem_inv(inv, inv_sel, n=1):
+    if inv[inv_sel]['num'] == n:
+        inv.remove(inv[inv_sel])
+
+        if inv_sel == len(inv):
+            inv_sel -= 1
     else:
-        for i, slot in enumerate(ext_inv):
-            if slot['block'] == block and slot['num'] < MAX_ITEM:
-                ext_inv[i]['num'] += 1
-                placed = True
-                break
-        if not placed:
-            ext_inv.append({'block': block, 'num': 1})
+        inv[inv_sel]['num'] -= n
 
-    return inv, ext_inv
-
-
-def rem_inv(inv, ext_inv, inv_sel, num=1):
-    if inv[inv_sel] is not None and inv[inv_sel]['num'] > num:
-        inv[inv_sel]['num'] -= num
-        change = True
-    else:
-        if ext_inv:
-            inv[inv_sel] = ext_inv[0]
-            ext_inv.remove(ext_inv[0])
-            change = True
-        elif inv[inv_sel] is not None:
-            inv[inv_sel] = None
-            change = True
-        else:
-            # inv was already None
-            change = False
-    return inv, ext_inv, change
+    return inv, inv_sel

@@ -2,9 +2,10 @@ from colors import *
 
 
 blocks = {
-    ' ': { # Air
+    ' ': {
         'char': ' ',
-        'colors': {
+        'name': 'Air',
+        'colours': {
             'fg': None,
             'bg': None,
             'style': None
@@ -13,9 +14,10 @@ blocks = {
         'breakable': False,
         'hierarchy': 0
     },
-    '-': { # Grass
-        'char': '░',
-        'colors': {
+    '-': {
+        'char': '░ᚇ~',
+        'name': 'Grass',
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': LIGHT
@@ -24,20 +26,23 @@ blocks = {
         'breakable': True,
         'hierarchy': 20
     },
-    'v': { # Tall Grass
+    'v': {
         'char': 'v',
-        'colors': {
+        'name': 'Tall Grass',
+        'colours': {
             'fg': GREEN,
             'bg': None,
             'style': DARK
         },
         'solid': False,
         'breakable': True,
-        'hierarchy': 0
+        'hierarchy': 0,
+        'placed_on': '-v'
     },
-    '|': { # Wood
+    '|': {
         'char': '#',
-        'colors': {
+        'name': 'Wood',
+        'colours': {
             'fg': BLACK,
             'bg': MAGENTA,
             'style': LIGHT
@@ -46,9 +51,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 10
     },
-    '@': { # Leaves
+    '@': {
         'char': '@',
-        'colors': {
+        'name': 'Leaves',
+        'colours': {
             'fg': GREEN,
             'bg': GREEN,
             'style': DARK
@@ -57,9 +63,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 5
     },
-    '#': { # Stone
+    '#': {
         'char': '~',
-        'colors': {
+        'name': 'Stone',
+        'colours': {
             'fg': None,
             'bg': BLACK,
             'style': CLEAR
@@ -68,20 +75,22 @@ blocks = {
         'breakable': True,
         'hierarchy': 50
     },
-    'x': { # Coal
+    'x': {
         'char': 'x',
-        'colors': {
+        'name': 'Coal',
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
-            'style': DARK
+            'style': LIGHT
         },
         'solid': True,
         'breakable': True,
         'hierarchy': 55
     },
-    '+': { # Iron
+    '+': {
         'char': '+',
-        'colors': {
+        'name': 'Iron',
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': LIGHT
@@ -90,9 +99,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 60
     },
-    ':': { # Redstone
+    ':': {
         'char': ':',
-        'colors': {
+        'name': 'Redstone',
+        'colours': {
             'fg': RED,
             'bg': BLACK,
             'style': DARK
@@ -101,9 +111,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 65
     },
-    '"': { # Gold
+    '"': {
         'char': '"',
-        'colors': {
+        'name': 'Gold',
+        'colours': {
             'fg': YELLOW,
             'bg': BLACK,
             'style': None
@@ -112,9 +123,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 70
     },
-    'o': { # Diamond
+    'o': {
         'char': 'o',
-        'colors': {
+        'name': 'Diamond',
+        'colours': {
             'fg': BLUE,
             'bg': BLACK,
             'style': LIGHT
@@ -123,9 +135,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 75
     },
-    '.': { # Emerald
+    '.': {
         'char': 'o',
-        'colors': {
+        'name': 'Emerald',
+        'colours': {
             'fg': GREEN,
             'bg': BLACK,
             'style': DARK
@@ -134,9 +147,10 @@ blocks = {
         'breakable': True,
         'hierarchy': 80
     },
-    '_': { # Bedrock
+    '_': {
         'char': '#',
-        'colors': {
+        'name': 'Bedrock',
+        'colours': {
             'fg': BLACK,
             'bg': BLACK,
             'style': LIGHT
@@ -145,42 +159,86 @@ blocks = {
         'breakable': False,
         'hierarchy': 100
     },
-    '=': { # Ladder
-        'char': '=',
-        'colors': {
+    '/': {
+        'char': '/',
+        'name': 'Sticks',
+        'colours': {
             'fg': BLACK,
             'bg': None,
-            'style': None
+            'style': LIGHT
+        },
+        'solid': False,
+        'breakable': False,
+        'hierarchy': 10,
+        'recipe': {
+            '|': 1
+        },
+        'crafts': 6
+    },
+    'i': {
+        'char': '¡',
+        'name': 'Torch',
+        'colours': {
+            'fg': YELLOW,
+            'bg': None,
+            'style': BOLD
         },
         'solid': False,
         'breakable': True,
-        'hierarchy': 10
+        'hierarchy': 10,
+        'recipe': {
+            '/': 1,
+            'x': 1
+        },
+        'crafts': 4,
+        'light': 7,
+        'placed_on_solid': True
     },
-    '*': { # Player head
+    '=': {
+        'char': '=',
+        'name': 'Ladder',
+        'colours': {
+            'fg': BLACK,
+            'bg': None,
+            'style': LIGHT
+        },
+        'solid': False,
+        'breakable': True,
+        'hierarchy': 10,
+        'recipe': {
+            '/': 3
+        },
+        'placed_on': '=',
+        'placed_on_solid': True
+    },
+    '*': {
         'char': '*',
-        'colors': {
+        'name': 'Player head',
+        'colours': {
             'fg': WHITE,
             'bg': None,
-            'style': None
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
         'hierarchy': 1000
     },
-    '^': { # Player feet
+    '^': {
         'char': '^',
-        'colors': {
+        'name': 'Player feet',
+        'colours': {
             'fg': WHITE,
             'bg': None,
-            'style': None
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
         'hierarchy': 1000
     },
-    'X': { # Cursor
+    'X': {
         'char': 'X',
-        'colors': {
+        'name': 'Cursor',
+        'colours': {
             'fg': RED,
             'bg': None,
             'style': None
@@ -188,12 +246,77 @@ blocks = {
         'solid': False,
         'breakable': False,
         'hierarchy': 1010
+    },
+    '1': {
+        'char': '⚒T',
+        'name': 'Wooden Pickaxe',
+        'colours': {
+            'fg': MAGENTA,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 50,
+        'recipe': {
+            '/': 2,
+            '|': 3
+        }
+    },
+    '2': {
+        'char': '⚒T',
+        'name': 'Stone Pickaxe',
+        'colours': {
+            'fg': BLACK,
+            'bg': None,
+            'style': LIGHT
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 60,
+        'recipe': {
+            '/': 2,
+            '#': 3
+        }
+    },
+    '3': {
+        'char': '⚒T',
+        'name': 'Iron Pickaxe',
+        'colours': {
+            'fg': RED,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 75,
+        'recipe': {
+            '/': 2,
+            '+': 3
+        }
+    },
+    '4': {
+        'char': '⚒T',
+        'name': 'Diamond Pickaxe',
+        'colours': {
+            'fg': CYAN,
+            'bg': None,
+            'style': DARK
+        },
+        'solid': False,
+        'breakable': False,
+        'strength': 80,
+        'recipe': {
+            '/': 2,
+            'o': 3
+        }
     }
 }
 
 world_gen = {
     'height': 30,
     'max_hill': 15,
+    'min_grad': 5,
     'ground_height': 10,
     'chunk_size': 16,
     'max_biome_size': 50,
@@ -285,10 +408,10 @@ help_data = {
         ['Move cursor anti-clockwise', 'J']
     ],
     'Inventory:': [
-        ['Cycle inventory down', ';'],
-        ['Cycle inventory up', 'H'],
-        ['Drop single item', 'B'],
-        ['Drop entire stack', 'CTRL-B']
+        ['Cycle inventory down', 'O'],
+        ['Cycle inventory up', 'U'],
+        ['Toggle crafting menu', 'C'],
+        ['Craft selected item', 'I']
     ],
     'Menus:': [
         ['Move up', 'W or UP'],

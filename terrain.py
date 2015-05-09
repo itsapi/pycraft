@@ -1,12 +1,8 @@
 import random
-import copy
-from math import ceil, sin, cos, radians, pi
+from math import ceil
 
-from console import CLS
-from colors import *
-from data import world_gen, blocks
+from data import world_gen
 
-sun_y = world_gen['height'] - world_gen['ground_height']
 
 # Maximum width of half a tree
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
@@ -20,132 +16,34 @@ def move_map(map_, edges):
     return slices
 
 
-def render_map(map_, objects, inv, blocks, sun, tick):
-    """
-        Prints out a frame of the game.
-
-        Takes:
-        - map_: a 2D list of blocks.
-        - objects: a list of dictionaries:
-            {'x': int, 'y': int, 'char': block}
-        - inv: a 2D list of chars to make up the inventory on
-            the right of the game.
-        - blocks: the main dictionary describing the blocks in the game.
-        - sun: (x, y) position of the sun.
-        - tick: the game time.
-    """
-
-    # Sorts the dict as a list by pos
-    map_ = list(map_.items())
-    map_.sort(key=lambda item: int(item[0]))
-
-    # map_ = [[0, '##  '],
-    #         [1, '### '],
-    #         [2, '##  ']]
-
-    # Seperates the pos and data
-    map_ = tuple(zip(*map_))[1]
-
-    # Orientates the data
-    map_ = zip(*map_)
-
-    # Output the map
-    out = ''
-    for y, row in enumerate(map_):
-        for x, pixel_f in enumerate(row):
-
-            # Block back and front are same to begin
-            pixel_b = pixel_f
-
-            # Add any objects
-            for object_ in objects:
-                if object_['x'] == x and object_['y'] == y:
-                    pixel_f = object_['char']
-
-            # Add sky behind blocks without objects
-            if pixel_f == pixel_b:
-                pixel_b = ' '
-
-            # If the front block has a transparent bg
-            if blocks[pixel_f]['colors']['bg'] is None:
-
-                # Figure out bg color
-                char_bg = blocks[pixel_b]['colors']['bg']
-                if char_bg is None or pixel_b == ' ':
-                    bg = sky(x, y, tick, sun)
-                else:
-                    bg = char_bg
-
-                out += colorStr(
-                    blocks[pixel_f]['char'],
-                    bg = bg,
-                    fg = blocks[pixel_f]['colors']['fg'],
-                    style = blocks[pixel_f]['colors']['style']
-                )
-            else: # The block was colored on startup
-                out += blocks[pixel_f]['char']
-
-        try:
-            out += ' ' + inv[y]
-        except IndexError:
-            pass
-
-        out += '\n'
-
-    print(CLS + out, end='')
-
-
-def sun(time, width):
-    """ Returns position of sun """
-
-    sun_r = width / 2
-
-    # Set i to +1 for night and -1 for day
-    i = -2 * (cos(time) > 0) + 1
-    x = int(sun_r * i * sin(time) + sun_r + 1)
-    y = int(sun_r * i * cos(time) + sun_y)
-
-    return x, y
-
-
-def sky(x, y, time, sun):
-    """ Returns the sky color. """
-
-    day = cos(time) > 0
-
-    if sun[0] in [x, x+1] and sun[1] == y:
-        # Sun pixel
-        if day:
-            return YELLOW
-        else:
-            return WHITE
-    else:
-        # Sky pixel
-        if day:
-            return CYAN
-        else:
-            return BLUE
-
-
 def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 
-    # Check surrounding slices for a hill
-    for x in range(pos - world_gen['max_hill'] * 2,
-                   pos + world_gen['max_hill'] * 2):
+    # Check surrounding slices for a hill with min gradient
+    for x in range(pos - world_gen['max_hill'] * world_gen['min_grad'],
+                   pos + world_gen['max_hill'] * world_gen['min_grad']):
         # Set seed for random numbers based on position
         random.seed(str(meta['seed']) + str(x) + 'hill')
 
         # Generate a hill with a 5% chance
         if random.random() <= 0.05:
-            # Make top of hill flat
-            # Set height to height of hill minus distance from hill
-            hill_height = (world_gen['ground_height'] +
-                random.randint(0, world_gen['max_hill']) - abs(pos-x)/2)
-            hill_height -= 1 if pos == x else 0
 
-            if hill_height > slice_height_:
-                slice_height_ = hill_height
+            # Get gradient for left, or right side of hill
+            gradient_l = random.randint(1, world_gen['min_grad'])
+            gradient_r = random.randint(1, world_gen['min_grad'])
+
+            gradient = gradient_r if x < pos else gradient_l
+
+            # Check if still in range with new gradient
+            if abs(pos-x) / gradient < world_gen['max_hill']:
+
+                # Set height to height of hill minus distance from hill
+                hill_height = (world_gen['ground_height'] +
+                    random.randint(0, world_gen['max_hill']) - abs(pos-x)/gradient)
+                # Make top of hill flat
+                hill_height -= 1 if pos == x else 0
+
+                slice_height_ = max(slice_height_, hill_height)
 
     return int(slice_height_)
 
@@ -202,14 +100,11 @@ def biome(pos, meta):
         random.seed(str(meta['seed']) + str(boime_x) + 'biome')
 
         # Generate a biome marker with a 5% chance
-        if random.random() <= 0.05:
+        if random.random() <= .05:
             biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
-    if not biome_type:
-        # If not plains or forest, it's normal
-        return .05
-    else:
-        return max(set(biome_type), key=biome_type.count)
+    # If not plains or forest, it's normal
+    return max(set(biome_type), key=biome_type.count) if biome_type else .05
 
 
 def add_ores(slice_, pos, meta, blocks, slice_height_):
@@ -270,10 +165,7 @@ def gen_slice(pos, meta, blocks):
 def detect_edges(map_, edges):
     slices = []
     for pos in range(*edges):
-        try:
-            # If it doesn't exist add the pos to the list
-            map_[str(pos)]
-        except KeyError:
+        if not str(pos) in map_:
             slices.append(pos)
 
     return slices
@@ -289,19 +181,3 @@ def is_solid(blocks, block):
 
 def ground_height(slice_, blocks):
     return next(i for i, block in enumerate(slice_) if blocks[block]['solid'])
-
-
-def gen_blocks():
-    # Convert the characters to their coloured form
-    for key, block in blocks.items():
-
-        # If bg is transparent, it must be coloured at runtime.
-        if blocks[key]['colors']['bg'] is not None:
-            blocks[key]['char'] = colorStr(
-                block['char'],
-                block['colors']['fg'],
-                block['colors']['bg'],
-                block['colors']['style']
-            )
-
-    return blocks

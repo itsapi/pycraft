@@ -5,7 +5,6 @@ import random
 from shutil import rmtree
 
 from terrain import world_gen
-from player import INV_SLOTS
 
 
 default_meta = {
@@ -14,8 +13,8 @@ default_meta = {
     'spawn': 0,
     'player_x': 0,
     'player_y': 1,
-    'inv': [None for i in range(INV_SLOTS)],
-    'ext_inv': []
+    'inv': [],
+    'tick': 0
 }
 
 SAVES_DIR = 'saves'
