@@ -78,6 +78,9 @@ class RemoteServer:
         self.chunks_requested.update(chunk_list)
         self.view_change = True
 
+    def unload_chunks(self, edges):
+        self._map = {i:s for i,s in self._map.items() if int(i) in range(*edges)}
+
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return self._dt
@@ -194,6 +197,9 @@ class Server:
 
         self._map.update(new_slices)
         return { 'event': 'slices', 'data': new_slices }
+
+    def unload_chunks(self, edges):
+        self._map = {i:s for i,s in self._map.items() if int(i) in range(*edges)}
 
     def dt(self):
         dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
