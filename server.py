@@ -78,7 +78,7 @@ class RemoteServer:
         self.chunks_requested.update(chunk_list)
         self.view_change = True
 
-    def unload_sices(self, edges):
+    def unload_slices(self, edges):
         self._map = {x:s for x,s in self._map.items() if int(x) in range(*edges)}
 
     def dt(self):
