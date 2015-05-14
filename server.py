@@ -25,8 +25,25 @@ def update_tick(last_tick, cur_tick):
     return dt, last_tick, cur_tick
 
 
-class RemoteServer:
-    """ Comunicate with remote server. """
+class CommonServer:
+
+    def unload_slices(self, edges):
+        self._map = {x:s for x,s in self._map.items() if int(x) in range(*edges)}
+
+    def get_meta(self, prop=None):
+        return self._meta[prop] if prop else self._meta
+
+    @property
+    def tick(self):
+        return self._meta['tick']
+
+    @property
+    def map_(self):
+        return self._map
+
+
+class ServerInterface(CommonServer):
+    """ Communicate with remote server. """
 
     def __init__(self, name, ip, port):
         self._sock = network.connect(ip, int(port))
@@ -78,44 +95,8 @@ class RemoteServer:
         self.chunks_requested.update(chunk_list)
         self.view_change = True
 
-    def unload_sices(self, edges):
-        self._map = {x:s for x,s in self._map.items() if int(x) in range(*edges)}
-
-    def dt(self):
-        self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
-        return self._dt
-
-    @property
-    def tick(self):
-        return self._meta['tick']
-
-    def login(self):
-        self._player = self._send('login', self._name)
-
-    def get_meta(self, prop=None):
-        return self._meta[prop] if prop else self._meta
-
-    @property
-    def pos(self):
-        return self._me['player_x'], self._me['player_y']
-
-    @pos.setter
-    def pos(self, pos):
-        self._me['player_x'], self._me['player_y'] = pos
-        self._send('set_player', [self._name, self._me], async=True)
-
-    @property
-    def inv(self):
-        return self._me['inv']
-
-    @inv.setter
-    def inv(self, inv):
-        self._me['inv'] = inv
-        self._send('set_player', [self._name, self._me], async=True)
-
-    @property
-    def map_(self):
-        return self._map
+    def chunk_loaded(self, x):
+        return (x // terrain.world_gen['chunk_size']) not in self.chunks_requested
 
     def save_blocks(self, blocks):
         self._send('save_blocks', [blocks], async=True)
@@ -130,15 +111,38 @@ class RemoteServer:
         self.chunks_requested.difference_update(terrain.get_chunk_list(new_slices.keys()))
         self.view_change = True
 
+    def login(self):
+        self._player = self._send('login', self._name)
+
+    def dt(self):
+        self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
+        return self._dt
+
     def _set_player(self, player):
         pass
 
-    def chunk_loaded(self, x):
-        return (x // terrain.world_gen['chunk_size']) not in self.chunks_requested
+    @property
+    def pos(self):
+        return self._me['player_x'], self._me['player_y']
+
+    @property
+    def inv(self):
+        return self._me['inv']
+
+    @pos.setter
+    def pos(self, pos):
+        self._me['player_x'], self._me['player_y'] = pos
+        self._send('set_player', [self._name, self._me], async=True)
+
+    @inv.setter
+    def inv(self, inv):
+        self._me['inv'] = inv
+        self._send('set_player', [self._name, self._me], async=True)
 
 
-class Server:
-    """ The 'remote' server. """
+class Server(CommonServer):
+    """ The host server. """
+
     def __init__(self, save, name):
         self._name = name
         self._save = save
@@ -198,16 +202,17 @@ class Server:
         self._map.update(new_slices)
         return { 'event': 'slices', 'data': new_slices }
 
-    def unload_slices(self, edges):
-        self._map = {x:s for x,s in self._map.items() if int(x) in range(*edges)}
+    def save_blocks(self, blocks):
+        self._map, new_slices = saves.set_blocks(self._map, blocks)
+        saves.save_map(self._save, new_slices)
+        self.view_change = True
+
+    def chunk_loaded(self, x):
+        return True
 
     def dt(self):
         dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return dt
-
-    @property
-    def tick(self):
-        return self._meta['tick']
 
     def login(self, name, sock=None):
         debug('Logging in: '+name)
@@ -222,14 +227,14 @@ class Server:
 
             return self._meta['players'][name]
 
-    def get_meta(self, prop=None):
-        return self._meta[prop] if prop else self._meta
-
     def get_player(self, name):
         return self._meta['players'][name]
 
     def set_player(self, name, player):
         self._meta['players'][name] = player
+
+    def update_clients(self, blocks):
+        pass
 
     @property
     def save(self):
@@ -243,30 +248,15 @@ class Server:
     def pos(self):
         return self._me['player_x'], self._me['player_y']
 
+    @property
+    def inv(self):
+        return self._me['inv']
+
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
         saves.save_meta(self._save, self._meta)
 
-    @property
-    def inv(self):
-        return self._me['inv']
-
     @inv.setter
     def inv(self, inv):
         self._me['inv'] = inv
-
-    @property
-    def map_(self):
-        return self._map
-
-    def save_blocks(self, blocks):
-        self._map, new_slices = saves.set_blocks(self._map, blocks)
-        saves.save_map(self._save, new_slices)
-        self.view_change = True
-
-    def update_clients(self, blocks):
-        pass
-
-    def chunk_loaded(self, x):
-        return True

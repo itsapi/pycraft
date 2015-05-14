@@ -26,7 +26,7 @@ def main():
                 game(blocks, server.Server(data, name))
             else:
                 # Remote Server
-                game(blocks, server.RemoteServer(name, *data))
+                game(blocks, server.ServerInterface(name, *data))
 
     finally:
         print(SHOW_CUR)
