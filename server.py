@@ -26,7 +26,7 @@ def update_tick(last_tick, cur_tick):
 
 
 class RemoteServer:
-    """ Comunicate with remote server. """
+    """ Communicate with remote server. """
 
     def __init__(self, name, ip, port):
         self._sock = network.connect(ip, int(port))
