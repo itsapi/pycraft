@@ -42,6 +42,7 @@ def game(blocks, meta, map_, save):
     old_sun = None
     old_edges = None
     redraw = False
+    last_frame = []
     last_out = time()
     last_tick = time()
     last_inp = time()
@@ -111,9 +112,17 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                label = (player.label(crafting_list, crafting_sel, blocks)
-                        if crafting else
-                        player.label(meta['inv'], inv_sel, blocks))
+                lights = render.get_lights(extended_view, edges[0], blocks)
+
+                out, last_frame = render.render_map(
+                    view,
+                    objects,
+                    blocks,
+                    sun,
+                    lights,
+                    meta['tick'],
+                    last_frame
+                )
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -125,18 +134,17 @@ def game(blocks, meta, map_, save):
                     terrain.world_gen['height']-1, inv_sel
                 )
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                label = (player.label(crafting_list, crafting_sel, blocks)
+                        if crafting else
+                        player.label(meta['inv'], inv_sel, blocks))
 
-                render.render_map(
-                    view,
-                    objects,
+                out += render.render_grids(
                     [[inv_grid, crafting_grid],
                      [[label]]],
-                    blocks,
-                    sun,
-                    lights,
-                    meta['tick']
+                    width
                 )
+
+                print(out)
             else:
                 df = 0
 
@@ -239,6 +247,7 @@ def game(blocks, meta, map_, save):
                 meta['player_x'], meta['player_y'] = x, y
                 saves.save_meta(save, meta)
                 redraw = True
+                last_frame = []
                 if ui.pause() == 'exit':
                     game = False
 
