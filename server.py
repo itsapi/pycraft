@@ -234,7 +234,7 @@ class Server(CommonServer):
 
     def set_player(self, name, player):
         self._meta['players'][name] = player
-        self.update_clients({ 'event': 'player', 'data': { 'name': player } }, name)
+        self.update_clients({ 'event': 'player', 'data': { name: player } }, name)
 
     def update_clients(self, message, sender=None):
         for name, sock in self._players.items():
