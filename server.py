@@ -85,8 +85,7 @@ class ServerInterface(CommonServer):
         while True:
             data = network.receive(self._sock)
             if data is None: break
-            {
-                'blocks': self._set_blocks,
+            {   'blocks': self._set_blocks,
                 'slices': self._set_slices,
                 'player': self._set_player
             }[data['event']](data['data'])
@@ -167,22 +166,21 @@ class Server(CommonServer):
     def _handler(self, sock, data):
         debug('Method: '+data['method'])
 
-        if data['method'] == 'login':
-            return self.login(data['args'], sock)
-        else:
-            return {
-                'load_chunks': self.load_chunks,
+        return (
+            self.login(data['args'], sock)
+            if data['method'] == 'login' else
+            {   'load_chunks': self.load_chunks,
                 'get_meta': self.get_meta,
                 'set_player': self.set_player,
                 'save_blocks': self.save_blocks,
                 'logout': lambda: self._logout(sock)
             }[data['method']](*data.get('args', []))
+        )
 
     def _logout(self, sock):
         saves.save_meta(self._save, self._meta)
         self._players = {
-            name: conn for name, conn in self._players.items()
-                if conn != sock
+            name: conn for name, conn in self._players.items() if conn != sock
         }
 
     def load_chunks(self, chunk_list):
@@ -201,8 +199,7 @@ class Server(CommonServer):
             new_slices.update(chunk)
 
         # Save generated terrain to file
-        if gen_slices:
-            saves.save_map(self._save, gen_slices)
+        if gen_slices: saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
         return { 'event': 'slices', 'data': new_slices }
@@ -228,8 +225,7 @@ class Server(CommonServer):
             debug('Creating: '+name)
 
             # Store socket
-            if sock:
-                self._players[name] = sock
+            if sock: self._players[name] = sock
 
             return self._meta['players'][name]
 
