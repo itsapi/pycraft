@@ -206,6 +206,7 @@ class Server(CommonServer):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
         self.view_change = True
+        self.update_clients({ 'event': 'blocks', 'data': blocks })
 
     def chunk_loaded(self, x):
         return True
@@ -233,8 +234,9 @@ class Server(CommonServer):
     def set_player(self, name, player):
         self._meta['players'][name] = player
 
-    def update_clients(self, blocks):
-        pass
+    def update_clients(self, message):
+        for sock in self._players.values():
+            network.send(sock, message, True)
 
     @property
     def save(self):

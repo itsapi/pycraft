@@ -185,8 +185,11 @@ def set_blocks(map_, blocks):
 
     for x, col in blocks.items():
         for y, block in col.items():
-            new_slices[str(x)] = map_[str(x)]
-            map_[str(x)][int(y)] = new_slices[str(x)][int(y)] = block
+            try:
+                new_slices[str(x)] = map_[str(x)]
+                map_[str(x)][int(y)] = new_slices[str(x)][int(y)] = block
+            except KeyError:
+                pass
 
     return map_, new_slices
 
