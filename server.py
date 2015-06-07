@@ -124,6 +124,7 @@ class ServerInterface(CommonServer):
     def _set_player(self, players):
         for name, player in players.items():
             self._meta['players'][name] = player
+        self.redraw = True
 
     @property
     def pos(self):
@@ -235,6 +236,7 @@ class Server(CommonServer):
     def set_player(self, name, player):
         self._meta['players'][name] = player
         self.update_clients({ 'event': 'player', 'data': { name: player } }, name)
+        self.redraw = True
 
     def update_clients(self, message, sender=None):
         for name, sock in self._players.items():
@@ -259,6 +261,7 @@ class Server(CommonServer):
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
+        self.set_player(self._name, self._me)
         saves.save_meta(self._save, self._meta)
 
     @inv.setter
