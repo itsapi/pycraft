@@ -168,6 +168,7 @@ def game(blocks, server):
                 else:
                     # Fall
                     y += 1
+                    server.pos = x, y
                     server.redraw = True
 
             # If no block below, kill player
