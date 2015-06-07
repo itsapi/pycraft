@@ -54,14 +54,14 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
 
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
     block_y = y + cursor_y[cursor]
+    block_x = str(x + cursor_x[cursor])
+    block = map_[block_x][block_y]
+    inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
 
     slices = {}
 
     if inp in 'k' and block_y >= 0 and block_y < terrain.world_gen['height']:
-        block_x = str(x + cursor_x[cursor])
-        block = map_[block_x][block_y]
-        inv_block = inv[inv_sel]['block'] if len(inv) else None
 
         # If pressing k and block is air
         if (block == ' ' and len(inv) and

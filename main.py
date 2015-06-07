@@ -7,8 +7,7 @@ import saves, ui, terrain, player, render, server
 
 
 def main():
-    print(HIDE_CUR)
-    print(CLS)
+    print(HIDE_CUR + CLS)
 
     debug('Start\n')
 
@@ -29,8 +28,7 @@ def main():
                 game(blocks, server.ServerInterface(name, *data))
 
     finally:
-        print(SHOW_CUR)
-        print(CLS)
+        print(SHOW_CUR + CLS)
 
 
 def game(blocks, server):
@@ -50,6 +48,8 @@ def game(blocks, server):
 
     old_sun = None
     old_edges = None
+    redraw = False
+    last_frame = []
     last_out = time()
     last_inp = time()
     last_move = time()
@@ -108,19 +108,26 @@ def game(blocks, server):
                     x, y, cursor, server.map_, blocks, server.inv, inv_sel
                 )
 
-                debug(server.players)
                 objects = player.assemble_players(
                     server.players, x, y, int(width / 2), edges
                 )
 
                 if not c_hidden:
                     objects.append(player.assemble_cursor(
-                        int(width / 2), y, cursor, cursor_colour, c_hidden
+                        int(width / 2), y, cursor, cursor_colour
                     ))
 
-                label = (player.label(crafting_list, crafting_sel, blocks)
-                        if crafting else
-                        player.label(server.inv, inv_sel, blocks))
+                lights = render.get_lights(extended_view, edges[0], blocks)
+
+                out, last_frame = render.render_map(
+                    view,
+                    objects,
+                    blocks,
+                    sun,
+                    lights,
+                    server.tick,
+                    last_frame
+                )
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
@@ -132,18 +139,17 @@ def game(blocks, server):
                     terrain.world_gen['height']-1, inv_sel
                 )
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                label = (player.label(crafting_list, crafting_sel, blocks)
+                        if crafting else
+                        player.label(server.inv, inv_sel, blocks))
 
-                render.render_map(
-                    view,
-                    objects,
+                out += render.render_grids(
                     [[inv_grid, crafting_grid],
                      [[label]]],
-                    blocks,
-                    sun,
-                    lights,
-                    server.tick
+                    width
                 )
+
+                print(out)
             else:
                 df = 0
 
@@ -253,6 +259,7 @@ def game(blocks, server):
             if char in ' \n':
                 server.pos = x, y
                 server.redraw = True
+                last_frame = []
                 if ui.pause(server) == 'exit':
                     game = False
 

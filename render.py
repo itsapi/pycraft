@@ -6,11 +6,13 @@ from data import world_gen, blocks
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
-
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 
-def render_map(map_, objects, grids, blocks, sun, lights, tick):
+pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
+
+
+def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
     """
         Prints out a frame of the game.
 
@@ -18,22 +20,12 @@ def render_map(map_, objects, grids, blocks, sun, lights, tick):
         - map_: a 2D list of blocks.
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
-        - grids: a list of 2D lists of chars to make up the inventory on
-            the right of the game.
         - blocks: the main dictionary describing the blocks in the game.
         - sun: (x, y) position of the sun.
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int}
         - tick: the game time.
     """
-
-    # Sort out grids
-    # Gets row from grid if it exists, else pads with ' '
-    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
-    merged_grids = []
-    for row in grids:
-        for y in range(max(map(len, row))):
-            merged_grids.append(' '.join(map(lambda g: get_row(g, y), row)))
 
     # Sorts the dict as a list by pos
     map_ = list(map_.items())
@@ -49,19 +41,26 @@ def render_map(map_, objects, grids, blocks, sun, lights, tick):
     # Orientates the data
     map_ = zip(*map_)
 
-    # Output the map
-    out = ''
+    diff = ''
+    this_frame = []
+
     for y, row in enumerate(map_):
+        this_frame.append([])
+
         for x, pixel in enumerate(row):
-            out += calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
 
-        # Grids
-        if y < len(merged_grids):
-            out += ' ' + merged_grids[y]
+            pixel_out = calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
+            this_frame[-1].append(pixel_out)
 
-        out += CLS_END_LN + '\n'
+            try:
+                if not last_frame[y][x] == pixel_out:
+                    # Changed
+                    diff += pos_str(x, y, pixel_out)
+            except IndexError:
+                # Doesn't exsit
+                diff += pos_str(x, y, pixel_out)
 
-    print(REDRAW + out + CLS_END)
+    return diff, this_frame
 
 
 def obj_pixel(x, y, objects, blocks):
@@ -234,6 +233,25 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
 
     out.append(bl + (h*3) + b + (h*(max_n_w+2)) + br + trailing)
     return out
+
+
+def render_grids(grids, x):
+    """
+        Prints out the grids on the right side of the game.
+    """
+
+    # Sort out grids
+    # Gets row from grid if it exists, else pads with ' '
+    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+    merged_grids = []
+    for row in grids:
+        for y in range(max(map(len, row))):
+            merged_grids.append(' '.join(map(lambda g: get_row(g, y), row)))
+
+    return ''.join(
+        pos_str(x, y, ' ' + row + CLS_END_LN)
+            for y, row in enumerate(merged_grids)
+    )
 
 
 def gen_blocks():
