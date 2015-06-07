@@ -7,8 +7,7 @@ import saves, ui, terrain, player, render
 
 
 def main():
-    print(HIDE_CUR)
-    print(CLS)
+    print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
     blocks = render.gen_blocks()
@@ -19,8 +18,7 @@ def main():
             game(blocks, *ui.main())
 
     finally:
-        print(SHOW_CUR)
-        print(CLS)
+        print(SHOW_CUR + CLS)
 
 
 def game(blocks, meta, map_, save):
