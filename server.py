@@ -34,6 +34,10 @@ class CommonServer:
         return self._meta[prop] if prop else self._meta
 
     @property
+    def players(self):
+        return self._meta['players']
+
+    @property
     def tick(self):
         return self._meta['tick']
 
