@@ -118,8 +118,9 @@ class ServerInterface(CommonServer):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return self._dt
 
-    def _set_player(self, player):
-        pass
+    def _set_player(self, players):
+        for name, player in players.items():
+            self._meta['players'][name] = player
 
     @property
     def pos(self):
@@ -233,10 +234,11 @@ class Server(CommonServer):
 
     def set_player(self, name, player):
         self._meta['players'][name] = player
+        self.update_clients({ 'event': 'player', 'data': { 'name': player } }, name)
 
-    def update_clients(self, message):
-        for sock in self._players.values():
-            network.send(sock, message, True)
+    def update_clients(self, message, sender=None):
+        for name, sock in self._players.items():
+            if name != sender: network.send(sock, message, True)
 
     @property
     def save(self):
