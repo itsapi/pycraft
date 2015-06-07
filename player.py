@@ -130,28 +130,36 @@ def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     return [RED, WHITE][can_break], can_break
 
 
-def assemble_player(x, y, cursor, colour, c_hidden):
+def assemble_players(players, x, y, offset, edges):
+    objects = []
 
-    head = {
-        'x': x,
-        'y': y - 1,
-        'char': '*'
-    }
+    for player in players.values():
+        player_x = player['player_x']
+        player_y = player['player_y']
+        x_offset = player_x - x + offset
 
-    feet = {
-        'x': x,
-        'y': y,
-        'char': '^'
-    }
+        if player_x in range(*edges):
+            objects.append({
+                'x': x_offset,
+                'y': player_y - 1,
+                'char': '*'
+            })
+            objects.append({
+                'x': x_offset,
+                'y': player_y,
+                'char': '^'
+            })
 
-    cursor = {
+    return objects
+
+
+def assemble_cursor(x, y, cursor, colour):
+    return {
         'x': x + cursor_x[cursor],
         'y': y + cursor_y[cursor],
         'char': 'X',
         'colour': colour
     }
-
-    return (head, feet) if c_hidden else (head, feet, cursor)
 
 
 def get_crafting(inv, crafting_list, crafting_sel, blocks, reset=False):

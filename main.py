@@ -108,9 +108,15 @@ def game(blocks, server):
                     x, y, cursor, server.map_, blocks, server.inv, inv_sel
                 )
 
-                objects = player.assemble_player(
-                    int(width / 2), y, cursor, cursor_colour, c_hidden
+                debug(server.players)
+                objects = player.assemble_players(
+                    server.players, x, y, int(width / 2), edges
                 )
+
+                if not c_hidden:
+                    objects.append(player.assemble_cursor(
+                        int(width / 2), y, cursor, cursor_colour, c_hidden
+                    ))
 
                 label = (player.label(crafting_list, crafting_sel, blocks)
                         if crafting else
