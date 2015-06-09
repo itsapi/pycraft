@@ -22,7 +22,7 @@ def main():
 
             if local:
                 # Local Server
-                game(blocks, server.Server(data, name))
+                game(blocks, server.Server(name, data))
             else:
                 # Remote Server
                 game(blocks, server.ServerInterface(name, *data))

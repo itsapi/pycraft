@@ -2,6 +2,7 @@ import socket
 import threading
 import socketserver
 import json
+import os
 
 from console import debug
 
@@ -87,7 +88,7 @@ def requestHandlerFactory(data_handler):
 
 def start(data_handler):
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = '0.0.0.0', 0
+    HOST, PORT = '0.0.0.0', int(os.getenv('PYCRAFT_PORT', 0))
 
     server = ThreadedTCPServer((HOST, PORT), requestHandlerFactory(data_handler))
     ip, port = server.server_address
