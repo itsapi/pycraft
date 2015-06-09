@@ -88,7 +88,7 @@ class ServerInterface(CommonServer):
             {   'blocks': self._set_blocks,
                 'slices': self._set_slices,
                 'player': self._set_player
-            }[data['event']](data['data'])
+            }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
         slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
@@ -121,8 +121,8 @@ class ServerInterface(CommonServer):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return self._dt
 
-    def _set_player(self, players):
-        self._meta['players'].update(players)
+    def _set_player(self, name, player):
+        self._meta['players'][name] = player
         self.redraw = True
 
     @property
@@ -202,13 +202,13 @@ class Server(CommonServer):
         if gen_slices: saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
-        return { 'event': 'slices', 'data': new_slices }
+        return { 'event': 'slices', 'args': [new_slices] }
 
     def save_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
         self.view_change = True
-        self.update_clients({ 'event': 'blocks', 'data': blocks })
+        self.update_clients({ 'event': 'blocks', 'args': [blocks] })
 
     def chunk_loaded(self, x):
         return True
@@ -234,7 +234,7 @@ class Server(CommonServer):
 
     def set_player(self, name, player):
         self._meta['players'][name] = player
-        self.update_clients({ 'event': 'player', 'data': { name: player } }, name)
+        self.update_clients({ 'event': 'player', 'args': [name, player] }, name)
         self.redraw = True
 
     def update_clients(self, message, sender=None):
