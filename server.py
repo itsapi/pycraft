@@ -187,6 +187,7 @@ class Server(CommonServer):
 
     def _logout(self, sock):
         saves.save_meta(self._save, self._meta)
+        sock.close()
         self._players = {
             name: conn for name, conn in self._players.items() if conn != sock
         }
