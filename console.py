@@ -56,5 +56,5 @@ REDRAW = '\033[0;0f'
 HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
 
-
-open(LOG, 'w').close()
+if DEBUG:
+    open(LOG, 'w').close()

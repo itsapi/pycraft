@@ -60,7 +60,10 @@ def receive(sock):
             return None
 
     debug('Received:', repr(''.join(total_data)))
-    return json.loads(''.join(total_data))
+    try:
+        return json.loads(''.join(total_data))
+    except ValueError as e:
+        debug('JSON Error:', e)
 
 
 def requestHandlerFactory(data_handler):

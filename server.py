@@ -61,7 +61,6 @@ class ServerInterface(CommonServer):
         self._dt = False
 
         self._meta = self._send('get_meta')
-        debug(self._meta)
         self._me = self._meta['players'][self._name]
         self._last_tick = time()
         self._chunks_requested = set()
