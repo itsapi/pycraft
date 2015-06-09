@@ -147,7 +147,7 @@ class ServerInterface(CommonServer):
 class Server(CommonServer):
     """ The host server. """
 
-    def __init__(self, save, name):
+    def __init__(self, name, save):
         self._name = name
         self._save = save
         # {Loggedin player: socket}
