@@ -122,8 +122,7 @@ class ServerInterface(CommonServer):
         return self._dt
 
     def _set_player(self, players):
-        for name, player in players.items():
-            self._meta['players'][name] = player
+        self._meta['players'].update(players)
         self.redraw = True
 
     @property
