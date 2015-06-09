@@ -211,13 +211,13 @@ class Server(CommonServer):
         if gen_slices: saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
-        return { 'event': 'slices', 'args': [new_slices] }
+        return {'event': 'slices', 'args': [new_slices]}
 
     def save_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
         self.view_change = True
-        self._update_clients({ 'event': 'blocks', 'args': [blocks] })
+        self._update_clients({'event': 'blocks', 'args': [blocks]})
 
     def chunk_loaded(self, x):
         return True
@@ -245,7 +245,7 @@ class Server(CommonServer):
 
     def _set_player(self, name, player):
         self._meta['players'][name] = player
-        self._update_clients({ 'event': 'player', 'args': [name, player] }, name)
+        self._update_clients({'event': 'player', 'args': [name, player]}, name)
         self.redraw = True
 
     def _update_clients(self, message, sender=None):
