@@ -89,7 +89,8 @@ class ServerInterface(CommonServer):
             if data is None: break
             {   'blocks': self._set_blocks,
                 'slices': self._set_slices,
-                'player': self._set_player
+                'player': self._set_player,
+                'logout': self.exit
             }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
@@ -118,6 +119,10 @@ class ServerInterface(CommonServer):
 
     def _login(self):
         self._player = self._send('login', self._name)
+
+    def exit(self):
+        self._send('logout', async=True)
+        self.game = False
 
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
@@ -231,6 +236,11 @@ class Server(CommonServer):
             if sock: self._players[name] = sock
 
             return self._meta['players'][name]
+
+    def exit(self):
+        self._update_clients({'event': 'logout'})
+        self.stop_server()
+        self.game = False
 
     def _set_player(self, name, player):
         self._meta['players'][name] = player
