@@ -55,27 +55,27 @@ class ServerInterface(CommonServer):
         self._map = {}
 
         self._name = name
-        self.login()
+        self._login()
 
         self._dt = False
 
         self._meta = self._send('get_meta')
         self._me = self._meta['players'][self._name]
         self._last_tick = time()
+        self._chunks_requested = set()
 
         self.redraw = False
         self.view_change = False
-        self.chunks_requested = set()
 
-        self.listener_t = Thread(target=self.listener)
-        self.listener_t.daemon = True
-        self.listener_t.start()
+        self._listener_t = Thread(target=self._listener)
+        self._listener_t.daemon = True
+        self._listener_t.start()
 
     def _send(self, method, args=[], async=False):
         # Sync cannot be used once self.listener thread starts
         return network.send(self._sock, {'method': method, 'args': args}, async)
 
-    def listener(self):
+    def _listener(self):
         """
             Data comes in in the form:
 
@@ -95,11 +95,11 @@ class ServerInterface(CommonServer):
 
         self._map.update({ str(i): list(terrain.EMPTY_SLICE) for i in slices_its_loading })
         self._send('load_chunks', [chunk_list], async=True)
-        self.chunks_requested.update(chunk_list)
+        self._chunks_requested.update(chunk_list)
         self.view_change = True
 
     def chunk_loaded(self, x):
-        return (x // terrain.world_gen['chunk_size']) not in self.chunks_requested
+        return (x // terrain.world_gen['chunk_size']) not in self._chunks_requested
 
     def save_blocks(self, blocks):
         self._send('save_blocks', [blocks], async=True)
@@ -111,10 +111,10 @@ class ServerInterface(CommonServer):
 
     def _set_slices(self, new_slices):
         self._map.update(new_slices)
-        self.chunks_requested.difference_update(terrain.get_chunk_list(new_slices.keys()))
+        self._chunks_requested.difference_update(terrain.get_chunk_list(new_slices.keys()))
         self.view_change = True
 
-    def login(self):
+    def _login(self):
         self._player = self._send('login', self._name)
 
     def dt(self):
@@ -161,17 +161,17 @@ class Server(CommonServer):
 
         self.port, self.stop_server = network.start(self._handler)
 
-        self.login(name)
+        self._login(name)
 
     def _handler(self, sock, data):
         debug('Method: '+data['method'])
 
         return (
-            self.login(data['args'], sock)
+            self._login(data['args'], sock)
             if data['method'] == 'login' else
             {   'load_chunks': self.load_chunks,
                 'get_meta': self.get_meta,
-                'set_player': self.set_player,
+                'set_player': self._set_player,
                 'save_blocks': self.save_blocks,
                 'logout': lambda: self._logout(sock)
             }[data['method']](*data.get('args', []))
@@ -208,7 +208,7 @@ class Server(CommonServer):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
         self.view_change = True
-        self.update_clients({ 'event': 'blocks', 'args': [blocks] })
+        self._update_clients({ 'event': 'blocks', 'args': [blocks] })
 
     def chunk_loaded(self, x):
         return True
@@ -217,7 +217,7 @@ class Server(CommonServer):
         dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return dt
 
-    def login(self, name, sock=None):
+    def _login(self, name, sock=None):
         debug('Logging in: '+name)
         if name not in self._players:
             # Load new player if new
@@ -229,21 +229,14 @@ class Server(CommonServer):
 
             return self._meta['players'][name]
 
-    def get_player(self, name):
-        return self._meta['players'][name]
-
-    def set_player(self, name, player):
+    def _set_player(self, name, player):
         self._meta['players'][name] = player
-        self.update_clients({ 'event': 'player', 'args': [name, player] }, name)
+        self._update_clients({ 'event': 'player', 'args': [name, player] }, name)
         self.redraw = True
 
-    def update_clients(self, message, sender=None):
+    def _update_clients(self, message, sender=None):
         for name, sock in self._players.items():
             if name != sender: network.send(sock, message, True)
-
-    @property
-    def save(self):
-        return self._save
 
     @property
     def _me(self):
@@ -260,7 +253,7 @@ class Server(CommonServer):
     @pos.setter
     def pos(self, pos):
         self._me['player_x'], self._me['player_y'] = pos
-        self.set_player(self._name, self._me)
+        self._set_player(self._name, self._me)
         saves.save_meta(self._save, self._meta)
 
     @inv.setter
