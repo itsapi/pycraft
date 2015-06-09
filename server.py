@@ -54,6 +54,7 @@ class ServerInterface(CommonServer):
         self._sock.setblocking(True)
         self._map = {}
 
+        self.game = True
         self._name = name
         self._login()
 
@@ -149,6 +150,7 @@ class Server(CommonServer):
     """ The host server. """
 
     def __init__(self, name, save):
+        self.game = True
         self._name = name
         self._save = save
         # {Loggedin player: socket}

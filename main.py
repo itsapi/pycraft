@@ -72,9 +72,8 @@ def game(blocks, server):
     )
 
     # Game loop
-    game = True
     with NonBlockingInput() as nbi:
-        while game:
+        while server.game:
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
@@ -262,7 +261,7 @@ def game(blocks, server):
                 server.redraw = True
                 last_frame = []
                 if ui.pause(server) == 'exit':
-                    game = False
+                    server.exit()
 
             dt = server.dt()
 
