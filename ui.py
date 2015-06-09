@@ -89,7 +89,7 @@ def title(name):
 
 
 def load():
-    """ A menu for selectng a save to load. """
+    """ A menu for selecting a save to load. """
     saves_list = saves.list_saves()
     return menu(
         'Load save',
@@ -105,7 +105,7 @@ def delete():
         'Delete save',
         ([(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
           for save in saves_list] + [back])
-    ), True
+    ), None
 
 
 def new():
@@ -118,7 +118,7 @@ def new():
     print(HIDE_CUR)
     if not meta['name']:
         print(CLS)
-        return None, True
+        return None, None
 
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ' + SHOW_CUR)
@@ -137,13 +137,13 @@ def multiplayer():
     print(HIDE_CUR)
     if not ip:
         print(CLS)
-        return None, False
+        return None, None
     port = input(colorStr(' Server port', style=BOLD)
                + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR)
     if not port:
         print(CLS)
-        return None, False
+        return None, None
 
     return (ip, port), False
 
@@ -174,7 +174,6 @@ def show_port(port):
     wait_for_input()
 
     print(CLS)
-    return None
 
 
 def help_():
@@ -196,7 +195,7 @@ def help_():
     wait_for_input()
 
     print(CLS)
-    return None
+    return None, None
 
 
 def name():
