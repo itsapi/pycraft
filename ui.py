@@ -59,6 +59,7 @@ def menu(name, options):
 def main():
     """ Loops the main menu until the user loads a save. """
 
+    print(CLS)
     data = None
     while not data:
         data, local = menu('Main menu', (
