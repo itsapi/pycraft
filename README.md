@@ -4,7 +4,7 @@ A console based 2D Minecraft, runs best on Unix with Python 3.3+. Built by [grit
 
 Usage: `python3 main.py`
 
-![Pycraft gameplay image](https://dl.dropboxusercontent.com/spa/3jurnyon2jw6230/pycraft.gif)
+![Pycraft gameplay image](http://cdn.dvbris.com/pycraft.gif)
 
 ## Controls
 
