@@ -171,4 +171,4 @@ def save_map(save, slices):
 
 def list_saves():
     return [(save, get_meta(save)) for save in os.listdir(SAVES_DIR)
-            if os.path.isdir(save_path(save))]
+        if os.path.isdir(save_path(save))]

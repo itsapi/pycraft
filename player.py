@@ -27,13 +27,13 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     is_solid = lambda block: terrain.is_solid(blocks, block)
 
     # Calculate change in x pos for left and right movement
-    for test_char, dir_, func in (('a', -1, left_slice),
-                                  ('d', 1, right_slice)):
-        if (char in test_char and not is_solid( func[head_y] )):
+    for test_char, dir_, func in (('a', -1, left_slice), ('d', 1, right_slice)):
+        if ( char in test_char
+             and not is_solid( func[head_y] )):
 
             if is_solid( func[feet_y] ):
-                if ( not is_solid( func[above_y] ) and
-                     not is_solid( player_slice[above_y] )):
+                if ( not is_solid( func[above_y] )
+                     and not is_solid( player_slice[above_y] )):
 
                     dy = -1
                     dx = dir_
@@ -41,10 +41,10 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
                 dx = dir_
 
     # Jumps if up pressed, block below, no block above
-    if (char in 'w' and y > 1 and
-        not is_solid( player_slice[above_y] ) and
-        ( is_solid( player_slice[below_y] ) or
-          player_slice[feet_y] == '=' )):
+    if ( char in 'w' and y > 1
+         and not is_solid( player_slice[above_y] )
+         and ( is_solid( player_slice[below_y] )
+               or player_slice[feet_y] == '=' )):
 
         dy = -1
         jump = 5
@@ -205,8 +205,7 @@ def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
                         for ingredient, n in block['recipe'].items())
 
         if can_craft:
-            crafting_list[crafting_sel]['num'] =\
-                n_crafts * block.get('crafts', 1)
+            crafting_list[crafting_sel]['num'] = n_crafts * block.get('crafts', 1)
             dcraft = True
 
     return crafting_list, dcraft
@@ -225,8 +224,7 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
         for ingredient, n in block['recipe'].items():
             for i, b in enumerate(inv):
                 if b['block'] == ingredient:
-                    inv, _ = rem_inv(
-                        inv, i, n * int(craft['num'] / block.get('crafts', 1)))
+                    inv, _ = rem_inv(inv, i, n * int(craft['num'] / block.get('crafts', 1)))
 
                     # Decrements inv_sel if you're at the end of the list
                     #   or an item is removed below you in the list.

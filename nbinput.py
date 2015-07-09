@@ -51,8 +51,7 @@ class _nbiGetchUnix:
         self.tty.setcbreak(sys.stdin.fileno())
 
     def exit(self, type_, value, traceback):
-        self.termios.tcsetattr(
-            sys.stdin,
+        self.termios.tcsetattr(sys.stdin,
             self.termios.TCSADRAIN, self.old_settings)
 
     def char(self):
@@ -101,8 +100,7 @@ class _nbiGetchMacCarbon:
         pass
 
     def char(self):
-        # 0x0008 is the keyDownMask
-        if self.Carbon.Evt.EventAvail(0x0008)[0] == 0:
+        if self.Carbon.Evt.EventAvail(0x0008)[0] == 0:  # 0x0008 is the keyDownMask
             return ''
         else:
             # The event contains the following info:
