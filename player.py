@@ -24,7 +24,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     dy = 0
     dx = 0
 
-    def is_solid(block): terrain.is_solid(blocks, block)
+    is_solid = lambda block: terrain.is_solid(blocks, block)
 
     # Calculate change in x pos for left and right movement
     for test_char, dir_, func in (('a', -1, left_slice),

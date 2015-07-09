@@ -22,9 +22,9 @@ CHUNK_EXT = '.chunk'
 SLICE_SEP = '<sep>'
 
 
-def save_path(save, filename=''): os.path.join(SAVES_DIR, save, filename)
-def meta_path(save): save_path(save, 'meta.json')
-def chunk_num(x): int(x) // world_gen['chunk_size']
+save_path = lambda save, filename='': os.path.join(SAVES_DIR, save, filename)
+meta_path = lambda save: save_path(save, 'meta.json')
+chunk_num = lambda x: int(x) // world_gen['chunk_size']
 
 
 def check_map_dir():

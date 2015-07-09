@@ -9,7 +9,7 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 
-def pos_str(x, y, s): '\033[{};{}H{}'.format(y+1, x+1, s)
+pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
 def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
@@ -129,8 +129,8 @@ def sun(time, width):
 
 
 # Checks if a point is within a lights range.
-def lit(x, y, l): ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
-                    ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
+lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
+                        ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
 
 
 def sky(x, y, time, sun, lights):
@@ -248,8 +248,7 @@ def render_grids(grids, x):
 
     # Sort out grids
     # Gets row from grid if it exists, else pads with ' '
-
-    def get_row(g, y): g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
 
     merged_grids = []
     for row in grids:
