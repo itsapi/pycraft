@@ -3,7 +3,12 @@ from math import radians
 
 from console import CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player, render
+
+import saves
+import ui
+import terrain
+import player
+import render
 
 
 def main():
@@ -26,17 +31,17 @@ def game(blocks, meta, map_, save):
     y = meta['player_y']
     dx = 0
     dy = 0
-    dt = 0 # Tick
-    df = 0 # Frame
-    dc = 0 # Cursor
-    ds = 0 # Selector
-    dinv = False # Inventory
-    dcraft = False # Crafting
+    dt = 0  # Tick
+    df = 0  # Frame
+    dc = 0  # Cursor
+    ds = 0  # Selector
+    dinv = False  # Inventory
+    dcraft = False  # Crafting
     width = 40
-    FPS = 15 # Max
-    TPS = 10 # Ticks
-    IPS = 20 # Input
-    MPS = 15 # Movement
+    FPS = 15  # Max
+    TPS = 10  # Ticks
+    IPS = 20  # Input
+    MPS = 15  # Movement
     SUN_TICK = radians(1/32)
 
     old_sun = None
@@ -71,7 +76,8 @@ def game(blocks, meta, map_, save):
         while game:
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
-            extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
+            extended_edges = (edges[0]-render.max_light,
+                              edges[1]+render.max_light)
 
             # Generates new terrain
             slice_list = terrain.detect_edges(map_, extended_edges)
@@ -135,8 +141,8 @@ def game(blocks, meta, map_, save):
                 )
 
                 label = (player.label(crafting_list, crafting_sel, blocks)
-                        if crafting else
-                        player.label(meta['inv'], inv_sel, blocks))
+                         if crafting else
+                         player.label(meta['inv'], inv_sel, blocks))
 
                 out += render.render_grids(
                     [[inv_grid, crafting_grid],
@@ -199,12 +205,12 @@ def game(blocks, meta, map_, save):
                     # Craft if player pressed craft
                     meta['inv'], inv_sel, crafting_list, dcraftC = \
                         player.crafting(str(inp), meta['inv'], inv_sel,
-                            crafting_list, crafting_sel, blocks)
+                                        crafting_list, crafting_sel, blocks)
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
                         player.craft_num(str(inp), meta['inv'], crafting_list,
-                            crafting_sel, blocks)
+                                         crafting_sel, blocks)
 
                     dcraft = dcraftC or dcraftN
 
@@ -221,10 +227,10 @@ def game(blocks, meta, map_, save):
                 ds = player.move_sel(inp)
                 if crafting:
                     crafting_sel = ((crafting_sel + ds) % len(crafting_list)
-                                       if len(crafting_list) else 0)
+                                    if len(crafting_list) else 0)
                 else:
                     inv_sel = ((inv_sel + ds) % len(meta['inv'])
-                                  if len(meta['inv']) else 0)
+                               if len(meta['inv']) else 0)
 
                 if any((dx, dy, dc, ds, dinv, dcraft)):
                     meta['player_x'], meta['player_y'] = x, y

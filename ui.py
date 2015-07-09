@@ -107,18 +107,19 @@ def delete():
 
 
 def new():
-    """ Lets the user enter a save name, then it creates and loads the save. """
+    """ Lets the user enter a save name, then it creates and loads the save.
+    """
 
     print(REDRAW + title('New save'), end='')
     meta = {}
-    meta['name'] = input(colorStr(' Save name', style=BOLD)
-                         + ' (leave blank to cancel): ')
+    meta['name'] = input(colorStr(' Save name', style=BOLD) +
+                         ' (leave blank to cancel): ')
     if not meta['name']:
         print(CLS)
         return None
 
-    meta['seed'] = input(colorStr(' Map seed', style=BOLD)
-                         + ' (leave blank to randomise): ')
+    meta['seed'] = input(colorStr(' Map seed', style=BOLD) +
+                         ' (leave blank to randomise): ')
     save = saves.new_save(meta)
     return saves.load_save(save)
 
@@ -137,7 +138,8 @@ def help_():
 
     out = REDRAW + title('Help')
 
-    max_len = max(len(item[0]) for section in help_data.values() for item in section)
+    max_len = max(len(item[0]) for section in help_data.values()
+                  for item in section)
 
     for label, section in help_data.items():
         out += label + '\n'

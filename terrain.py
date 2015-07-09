@@ -5,7 +5,8 @@ from data import world_gen
 
 
 # Maximum width of half a tree
-max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
+max_half_tree = int(len(max(world_gen['trees'],
+                            key=lambda tree: len(tree))) / 2)
 
 
 def move_map(map_, edges):
@@ -39,7 +40,8 @@ def slice_height(pos, meta):
 
                 # Set height to height of hill minus distance from hill
                 hill_height = (world_gen['ground_height'] +
-                    random.randint(0, world_gen['max_hill']) - abs(pos-x)/gradient)
+                               random.randint(0, world_gen['max_hill']) -
+                               abs(pos-x) / gradient)
                 # Make top of hill flat
                 hill_height -= 1 if pos == x else 0
 
@@ -66,20 +68,24 @@ def add_tree(slice_, pos, meta, blocks):
             center_leaves = tree[int(len(tree)/2)]
             trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
                                if leaf)
-            tree_height = random.randint(2, air_height
-                          - len(center_leaves) + trunk_depth)
+            tree_height = random.randint(2,
+                                         air_height - len(center_leaves) +
+                                         trunk_depth)
 
             # Find leaves of current tree
             for i, leaf_slice in enumerate(tree):
                 leaf_pos = x + (i - int(len(tree) / 2))
                 if leaf_pos == pos:
-                    leaf_height = air_height - tree_height - (len(leaf_slice) - trunk_depth)
+                    leaf_height = (air_height - tree_height -
+                                   (len(leaf_slice) - trunk_depth))
 
                     # Add leaves to slice
                     for j, leaf in enumerate(leaf_slice):
                         if leaf:
                             sy = leaf_height + j
-                            slice_[sy] = spawn_hierarchy(blocks, ('@', slice_[sy]))
+                            slice_[sy] = spawn_hierarchy(
+                                blocks,
+                                ('@', slice_[sy]))
 
             if x == pos:
                 # Add trunk to slice
@@ -125,9 +131,12 @@ def add_ores(slice_, pos, meta, blocks, slice_height_):
                                              ceil(ore['vain_size'] / 2)))
 
                 # Won't allow ore above surface
-                if ore['lower'] < ore_height < min(ore['upper'], slice_height_):
+                if (ore['lower'] < ore_height <
+                        min(ore['upper'], slice_height_)):
+
                     sy = world_gen['height'] - ore_height
-                    slice_[sy] = spawn_hierarchy(blocks, (ore['char'], slice_[sy]))
+                    slice_[sy] = spawn_hierarchy(blocks,
+                                                 (ore['char'], slice_[sy]))
 
     return slice_
 
@@ -151,7 +160,7 @@ def gen_slice(pos, meta, blocks):
     slice_ = (
         [' '] * (world_gen['height'] - slice_height_) +
         ['-'] +
-        ['#'] * (slice_height_ - 2) + # 2 for grass and bedrock
+        ['#'] * (slice_height_ - 2) +  # 2 for grass and bedrock
         ['_']
     )
 

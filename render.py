@@ -9,7 +9,7 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 
-pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
+def pos_str(x, y, s): '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
 def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
@@ -49,7 +49,8 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
+            pixel_out = calc_pixel(x, y, pixel, objects,
+                                   blocks, sun, lights, tick)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -69,7 +70,8 @@ def obj_pixel(x, y, objects, blocks):
         if object_['x'] == x and object_['y'] == y:
 
             # Objects can override their block colour
-            colour = object_.get('colour', blocks[object_['char']]['colours']['fg'])
+            colour = object_.get('colour',
+                                 blocks[object_['char']]['colours']['fg'])
 
             return object_['char'], colour
 
@@ -109,8 +111,9 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
             style = blocks[pixel_f]['colours']['style']
         )
 
-    else: # The block was coloured on startup
+    else:  # The block was coloured on startup
         return blocks[pixel_f]['char']
+
 
 def sun(time, width):
     """ Returns position of sun """
@@ -126,8 +129,9 @@ def sun(time, width):
 
 
 # Checks if a point is within a lights range.
-lit = lambda x, y, l: (( ((x-l['x']) ** 2) /  l['radius']    ** 2)
-                     + ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) < 1)
+def lit(x, y, l): ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
+                    ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
+
 
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
@@ -153,8 +157,9 @@ def get_lights(_map, start_x, blocks):
 
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
-        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light'),
-            zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
+        slice_lights = filter(
+            lambda pixel: blocks[pixel[1]].get('light'),
+            zip(range(len(slice_)), slice_))  # [(0, ' '), (1, '~'), ...]
 
         # Convert light pixels to light objects
         lights.extend(map(
@@ -173,15 +178,15 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
-    max_height = int((max_height-2) / 2) # -2 for title, bottom
+    max_height = int((max_height-2) / 2)  # -2 for title, bottom
 
     # Figure out offset
     if sel:
         bottom_pad = 2
 
         offset = sel - max(
-            min(sel, max_height - bottom_pad - 1), # Beginning and middle
-            sel + min(0, max_height - len(grid)) # End positions
+            min(sel, max_height - bottom_pad - 1),  # Beginning and middle
+            sel + min(0, max_height - len(grid))  # End positions
         )
     else:
         offset = 0
@@ -189,7 +194,8 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
     # Find maximum length of the num column.
     max_n_w = len(str(max(map(lambda s: s['num'], grid)))) if len(grid) else 1
 
-    # Figure out number of trailing spaces to make the grid same width as the title.
+    # Figure out number of trailing spaces to make the grid the
+    #   same width as the title.
     #     |   block    |         num          |
     top = tl + (h*3) + t + (h*(max_n_w+2)) + tr
     max_w = max(len(top), len(title))
@@ -242,7 +248,9 @@ def render_grids(grids, x):
 
     # Sort out grids
     # Gets row from grid if it exists, else pads with ' '
-    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+
+    def get_row(g, y): g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+
     merged_grids = []
     for row in grids:
         for y in range(max(map(len, row))):
@@ -250,7 +258,7 @@ def render_grids(grids, x):
 
     return ''.join(
         pos_str(x, y, ' ' + row + CLS_END_LN)
-            for y, row in enumerate(merged_grids)
+        for y, row in enumerate(merged_grids)
     )
 
 

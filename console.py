@@ -5,10 +5,16 @@ import os
 def getTerminalSize():
     import os
     env = os.environ
+
     def ioctl_GWINSZ(fd):
         try:
-            import fcntl, termios, struct, os
-            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            import fcntl
+            import termios
+            import struct
+            import os
+            cr = struct.unpack(
+                'hh',
+                fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
         except:
             return
         return cr
@@ -40,7 +46,7 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
 
 
-def debug (*args):
+def debug(*args):
     if DEBUG:
         with open(LOG, 'a') as f:
             print(*args, file=f)
