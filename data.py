@@ -176,7 +176,7 @@ blocks = {
         'crafts': 6
     },
     'i': {
-        'char': '¡',
+        'char': '¡i',
         'name': 'Torch',
         'colours': {
             'fg': YELLOW,
