@@ -40,7 +40,7 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
 
 
-def debug (*args):
+def debug(*args):
     if DEBUG:
         with open(LOG, 'a') as f:
             print(*args, file=f)
