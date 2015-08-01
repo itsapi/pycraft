@@ -34,10 +34,6 @@ class CommonServer:
         return self._meta[prop] if prop else self._meta
 
     @property
-    def players(self):
-        return self._meta['players']
-
-    @property
     def tick(self):
         return self._meta['tick']
 
@@ -64,6 +60,8 @@ class ServerInterface(CommonServer):
         self._last_tick = time()
         self._chunks_requested = set()
 
+        self._current_players = set(self._send('get_players'))
+
         self.redraw = False
         self.view_change = False
 
@@ -87,7 +85,8 @@ class ServerInterface(CommonServer):
             if data is None: break
             {   'blocks': self._set_blocks,
                 'slices': self._set_slices,
-                'player': self._set_player
+                'player': self._set_player,
+                'remove_player': self._remove_player
             }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
@@ -123,7 +122,16 @@ class ServerInterface(CommonServer):
 
     def _set_player(self, name, player):
         self._meta['players'][name] = player
+        self._current_players.add(name)
         self.redraw = True
+
+    def _remove_player(self, name):
+        self._current_players.discard(name)
+        self.redraw = True
+
+    @property
+    def players(self):
+        return {name: self._meta['players'][name] for name in self._current_players}
 
     @property
     def pos(self):
@@ -151,7 +159,7 @@ class Server(CommonServer):
         self._name = name
         self._save = save
         # {Loggedin player: socket}
-        self._players = {}
+        self._current_players = {}
         self._map = {}
         self._meta = saves.load_meta(save)
         self._last_tick = time()
@@ -219,13 +227,13 @@ class Server(CommonServer):
 
     def _login(self, name, sock=None):
         debug('Logging in: '+name)
-        if name not in self._players:
+        if name not in self._current_players:
             # Load new player if new
             self._meta = saves.load_player(name, self._meta)
             debug('Creating: '+name)
 
             # Store socket
-            if sock: self._players[name] = sock
+            self._current_players[name] = sock
 
             return self._meta['players'][name]
 
@@ -234,9 +242,18 @@ class Server(CommonServer):
         self._update_clients({ 'event': 'player', 'args': [name, player] }, name)
         self.redraw = True
 
+    def _get_players(self):
+        """ Returns logged in player names """
+        return list(self._current_players.keys())
+
     def _update_clients(self, message, sender=None):
         for name, sock in self._players.items():
             if name != sender: network.send(sock, message, True)
+
+    @property
+    def players(self):
+        """ Returns logged in player objects """
+        return {name: self._meta['players'][name] for name in self._current_players.keys()}
 
     @property
     def _me(self):
