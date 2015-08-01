@@ -50,6 +50,7 @@ class ServerInterface(CommonServer):
         self._sock.setblocking(True)
         self._map = {}
 
+        self.game = True
         self._name = name
         self._login()
 
@@ -86,7 +87,8 @@ class ServerInterface(CommonServer):
             {   'blocks': self._set_blocks,
                 'slices': self._set_slices,
                 'player': self._set_player,
-                'remove_player': self._remove_player
+                'remove_player': self._remove_player,
+                'logout': self.logout
             }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
@@ -118,6 +120,7 @@ class ServerInterface(CommonServer):
 
     def logout(self):
         self._send('logout', async=True)
+        self.game = False
         try:
             self._sock.close()
         except OSError:
@@ -165,6 +168,7 @@ class Server(CommonServer):
     FAKE_SOCKET = 'FAKE'
 
     def __init__(self, name, save):
+        self.game = True
         self._name = name
         self._save = save
         # {Loggedin player: socket}
@@ -214,13 +218,13 @@ class Server(CommonServer):
         if gen_slices: saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
-        return { 'event': 'slices', 'args': [new_slices] }
+        return {'event': 'slices', 'args': [new_slices]}
 
     def save_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
         saves.save_map(self._save, new_slices)
         self.view_change = True
-        self._update_clients({ 'event': 'blocks', 'args': [blocks] })
+        self._update_clients({'event': 'blocks', 'args': [blocks]})
 
     def chunk_loaded(self, x):
         return True
@@ -257,13 +261,13 @@ class Server(CommonServer):
         self._current_players = players
 
     def logout(self):
-        for conn in self._current_players.values():
-            if conn is not Server.FAKE_SOCKET:
-                self._logout(conn)
+        self._update_clients({'event': 'logout'})
+        self.stop_server()
+        self.game = False
 
     def _set_player(self, name, player):
         self._meta['players'][name] = player
-        self._update_clients({ 'event': 'player', 'args': [name, player] }, name)
+        self._update_clients({'event': 'player', 'args': [name, player]}, name)
         self.redraw = True
 
     def _get_players(self):

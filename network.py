@@ -39,7 +39,12 @@ def receive(sock):
     data = ''
     while True:
         debug('Waiting')
-        data = str(sock.recv(1024), 'ascii')
+        try:
+            data = str(sock.recv(1024), 'ascii')
+        except OSError:
+            debug('Socket closing')
+            sock.close()
+
         if END in data:
             total_data.append(data[:data.find(END)])
             break
@@ -82,7 +87,7 @@ def requestHandlerFactory(data_handler):
                 else:
                     break
 
-            debug('Closing Socket')
+            debug('Handler Exiting')
 
     return ThreadedTCPRequestHandler
 
