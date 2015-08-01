@@ -35,16 +35,16 @@ def game(blocks, server):
     x, y = server.pos
     dx = 0
     dy = 0
-    dt = 0 # Tick
-    df = 0 # Frame
-    dc = 0 # Cursor
-    ds = 0 # Selector
-    dinv = False # Inventory
-    dcraft = False # Crafting
+    dt = 0  # Tick
+    df = 0  # Frame
+    dc = 0  # Cursor
+    ds = 0  # Selector
+    dinv = False  # Inventory
+    dcraft = False  # Crafting
     width = 40
-    FPS = 15 # Max
-    IPS = 20 # Input
-    MPS = 15 # Movement
+    FPS = 15  # Max
+    IPS = 20  # Input
+    MPS = 15  # Movement
 
     old_sun = None
     old_edges = None

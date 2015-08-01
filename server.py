@@ -11,7 +11,8 @@ chunk_size = terrain.world_gen['chunk_size']
 blocks = render.gen_blocks()
 
 SUN_TICK = radians(1/32)
-TPS = 10 # Ticks
+TPS = 10  # Ticks
+
 
 def update_tick(last_tick, cur_tick):
     # Increase tick
@@ -28,7 +29,7 @@ def update_tick(last_tick, cur_tick):
 class CommonServer:
 
     def unload_slices(self, edges):
-        self._map = {x:s for x,s in self._map.items() if int(x) in range(*edges)}
+        self._map = {x: s for x, s in self._map.items() if int(x) in range(*edges)}
 
     def get_meta(self, prop=None):
         return self._meta[prop] if prop else self._meta
@@ -94,7 +95,7 @@ class ServerInterface(CommonServer):
     def load_chunks(self, chunk_list):
         slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
 
-        self._map.update({ str(i): list(terrain.EMPTY_SLICE) for i in slices_its_loading })
+        self._map.update({str(i): list(terrain.EMPTY_SLICE) for i in slices_its_loading})
         self._send('load_chunks', [chunk_list], async=True)
         self._chunks_requested.update(chunk_list)
         self.view_change = True
@@ -215,7 +216,8 @@ class Server(CommonServer):
             new_slices.update(chunk)
 
         # Save generated terrain to file
-        if gen_slices: saves.save_map(self._save, gen_slices)
+        if gen_slices:
+            saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
         return {'event': 'slices', 'args': [new_slices]}
@@ -253,7 +255,7 @@ class Server(CommonServer):
         for name, conn in self._current_players.items():
             if conn == sock:
                 debug('Logging', name, sock)
-                self._update_clients({ 'event': 'remove_player', 'args': [name] }, name)
+                self._update_clients({'event': 'remove_player', 'args': [name]}, name)
             else:
                 players[name] = sock
 
