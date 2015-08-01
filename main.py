@@ -263,6 +263,7 @@ def game(blocks, server):
                 last_frame = []
                 if ui.pause(server) == 'exit':
                     game = False
+                    server.logout()
 
             dt = server.dt()
 

@@ -71,17 +71,18 @@ def requestHandlerFactory(data_handler):
             while True:
                 try:
                     data = receive(self.request)
-                    if not data: break
                 except ValueError:
-                    pass
+                    continue
 
-                response = self.data_handler(self.request, data)
-                if not response: continue
+                if data:
+                    response = self.data_handler(self.request, data)
 
-                send(self.request, response, True)
+                    if response:
+                        send(self.request, response, True)
+                else:
+                    break
 
             debug('Closing Socket')
-            data_handler(self.request, { 'method': 'logout' })
 
     return ThreadedTCPRequestHandler
 

@@ -114,7 +114,14 @@ class ServerInterface(CommonServer):
         self.view_change = True
 
     def _login(self):
-        self._player = self._send('login', self._name)
+        self._player = self._send('login', [self._name])
+
+    def logout(self):
+        self._send('logout', async=True)
+        try:
+            self._sock.close()
+        except OSError:
+            pass
 
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
@@ -155,6 +162,8 @@ class ServerInterface(CommonServer):
 class Server(CommonServer):
     """ The host server. """
 
+    FAKE_SOCKET = 'FAKE'
+
     def __init__(self, name, save):
         self._name = name
         self._save = save
@@ -169,27 +178,22 @@ class Server(CommonServer):
 
         self.port, self.stop_server = network.start(self._handler)
 
-        self._login(name)
+        self._login(name, Server.FAKE_SOCKET)
 
     def _handler(self, sock, data):
         debug('Method: '+data['method'])
+        debug(data)
 
         return (
-            self._login(data['args'], sock)
-            if data['method'] == 'login' else
-            {   'load_chunks': self.load_chunks,
-                'get_meta': self.get_meta,
-                'set_player': self._set_player,
-                'save_blocks': self.save_blocks,
-                'logout': lambda: self._logout(sock)
-            }[data['method']](*data.get('args', []))
+            {'load_chunks': self.load_chunks,
+             'get_meta': self.get_meta,
+             'set_player': self._set_player,
+             'get_players': self._get_players,
+             'save_blocks': self.save_blocks,
+             'logout': lambda: self._logout(sock),
+             'login': lambda data: self._login(data, sock)
+             }[data['method']](*data.get('args', []))
         )
-
-    def _logout(self, sock):
-        saves.save_meta(self._save, self._meta)
-        self._players = {
-            name: conn for name, conn in self._players.items() if conn != sock
-        }
 
     def load_chunks(self, chunk_list):
         new_slices = {}
@@ -225,7 +229,7 @@ class Server(CommonServer):
         dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
         return dt
 
-    def _login(self, name, sock=None):
+    def _login(self, name, sock):
         debug('Logging in: '+name)
         if name not in self._current_players:
             # Load new player if new
@@ -237,6 +241,26 @@ class Server(CommonServer):
 
             return self._meta['players'][name]
 
+    def _logout(self, sock=None):
+        saves.save_meta(self._save, self._meta)
+
+        # Re-add all players which aren't the sock
+        players = {}
+        for name, conn in self._current_players.items():
+            if conn == sock:
+                debug('Logging', name, sock)
+                self._update_clients({ 'event': 'remove_player', 'args': [name] }, name)
+            else:
+                players[name] = sock
+
+        self.redraw = True
+        self._current_players = players
+
+    def logout(self):
+        for conn in self._current_players.values():
+            if conn is not Server.FAKE_SOCKET:
+                self._logout(conn)
+
     def _set_player(self, name, player):
         self._meta['players'][name] = player
         self._update_clients({ 'event': 'player', 'args': [name, player] }, name)
@@ -247,8 +271,9 @@ class Server(CommonServer):
         return list(self._current_players.keys())
 
     def _update_clients(self, message, sender=None):
-        for name, sock in self._players.items():
-            if name != sender: network.send(sock, message, True)
+        for name, sock in self._current_players.items():
+            if name != sender and sock is not Server.FAKE_SOCKET:
+                network.send(sock, message, True)
 
     @property
     def players(self):
