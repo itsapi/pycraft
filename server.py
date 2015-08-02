@@ -29,8 +29,8 @@ def update_tick(last_tick, cur_tick):
 class CommonServer:
 
     def unload_slices(self, edges):
-        a = lambda x, f: chunk_size * f(x / chunk_size)
-        edges = [a(edges[0], floor), a(edges[1], ceil)]
+        edges = [chunk_size * floor(edges[0] / chunk_size),
+                 chunk_size * ceil(edges[1] / chunk_size)]
         self._map = {x: s for x, s in self._map.items() if int(x) in range(*edges)}
 
     def get_meta(self, prop=None):
