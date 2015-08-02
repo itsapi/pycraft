@@ -49,7 +49,12 @@ class ServerInterface(CommonServer):
     """ Communicate with remote server. """
 
     def __init__(self, name, ip, port):
-        self._sock = network.connect(ip, int(port))
+        try:
+            self._sock = network.connect(ip, int(port))
+        except (ConnectionRefusedError, ValueError):
+            self.error = 'Cannot connect to server'
+            return
+
         self._sock.setblocking(True)
         self._map = {}
 
