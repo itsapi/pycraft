@@ -264,17 +264,17 @@ class Server(CommonServer):
         return dt
 
     def _login(self, name, sock):
-        debug('Logging in: '+name)
         if name not in self._current_players:
+            debug('Logging in: '+name)
             # Load new player if new
             self._meta = saves.load_player(name, self._meta)
-            debug('Creating: '+name)
 
             # Store socket
             self._current_players[name] = sock
 
             return self._meta['players'][name]
         else:
+            debug('Not Logging in: '+name)
             return {'err': 'Username in use'}
 
     def _logout(self, sock=None):
