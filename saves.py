@@ -75,9 +75,23 @@ def load_meta(save):
 
 def load_chunk(save, chunk):
     try:
-        map_ = check_map(get_chunk(save, chunk))
+        map_ = parse_slices(get_chunk(save, chunk))
     except FileNotFoundError:
         map_ = {}
+
+    valid_map = {}
+    for pos, slice_ in map_.items():
+        if pos in range(chunk, chunk + world_gen['chunk_size']):
+
+            if not len(slice_) == world_gen['height']:
+                if len(slice_) < world_gen['height']:
+                    # Extend slice height
+                    slice_ = [' '] * (world_gen['height'] - len(slice_)) + slice_
+                elif len(slice_) > world_gen['height']:
+                    # Truncate slice height
+                    slice_ = slice_[len(slice_) - world_gen['height']:]
+
+            valid_map[pos] = slice_
 
     save_map(save, map_)
     return map_
@@ -114,24 +128,6 @@ def check_meta(meta):
         meta['seed'] = hash(random.random())
 
     return meta
-
-
-def check_map(data):
-    map_ = parse_slices(data)
-
-    for key, slice_ in map_.items():
-        if not len(slice_) == world_gen['height']:
-
-            if len(slice_) < world_gen['height']:
-                # Extend slice height
-                slice_ = [' '] * (world_gen['height'] - len(slice_)) + slice_
-            elif len(slice_) > world_gen['height']:
-                # Truncate slice height
-                slice_ = slice_[len(slice_) - world_gen['height']:]
-
-            map_[key] = slice_
-
-    return map_
 
 
 def parse_slices(data):
