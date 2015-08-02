@@ -44,11 +44,23 @@ class CommonServer:
     def map_(self):
         return self._map
 
+    def init_server(self):
+        pass
+
+    def kill_server(self):
+        pass
+
 
 class ServerInterface(CommonServer):
     """ Communicate with remote server. """
 
     def __init__(self, name, ip, port):
+        self._map = {}
+        self.game = True
+        self.server = None
+        self.error = None
+        self._name = name
+
         try:
             self._sock = network.connect(ip, int(port))
         except (ConnectionRefusedError, ValueError):
@@ -56,11 +68,6 @@ class ServerInterface(CommonServer):
             return
 
         self._sock.setblocking(True)
-        self._map = {}
-
-        self.game = True
-        self.error = False
-        self._name = name
 
         if not self._login():
             self._sock.close()
@@ -100,7 +107,7 @@ class ServerInterface(CommonServer):
                 'slices': self._set_slices,
                 'player': self._set_player,
                 'remove_player': self._remove_player,
-                'logout': self.logout
+                'logout': self._logout
             }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
@@ -136,13 +143,17 @@ class ServerInterface(CommonServer):
             self._player = response
             return True
 
-    def logout(self):
-        self._send('logout', async=True)
+    def _logout(self, msg):
         self.game = False
+        self.error = msg
         try:
             self._sock.close()
         except OSError:
             pass
+
+    def logout(self):
+        self._send('logout', async=True)
+        self._logout()
 
     def dt(self):
         self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
@@ -187,6 +198,8 @@ class Server(CommonServer):
 
     def __init__(self, name, save):
         self.game = True
+        self.server = False
+        self.error = None
         self._name = name
         self._save = save
         # {Loggedin player: socket}
@@ -198,9 +211,18 @@ class Server(CommonServer):
         self.redraw = False
         self.view_change = False
 
-        self.port, self.stop_server = network.start(self._handler)
+        self._login(self._name, Server.FAKE_SOCKET)
 
-        self._login(name, Server.FAKE_SOCKET)
+    def init_server(self):
+        self.port, self._stop_server = network.start(self._handler)
+        self.server = True
+
+    def kill_server(self):
+        self._update_clients({'event': 'logout', 'args': ['Server Closed']})
+        self._current_players = {self._name: Server.FAKE_SOCKET}
+        self._stop_server()
+        self.server = False
+        self.port, self._stop_server = None, None
 
     def _handler(self, sock, data):
         debug('Method: '+data['method'])
@@ -286,15 +308,15 @@ class Server(CommonServer):
             if conn == sock:
                 debug('Logging', name, sock)
                 self._update_clients({'event': 'remove_player', 'args': [name]}, name)
+                self.redraw = True
             else:
                 players[name] = sock
 
-        self.redraw = True
         self._current_players = players
 
     def logout(self):
-        self._update_clients({'event': 'logout'})
-        self.stop_server()
+        if self.server:
+            self.kill_server()
         self.game = False
 
     def _set_player(self, name, player):

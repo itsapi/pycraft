@@ -22,14 +22,18 @@ def main():
 
             if local:
                 # Local Server
-                game(blocks, server.Server(name, data))
+                server_obj = server.Server(name, data)
+                game(blocks, server_obj)
             else:
                 # Remote Server
-                server_interface = server.ServerInterface(name, *data)
-                if server_interface.error:
-                    ui.error(server_interface.error)
+                server_obj = server.ServerInterface(name, *data)
+                if server_obj.error:
+                    ui.error(server_obj.error)
                 else:
-                    game(blocks, server_interface)
+                    game(blocks, server_obj)
+
+            if server_obj.error:
+                ui.error(server_obj.error)
 
     finally:
         print(SHOW_CUR + CLS)

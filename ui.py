@@ -140,7 +140,7 @@ def multiplayer():
         print(CLS)
         return None, None
     port = input(colorStr(' Server port', style=BOLD)
-               + ' (leave blank to cancel): ' + SHOW_CUR)
+                 + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR)
     if not port:
         print(CLS)
@@ -152,15 +152,20 @@ def multiplayer():
 def pause(server):
     print(CLS)
 
-    try:
-        server.port
-        port_item = ('Show Port', lambda: show_port(server.port))
-    except AttributeError:
-        port_item = None
+    port_item = None
+    multiplayer_item = None
+
+    if server.server is not None:
+        if server.server:
+            multiplayer_item = ('Disable Multiplayer', server.kill_server)
+            port_item = ('Show Port', lambda: show_port(server.port))
+        else:
+            multiplayer_item = ('Enable Multiplayer', server.init_server)
 
     return menu('Paused', (
         ('Resume', lambda: None),
         ('Help', help_),
+        multiplayer_item,
         port_item,
         ('Main Menu', lambda: 'exit')
     ))
