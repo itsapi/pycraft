@@ -217,6 +217,11 @@ class Server(CommonServer):
              }[data['method']](*data.get('args', []))
         )
 
+    def _update_clients(self, message, sender=None):
+        for name, sock in self._current_players.items():
+            if name != sender and sock is not Server.FAKE_SOCKET:
+                network.send(sock, message, True)
+
     def load_chunks(self, chunk_list):
         new_slices = {}
         gen_slices = {}
@@ -300,11 +305,6 @@ class Server(CommonServer):
     def _get_players(self):
         """ Returns logged in player names """
         return list(self._current_players.keys())
-
-    def _update_clients(self, message, sender=None):
-        for name, sock in self._current_players.items():
-            if name != sender and sock is not Server.FAKE_SOCKET:
-                network.send(sock, message, True)
 
     @property
     def players(self):
