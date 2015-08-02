@@ -176,7 +176,7 @@ def save_map(save, new_slices):
                 slices = parse_slices(f.readlines())
         except (OSError, IOError):
             slices = {}
-        slices.update(new_slices)
+        slices.update(chunk)
 
         # Write slices back to file
         with open(chunk_file, 'w') as f:
