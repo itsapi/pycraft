@@ -80,6 +80,7 @@ def game(blocks, server):
 
             slice_list = terrain.detect_edges(server.map_, extended_edges)
             if slice_list:
+                debug('slices to load', slice_list)
                 chunk_list = terrain.get_chunk_list(slice_list)
                 server.load_chunks(chunk_list)
                 server.unload_slices(extended_edges)

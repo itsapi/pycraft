@@ -204,6 +204,8 @@ class Server(CommonServer):
         new_slices = {}
         gen_slices = {}
 
+        debug('loading chunks', chunk_list)
+
         # Generates new terrain
         for chunk_num in chunk_list:
             chunk = saves.load_chunk(self._save, chunk_num)
@@ -215,8 +217,12 @@ class Server(CommonServer):
                     gen_slices[str(pos)] = slice_
             new_slices.update(chunk)
 
+        debug('generated slices', gen_slices.keys())
+        debug('new slices', new_slices.keys())
+
         # Save generated terrain to file
         if gen_slices:
+            debug('saving slices', gen_slices.keys())
             saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
