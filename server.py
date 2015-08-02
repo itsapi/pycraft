@@ -1,5 +1,5 @@
 from time import time
-from math import radians
+from math import radians, floor, ceil
 from threading import Thread
 
 import terrain, saves, render, network
@@ -29,6 +29,8 @@ def update_tick(last_tick, cur_tick):
 class CommonServer:
 
     def unload_slices(self, edges):
+        a = lambda x, f: chunk_size * f(x / chunk_size)
+        edges = [a(edges[0], floor), a(edges[1], ceil)]
         self._map = {x: s for x, s in self._map.items() if int(x) in range(*edges)}
 
     def get_meta(self, prop=None):
