@@ -25,7 +25,11 @@ def main():
                 game(blocks, server.Server(name, data))
             else:
                 # Remote Server
-                game(blocks, server.ServerInterface(name, *data))
+                server_interface = server.ServerInterface(name, *data)
+                if server_interface.error:
+                    ui.error(server_interface.error)
+                else:
+                    game(blocks, server_interface)
 
     finally:
         print(SHOW_CUR + CLS)

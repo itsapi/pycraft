@@ -54,8 +54,12 @@ class ServerInterface(CommonServer):
         self._map = {}
 
         self.game = True
+        self.error = False
         self._name = name
-        self._login()
+
+        if not self._login():
+            self._sock.close()
+            return
 
         self._dt = False
 
@@ -119,7 +123,13 @@ class ServerInterface(CommonServer):
         self.view_change = True
 
     def _login(self):
-        self._player = self._send('login', [self._name])
+        response = self._send('login', [self._name])
+        try:
+            self.error = response['err']
+            return False
+        except KeyError:
+            self._player = response
+            return True
 
     def logout(self):
         self._send('logout', async=True)
@@ -254,6 +264,8 @@ class Server(CommonServer):
             self._current_players[name] = sock
 
             return self._meta['players'][name]
+        else:
+            return {'err': 'Username in use'}
 
     def _logout(self, sock=None):
         saves.save_meta(self._save, self._meta)

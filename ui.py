@@ -211,6 +211,14 @@ def name():
     return name
 
 
+def error(message):
+    print(CLS + REDRAW + '\n' + colorStr(message, fg=RED) + '\n\nBack...\n')
+
+    wait_for_input()
+
+    print(CLS)
+
+
 def wait_for_input():
     with BlockingInput() as bi:
         while not str(bi.char()) in ' \n':
