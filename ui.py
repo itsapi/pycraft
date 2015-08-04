@@ -217,7 +217,7 @@ def help_():
     return None, None
 
 
-def name():
+def name(meta):
     print(REDRAW)
 
     name = None
@@ -226,6 +226,10 @@ def name():
         print(HIDE_CUR + REDRAW)
 
     print(CLS)
+
+    meta['name'] = name
+    saves.save_global_meta(meta)
+
     return name
 
 

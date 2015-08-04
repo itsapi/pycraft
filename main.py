@@ -13,7 +13,8 @@ def main():
 
     # Menu loop
     try:
-        name = ui.name()
+        meta = saves.get_global_meta()
+        name = meta.get('name', lambda: ui.name(meta))
         saves.check_map_dir()
         blocks = server.blocks
 
