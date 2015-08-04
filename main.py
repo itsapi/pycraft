@@ -23,14 +23,12 @@ def main():
             if local:
                 # Local Server
                 server_obj = server.Server(name, data)
-                game(blocks, server_obj)
             else:
                 # Remote Server
                 server_obj = server.ServerInterface(name, *data)
-                if server_obj.error:
-                    ui.error(server_obj.error)
-                else:
-                    game(blocks, server_obj)
+
+            if not server_obj.error:
+                game(blocks, server_obj)
 
             if server_obj.error:
                 ui.error(server_obj.error)
