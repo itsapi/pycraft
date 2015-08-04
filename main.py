@@ -23,14 +23,17 @@ def main():
         blocks = server.blocks
 
         while True:
-            data, local = ui.main(meta)
+            data = ui.main(meta)
 
-            if local:
+            if data is None:
+                break
+
+            if data['local']:
                 # Local Server
-                server_obj = server.Server(name, data, port)
+                server_obj = server.Server(name, data['save'], port)
             else:
                 # Remote Server
-                server_obj = server.ServerInterface(name, *data)
+                server_obj = server.ServerInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
                 game(blocks, server_obj)

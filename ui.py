@@ -1,4 +1,3 @@
-import sys
 import json
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
@@ -9,7 +8,7 @@ import saves
 from data import help_data
 
 
-back = ('Back...', lambda: None)
+back = ('Back...', lambda: False)
 
 
 def menu(name, options):
@@ -56,22 +55,41 @@ def menu(name, options):
     return options[selection][1]()
 
 
+def loop_menu(title, generator):
+    """
+        Parameters:
+         - generator: Function which generates the `options` argument
+             for menu()
+         - top: Is the top level menu. Meaning False stays at current level too
+
+        Return values from option functions have these meanings:
+         - None: Stays at current level
+         - False, other: Drops a level
+    """
+
+    data = None
+    while data is None:
+        data = menu(title, generator())
+
+    if data is False:
+        # Stop at next level
+        data = None
+
+    return data
+
+
 def main(meta):
     """ Loops the main menu until the user loads a save. """
 
     print(CLS)
-    data = None
-    while data is None:
-        data, local = menu('Main menu', (
-            ('New Save', new),
-            ('Load Save', load),
-            ('Delete Save', delete),
-            ('Multiplayer', lambda: servers(meta)),
-            ('Help', help_),
-            ('Exit', sys.exit)
-        ))
-
-    return data, local
+    return loop_menu('Main menu', lambda: (
+        ('New Save', new),
+        ('Load Save', load),
+        ('Delete Save', delete),
+        ('Multiplayer', lambda: servers(meta)),
+        ('Help', help_),
+        ('Exit', lambda: False)
+    ))
 
 
 def lambda_gen(func, var):
@@ -91,22 +109,26 @@ def title(name):
 
 def load():
     """ A menu for selecting a save to load. """
-    saves_list = saves.list_saves()
-    return menu(
-        'Load save',
-        ([(save[1]['name'], lambda_gen(lambda s: s, save[0]))
-          for save in saves_list] + [back])
-    ), True
+    data = menu('Load save', (
+        [(save[1]['name'], lambda_gen(lambda s: s, save[0]))
+         for save in saves.list_saves()] +
+        [back])
+    )
+
+    return None if data is False else {
+        'local': True,
+        'save': data
+    }
 
 
 def delete():
     """ A menu for selectng a save to delete. """
-    saves_list = saves.list_saves()
-    return menu(
-        'Delete save',
-        ([(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
-          for save in saves_list] + [back])
-    ), None
+    loop_menu('Delete save', lambda: (
+        [(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
+         for save in saves.list_saves()] +
+        [back])
+    )
+    return None
 
 
 def new():
@@ -119,40 +141,39 @@ def new():
     print(HIDE_CUR)
     if not meta['name']:
         print(CLS)
-        return None, None
+        return None
 
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ' + SHOW_CUR)
     print(HIDE_CUR)
     save = saves.new_save(meta)
-    return save, True
+    return {'local': True, 'save': save}
 
 
-def server_list(meta):
-    return [('{}:{}'.format(*server), lambda_gen(lambda s: s, server))
+def server_list(meta, func):
+    return [('{}:{}'.format(*server), lambda_gen(func, server))
             for server in meta.get('servers', [])]
 
 
 def servers(meta):
     """ A menu for selecting a server to join. """
-    return menu(
-        'Join server',
-        (server_list(meta) +
-         [('Add new server', lambda: add_server(meta))] +
-         [('Delete server', lambda: delete_server(meta))] +
-         [back])
-    ), False
+
+    return loop_menu('Join server', lambda: (
+        server_list(meta, lambda s: {'local': False,
+                                     'ip': s[0],
+                                     'port': s[1]}) +
+        [('Add new server', lambda: add_server(meta))] +
+        [('Delete server', lambda: delete_server(meta))] +
+        [back])
+    )
 
 
 def delete_server(meta):
     """ A menu for selecting a server to delete. """
-    to_delete = menu(
-        'Delete Server',
-        (server_list(meta) +
-         [back])
+    loop_menu('Delete Server', lambda: (
+        server_list(meta, lambda s: saves.delete_server(meta, s)) +
+        [back])
     )
-
-    saves.delete_server(meta, to_delete)
     return None
 
 
@@ -176,7 +197,9 @@ def add_server(meta):
 
     saves.add_server(meta, (ip, port))
 
-    return ip, port
+    return {'local': False,
+            'ip': ip,
+            'port': port}
 
 
 def pause(server):
@@ -192,11 +215,13 @@ def pause(server):
         else:
             multiplayer_item = ('Enable Multiplayer', server.init_server)
 
-    return menu('Paused', (
-        ('Resume', lambda: None),
+    return loop_menu('Paused', lambda: (
+        ('Resume', lambda: False),
         ('Help', help_),
-        multiplayer_item,
-        port_item,
+        ((('Disable Multiplayer', server.kill_server)
+            if server.server else ('Enable Multiplayer', server.init_server))
+            if server.server is not None else None),
+        (('Show Port', lambda: show_port(server.port)) if server.server else None),
         ('Main Menu', lambda: 'exit')
     ))
 
@@ -231,7 +256,7 @@ def help_():
     wait_for_input()
 
     print(CLS)
-    return None, None
+    return None
 
 
 def name(meta):
