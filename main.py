@@ -19,7 +19,7 @@ def main():
         blocks = server.blocks
 
         while True:
-            data, local = ui.main()
+            data, local = ui.main(meta)
 
             if local:
                 # Local Server

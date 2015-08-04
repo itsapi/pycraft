@@ -56,7 +56,7 @@ def menu(name, options):
     return options[selection][1]()
 
 
-def main():
+def main(meta):
     """ Loops the main menu until the user loads a save. """
 
     print(CLS)
@@ -66,7 +66,7 @@ def main():
             ('New Save', new),
             ('Load Save', load),
             ('Delete Save', delete),
-            ('Multiplayer', servers),
+            ('Multiplayer', lambda: servers(meta)),
             ('Help', help_),
             ('Exit', sys.exit)
         ))
@@ -128,18 +128,18 @@ def new():
     return save, True
 
 
-def servers():
+def servers(meta):
     """ A menu for selecting a server to join. """
-    server_list = saves.list_servers()
+    server_list = meta.get('servers', [])
     return menu(
         'Join server',
         ([('{}:{}'.format(*server), lambda_gen(lambda s: s, server))
           for server in server_list] +
-          [('Add new server', add_server), back])
+         [('Add new server', lambda: add_server(meta)), back])
     ), False
 
 
-def add_server():
+def add_server(meta):
     """ Get ip and port of server to connect to, then load world from server. """
 
     print(REDRAW + title('Connect to server'), end='')
@@ -157,7 +157,7 @@ def add_server():
         print(CLS)
         return None
 
-    saves.add_server(ip, port)
+    saves.add_server(meta, (ip, port))
 
     return ip, port
 

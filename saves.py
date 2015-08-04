@@ -214,12 +214,7 @@ def save_global_meta(meta):
         json.dump(meta, f)
 
 
-def list_servers():
-    return get_global_meta().get('servers', [])
-
-
-def add_server(ip, port):
-    meta = get_global_meta()
+def add_server(meta, server):
     meta['servers'] = meta.get('servers', [])
-    meta['servers'].append((ip, port))
+    meta['servers'].append(server)
     save_global_meta(meta)
