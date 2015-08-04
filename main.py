@@ -15,7 +15,9 @@ def main():
     # Menu loop
     try:
         meta = saves.get_global_meta()
-        name = getenv('PYCRAFT_NAME', meta.get('name', lambda: ui.name(meta)))
+
+        name = getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
+
         debug(name)
         saves.check_map_dir()
         blocks = server.blocks
