@@ -92,9 +92,9 @@ def requestHandlerFactory(data_handler):
     return ThreadedTCPRequestHandler
 
 
-def start(data_handler):
+def start(data_handler, port):
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = '0.0.0.0', int(os.getenv('PYCRAFT_PORT', 0))
+    HOST, PORT = '0.0.0.0', int(port)
 
     server = ThreadedTCPServer((HOST, PORT), requestHandlerFactory(data_handler))
     ip, port = server.server_address

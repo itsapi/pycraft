@@ -17,8 +17,8 @@ def main():
         meta = saves.get_global_meta()
 
         name = getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
+        port = getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
-        debug(name)
         saves.check_map_dir()
         blocks = server.blocks
 
@@ -27,7 +27,7 @@ def main():
 
             if local:
                 # Local Server
-                server_obj = server.Server(name, data)
+                server_obj = server.Server(name, data, port)
             else:
                 # Remote Server
                 server_obj = server.ServerInterface(name, *data)

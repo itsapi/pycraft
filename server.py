@@ -196,10 +196,11 @@ class Server(CommonServer):
 
     FAKE_SOCKET = 'FAKE'
 
-    def __init__(self, name, save):
+    def __init__(self, name, save, port):
         self.game = True
         self.server = False
         self.error = None
+        self.port = port
         self._name = name
         self._save = save
         # {Loggedin player: socket}
@@ -214,7 +215,7 @@ class Server(CommonServer):
         self._login(self._name, Server.FAKE_SOCKET)
 
     def init_server(self):
-        self.port, self._stop_server = network.start(self._handler)
+        self.port, self._stop_server = network.start(self._handler, self.port)
         debug('Server started on port', self.port)
         self.server = True
 
