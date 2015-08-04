@@ -143,9 +143,12 @@ class ServerInterface(CommonServer):
             self._player = response
             return True
 
-    def _logout(self, msg):
+    def _logout(self, error=None):
         self.game = False
-        self.error = msg
+
+        if error is not None:
+            self.error = error
+
         try:
             self._sock.close()
         except OSError:
