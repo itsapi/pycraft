@@ -56,3 +56,4 @@ saves/
 
 *.sublime-project
 *.sublime-workspace
+meta.json
