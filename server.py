@@ -215,6 +215,7 @@ class Server(CommonServer):
 
     def init_server(self):
         self.port, self._stop_server = network.start(self._handler)
+        debug('Server started on port', self.port)
         self.server = True
 
     def kill_server(self):

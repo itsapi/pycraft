@@ -1,5 +1,6 @@
 from time import time
 from math import radians
+from os import getenv
 
 from console import CLS, SHOW_CUR, HIDE_CUR, debug
 from nbinput import NonBlockingInput
@@ -14,7 +15,8 @@ def main():
     # Menu loop
     try:
         meta = saves.get_global_meta()
-        name = meta.get('name', lambda: ui.name(meta))
+        name = getenv('PYCRAFT_NAME', meta.get('name', lambda: ui.name(meta)))
+        debug(name)
         saves.check_map_dir()
         blocks = server.blocks
 
