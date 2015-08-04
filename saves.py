@@ -196,7 +196,7 @@ def set_blocks(map_, blocks):
 
 def list_saves():
     return [(save, get_meta(save)) for save in os.listdir(SAVES_DIR)
-        if os.path.isdir(save_path(save))]
+            if os.path.isdir(save_path(save))]
 
 
 def get_global_meta():
