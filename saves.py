@@ -218,3 +218,8 @@ def add_server(meta, server):
     meta['servers'] = meta.get('servers', [])
     meta['servers'].append(server)
     save_global_meta(meta)
+
+
+def delete_server(meta, server):
+    meta['servers'].remove(server)
+    save_global_meta(meta)

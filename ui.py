@@ -128,15 +128,32 @@ def new():
     return save, True
 
 
+def server_list(meta):
+    return [('{}:{}'.format(*server), lambda_gen(lambda s: s, server))
+            for server in meta.get('servers', [])]
+
+
 def servers(meta):
     """ A menu for selecting a server to join. """
-    server_list = meta.get('servers', [])
     return menu(
         'Join server',
-        ([('{}:{}'.format(*server), lambda_gen(lambda s: s, server))
-          for server in server_list] +
-         [('Add new server', lambda: add_server(meta)), back])
+        (server_list(meta) +
+         [('Add new server', lambda: add_server(meta))] +
+         [('Delete server', lambda: delete_server(meta))] +
+         [back])
     ), False
+
+
+def delete_server(meta):
+    """ A menu for selecting a server to delete. """
+    to_delete = menu(
+        'Delete Server',
+        (server_list(meta) +
+         [back])
+    )
+
+    saves.delete_server(meta, to_delete)
+    return None
 
 
 def add_server(meta):
