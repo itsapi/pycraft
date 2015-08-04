@@ -66,7 +66,7 @@ def main():
             ('New Save', new),
             ('Load Save', load),
             ('Delete Save', delete),
-            ('Multiplayer', multiplayer),
+            ('Multiplayer', servers),
             ('Help', help_),
             ('Exit', sys.exit)
         ))
@@ -128,7 +128,18 @@ def new():
     return save, True
 
 
-def multiplayer():
+def servers():
+    """ A menu for selecting a server to join. """
+    server_list = saves.list_servers()
+    return menu(
+        'Join server',
+        ([('{}:{}'.format(*server), lambda_gen(lambda s: s, server))
+          for server in server_list] +
+          [('Add new server', add_server), back])
+    ), False
+
+
+def add_server():
     """ Get ip and port of server to connect to, then load world from server. """
 
     print(REDRAW + title('Connect to server'), end='')
@@ -138,15 +149,17 @@ def multiplayer():
     print(HIDE_CUR)
     if not ip:
         print(CLS)
-        return None, None
+        return None
     port = input(colorStr(' Server port', style=BOLD)
                  + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR)
     if not port:
         print(CLS)
-        return None, None
+        return None
 
-    return (ip, port), False
+    saves.add_server(ip, port)
+
+    return ip, port
 
 
 def pause(server):
