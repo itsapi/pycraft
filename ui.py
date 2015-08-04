@@ -61,7 +61,7 @@ def main(meta):
 
     print(CLS)
     data = None
-    while not data:
+    while data is None:
         data, local = menu('Main menu', (
             ('New Save', new),
             ('Load Save', load),
