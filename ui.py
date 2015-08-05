@@ -116,7 +116,7 @@ def load_save():
     return loop_menu('Load save', lambda: (
         saves_list(lambda s: {'local': True,
                               'save': s}) +
-        [('Add save', add_save)] +
+        [('Add new save', add_save)] +
         [('Delete save', delete_save)] +
         [back])
     )
@@ -180,7 +180,7 @@ def delete_server(meta):
 def add_server(meta):
     """ Get ip and port of server to connect to, then load world from server. """
 
-    print(REDRAW + title('Connect to server'), end='')
+    print(REDRAW + title('New server'), end='')
 
     ip = input(colorStr(' Server IP', style=BOLD)
                + ' (leave blank to cancel): ' + SHOW_CUR)
