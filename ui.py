@@ -83,10 +83,10 @@ def main(meta):
 
     print(CLS)
     return loop_menu('Main menu', lambda: (
-        ('Saves', load_save),
-        ('Multiplayer', lambda: servers(meta)),
-        ('Help', help_),
-        ('Exit', lambda: False)
+        [('Saves', load_save)] +
+        [('Multiplayer', lambda: servers(meta))] +
+        [('Help', help_)] +
+        [('Exit', lambda: False)]
     ))
 
 
