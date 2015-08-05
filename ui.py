@@ -205,16 +205,6 @@ def add_server(meta):
 def pause(server):
     print(CLS)
 
-    port_item = None
-    multiplayer_item = None
-
-    if server.server is not None:
-        if server.server:
-            multiplayer_item = ('Disable Multiplayer', server.kill_server)
-            port_item = ('Show Port', lambda: show_port(server.port))
-        else:
-            multiplayer_item = ('Enable Multiplayer', server.init_server)
-
     return loop_menu('Paused', lambda: (
         ('Resume', lambda: False),
         ('Help', help_),

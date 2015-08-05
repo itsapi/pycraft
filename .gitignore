@@ -56,4 +56,6 @@ saves/
 
 *.sublime-project
 *.sublime-workspace
+*.caret
+
 meta.json
