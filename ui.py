@@ -11,7 +11,7 @@ from data import help_data
 back = ('Back...', lambda: False)
 
 
-def menu(name, options):
+def menu(name, options, selection=0):
     """
         Executes the users selection from the menu, and returns the result.
 
@@ -23,7 +23,13 @@ def menu(name, options):
     STAR = colorStr('*', YELLOW)
     options = [x for x in options if x is not None]
 
-    selection = 0
+    print_map = {}
+    i = 0
+    for j, option in enumerate(options):
+        if len(option) > 1:
+            print_map[i] = j
+            i += 1
+
     char = None
     with BlockingInput() as bi:
         while not str(char) in ' \n':
@@ -31,7 +37,9 @@ def menu(name, options):
             # Print menu
             out = ''
             for i, option in enumerate(options):
-                if i == selection:
+                if option == ():
+                    pass
+                elif i == print_map.get(selection):
                     out += STAR + colorStr(option[0], style=BOLD) + STAR
                 else:
                     out += ' ' + option[0] + ' '
@@ -49,10 +57,10 @@ def menu(name, options):
                 if char in 'Ss'+DOWN:
                     selection += 1
                     break
-            selection %= len(options)
+            selection %= len(print_map)
         print(CLS)
     # Execute function of selection
-    return options[selection][1]()
+    return options[print_map[selection]][1](), selection
 
 
 def loop_menu(title, generator):
@@ -68,8 +76,9 @@ def loop_menu(title, generator):
     """
 
     data = None
+    selection = 0
     while data is None:
-        data = menu(title, generator())
+        data, selection = menu(title, generator(), selection)
 
     if data is False:
         # Stop at next level
@@ -116,6 +125,7 @@ def load_save():
     return loop_menu('Load save', lambda: (
         saves_list(lambda s: {'local': True,
                               'save': s}) +
+        [()] +
         [('Add new save', add_save)] +
         [('Delete save', delete_save)] +
         [back])
@@ -162,6 +172,7 @@ def servers(meta):
         server_list(meta, lambda s: {'local': False,
                                      'ip': s[0],
                                      'port': s[1]}) +
+        [()] +
         [('Add new server', lambda: add_server(meta))] +
         [('Delete server', lambda: delete_server(meta))] +
         [back])
@@ -211,20 +222,9 @@ def pause(server):
         ((('Disable Multiplayer', server.kill_server)
             if server.server else ('Enable Multiplayer', server.init_server))
             if server.server is not None else None),
-        (('Show Port', lambda: show_port(server.port)) if server.server else None),
+        (('  Port: {}'.format(server.port),) if server.server else None),
         ('Main Menu', lambda: 'exit')
     ))
-
-
-def show_port(port):
-    out = REDRAW + '\n'
-    out += 'Port: {}\n\n'.format(port)
-    out += 'Back...\n'
-    print(out)
-
-    wait_for_input()
-
-    print(CLS)
 
 
 def help_():
