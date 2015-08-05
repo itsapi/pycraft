@@ -83,9 +83,7 @@ def main(meta):
 
     print(CLS)
     return loop_menu('Main menu', lambda: (
-        ('New Save', new),
-        ('Load Save', load),
-        ('Delete Save', delete),
+        ('Saves', load_save),
         ('Multiplayer', lambda: servers(meta)),
         ('Help', help_),
         ('Exit', lambda: False)
@@ -107,31 +105,33 @@ def title(name):
     )
 
 
-def load():
+def saves_list(func):
+    return [(save[1]['name'], lambda_gen(func, save[0]))
+            for save in saves.list_saves()]
+
+
+def load_save():
     """ A menu for selecting a save to load. """
-    data = menu('Load save', (
-        [(save[1]['name'], lambda_gen(lambda s: s, save[0]))
-         for save in saves.list_saves()] +
+
+    return loop_menu('Load save', lambda: (
+        saves_list(lambda s: {'local': True,
+                              'save': s}) +
+        [('Add save', add_save)] +
+        [('Delete save', delete_save)] +
         [back])
     )
 
-    return None if data is False else {
-        'local': True,
-        'save': data
-    }
 
-
-def delete():
-    """ A menu for selectng a save to delete. """
-    loop_menu('Delete save', lambda: (
-        [(save[1]['name'], lambda_gen(saves.delete_save, save[0]))
-         for save in saves.list_saves()] +
+def delete_save():
+    """ A menu for selecting a save to delete. """
+    loop_menu('Delete Save', lambda: (
+        saves_list(saves.delete_save) +
         [back])
     )
     return None
 
 
-def new():
+def add_save():
     """ Lets the user enter a save name, then it creates and loads the save. """
 
     print(REDRAW + title('New save'), end='')
