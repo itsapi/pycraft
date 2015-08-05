@@ -1,5 +1,3 @@
-import json
-
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
 from colors import *
