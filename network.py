@@ -10,6 +10,10 @@ from console import debug
 END = '<END>'
 
 
+class SocketError(Exception):
+    pass
+
+
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
@@ -57,7 +61,7 @@ def receive(sock):
                 total_data.pop()
                 break
         elif len(data) == 0:
-            return None
+            raise SocketError()
 
     debug('Received:', repr(''.join(total_data)))
     try:
@@ -76,16 +80,14 @@ def requestHandlerFactory(data_handler):
             while True:
                 try:
                     data = receive(self.request)
-                except ValueError:
-                    continue
+                except SocketError:
+                    break
 
                 if data:
                     response = self.data_handler(self.request, data)
 
                     if response:
                         send(self.request, response, True)
-                else:
-                    break
 
             debug('Handler Exiting')
 

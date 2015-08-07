@@ -101,14 +101,17 @@ class ServerInterface(CommonServer):
              'data':  'some data'}
         """
         while True:
-            data = network.receive(self._sock)
-            if data is None: break
-            {   'blocks': self._set_blocks,
-                'slices': self._set_slices,
-                'player': self._set_player,
-                'remove_player': self._remove_player,
-                'logout': self._logout
-            }[data['event']](*data.get('args', []))
+            try:
+                data = network.receive(self._sock)
+            except server.SocketError:
+                break
+
+            {'blocks': self._set_blocks,
+             'slices': self._set_slices,
+             'player': self._set_player,
+             'remove_player': self._remove_player,
+             'logout': self._logout
+             }[data['event']](*data.get('args', []))
 
     def load_chunks(self, chunk_list):
         slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
