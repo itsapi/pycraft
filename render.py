@@ -3,11 +3,11 @@ from math import cos, sin
 import terrain
 from colors import *
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, supported_chars
-from data import world_gen, blocks
-
+import data
+from data import world_gen
 
 sun_y = world_gen['height'] - world_gen['ground_height']
-max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
+max_light = max(map(lambda b: b.get('light', 0), data.blocks.values()))
 
 
 pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)

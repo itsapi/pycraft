@@ -4,7 +4,7 @@ from os import getenv
 
 from console import CLS, SHOW_CUR, HIDE_CUR, debug
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player, render, server
+import saves, ui, terrain, player, render, server_interface
 
 
 def main():
@@ -29,10 +29,10 @@ def main():
 
             if data['local']:
                 # Local Server
-                server_obj = server.Server(name, data['save'], port)
+                server_obj = server_interface.LocalInterface(name, data['save'], port)
             else:
                 # Remote Server
-                server_obj = server.ServerInterface(name, data['ip'], data['port'])
+                server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
                 game(server_obj)
@@ -61,7 +61,6 @@ def game(server):
 
     old_sun = None
     old_edges = None
-    redraw = False
     last_frame = []
     last_out = time()
     last_inp = time()
@@ -94,7 +93,7 @@ def game(server):
             if slice_list:
                 debug('slices to load', slice_list)
                 chunk_list = terrain.get_chunk_list(slice_list)
-                server.load_chunks(chunk_list)
+                server.get_chunks(chunk_list)
                 server.unload_slices(extended_edges)
 
             # Moving view
@@ -121,7 +120,7 @@ def game(server):
                 )
 
                 objects = player.assemble_players(
-                    server.players, x, y, int(width / 2), edges
+                    server.current_players, x, y, int(width / 2), edges
                 )
 
                 if not c_hidden:
@@ -214,7 +213,7 @@ def game(server):
                     server.inv = inv
 
                 if new_blocks:
-                    server.save_blocks(new_blocks)
+                    server.set_blocks(new_blocks)
 
                 dcraft, dcraftC, dcraftN = False, False, False
                 if dinv: crafting = False
