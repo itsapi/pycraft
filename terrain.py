@@ -1,6 +1,7 @@
 import random
 from math import ceil
 
+import render
 from data import world_gen
 
 
@@ -8,8 +9,9 @@ from data import world_gen
 max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 
-
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
+
+blocks = render.blocks
 
 
 def move_map(map_, edges):
@@ -52,7 +54,7 @@ def slice_height(pos, meta):
     return int(slice_height_)
 
 
-def add_tree(slice_, pos, meta, blocks):
+def add_tree(slice_, pos, meta):
     for x in range(pos - max_half_tree, pos + max_half_tree + 1):
         tree_chance = biome(x, meta)
 
@@ -83,13 +85,13 @@ def add_tree(slice_, pos, meta, blocks):
                     for j, leaf in enumerate(leaf_slice):
                         if leaf:
                             sy = leaf_height + j
-                            slice_[sy] = spawn_hierarchy(blocks, ('@', slice_[sy]))
+                            slice_[sy] = spawn_hierarchy(('@', slice_[sy]))
 
             if x == pos:
                 # Add trunk to slice
                 for i in range(air_height - tree_height,
                                air_height):
-                    slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
+                    slice_[i] = spawn_hierarchy(('|', slice_[i]))
 
     return slice_
 
@@ -111,7 +113,7 @@ def biome(pos, meta):
     return max(set(biome_type), key=biome_type.count) if biome_type else .05
 
 
-def add_ores(slice_, pos, meta, blocks, slice_height_):
+def add_ores(slice_, pos, meta, slice_height_):
     for ore in world_gen['ores'].values():
         for x in range(pos - int(ore['vain_size'] / 2),
                        pos + ceil(ore['vain_size'] / 2)):
@@ -131,24 +133,24 @@ def add_ores(slice_, pos, meta, blocks, slice_height_):
                 # Won't allow ore above surface
                 if ore['lower'] < ore_height < min(ore['upper'], slice_height_):
                     sy = world_gen['height'] - ore_height
-                    slice_[sy] = spawn_hierarchy(blocks, (ore['char'], slice_[sy]))
+                    slice_[sy] = spawn_hierarchy((ore['char'], slice_[sy]))
 
     return slice_
 
 
-def add_tall_grass(slice_, pos, meta, blocks, slice_height_):
+def add_tall_grass(slice_, pos, meta, slice_height_):
     # Set seed for random numbers based on position and grass
     random.seed(str(meta['seed']) + str(pos) + 'grass')
 
     # Gernerate a grass with a probability
     if random.random() <= world_gen['tall_grass_rate']:
         sy = world_gen['height'] - slice_height_ - 1
-        slice_[sy] = spawn_hierarchy(blocks, ('v', slice_[sy]))
+        slice_[sy] = spawn_hierarchy(('v', slice_[sy]))
 
     return slice_
 
 
-def gen_slice(pos, meta, blocks):
+def gen_slice(pos, meta):
     slice_height_ = slice_height(pos, meta)
 
     # Form slice of sky, grass, stone, bedrock
@@ -159,9 +161,9 @@ def gen_slice(pos, meta, blocks):
         ['_']
     )
 
-    slice_ = add_tree(slice_, pos, meta, blocks)
-    slice_ = add_ores(slice_, pos, meta, blocks, slice_height_)
-    slice_ = add_tall_grass(slice_, pos, meta, blocks, slice_height_)
+    slice_ = add_tree(slice_, pos, meta)
+    slice_ = add_ores(slice_, pos, meta, slice_height_)
+    slice_ = add_tall_grass(slice_, pos, meta, slice_height_)
 
     return slice_
 
@@ -175,13 +177,13 @@ def detect_edges(map_, edges):
     return slices
 
 
-def spawn_hierarchy(blocks, tests):
+def spawn_hierarchy(tests):
     return max(tests, key=lambda block: blocks[block]['hierarchy'])
 
 
-def is_solid(blocks, block):
+def is_solid(block):
     return blocks[block]['solid']
 
 
-def ground_height(slice_, blocks):
+def ground_height(slice_):
     return next(i for i, block in enumerate(slice_) if blocks[block]['solid'])

@@ -2,13 +2,12 @@ from time import time
 from math import radians, floor, ceil
 from threading import Thread
 
-import terrain, saves, render, network
+import terrain, saves, network
 
 from console import debug
 
 
 chunk_size = terrain.world_gen['chunk_size']
-blocks = render.gen_blocks()
 
 SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
@@ -267,7 +266,7 @@ class Server(CommonServer):
             for i in range(chunk_size):
                 pos = i + chunk_num * chunk_size
                 if not str(pos) in chunk:
-                    slice_ = terrain.gen_slice(pos, self._meta, blocks)
+                    slice_ = terrain.gen_slice(pos, self._meta)
                     chunk[str(pos)] = slice_
                     gen_slices[str(pos)] = slice_
             new_slices.update(chunk)

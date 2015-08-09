@@ -1,5 +1,6 @@
 from math import cos, sin
 
+import terrain
 from colors import *
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, supported_chars
 from data import world_gen, blocks
@@ -12,7 +13,7 @@ max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
-def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
+def render_map(map_, objects, sun, lights, tick, last_frame):
     """
         Prints out a frame of the game.
 
@@ -49,7 +50,7 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
+            pixel_out = calc_pixel(x, y, pixel, objects, sun, lights, tick)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -63,7 +64,7 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
     return diff, this_frame
 
 
-def obj_pixel(x, y, objects, blocks):
+def obj_pixel(x, y, objects):
 
     for object_ in objects:
         if object_['x'] == x and object_['y'] == y:
@@ -76,10 +77,10 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
+def calc_pixel(x, y, pixel_f, objects, sun, lights, tick):
 
     # Add any objects
-    object_, obj_colour = obj_pixel(x, y, objects, blocks)
+    object_, obj_colour = obj_pixel(x, y, objects)
 
     # Add sky behind blocks without objects
     if object_:
@@ -148,7 +149,7 @@ def sky(x, y, time, sun, lights):
             return BLUE
 
 
-def get_lights(_map, start_x, blocks):
+def get_lights(_map, start_x):
     lights = []
 
     for x, slice_ in _map.items():
@@ -169,7 +170,7 @@ def get_lights(_map, start_x, blocks):
     return lights
 
 
-def render_grid(title, selected, grid, blocks, max_height, sel=None):
+def render_grid(title, selected, grid, max_height, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
@@ -255,6 +256,8 @@ def render_grids(grids, x):
 
 
 def gen_blocks():
+    blocks = data.blocks
+
     # Convert the characters to their coloured form
     for key, block in blocks.items():
 
@@ -271,3 +274,5 @@ def gen_blocks():
             )
 
     return blocks
+
+blocks = gen_blocks()

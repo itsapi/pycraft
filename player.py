@@ -2,6 +2,7 @@ import terrain
 from colors import *
 from console import debug
 
+blocks = terrain.blocks
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
@@ -10,7 +11,7 @@ INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
 
-def get_pos_delta(char, map_, x, y, blocks, jump):
+def get_pos_delta(char, map_, x, y, jump):
 
     left_slice = map_[str(x - 1)]
     player_slice = map_[str(x)]
@@ -24,7 +25,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     dy = 0
     dx = 0
 
-    is_solid = lambda block: terrain.is_solid(blocks, block)
+    is_solid = lambda block: terrain.is_solid(block)
 
     # Calculate change in x pos for left and right movement
     for test_char, dir_, func in (('a', -1, left_slice), ('d', 1, right_slice)):
@@ -52,7 +53,7 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv, blocks):
+def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
     block_y = y + cursor_y[cursor]
     block_x = str(x + cursor_x[cursor])
     block = map_[block_x][block_y]
@@ -113,7 +114,7 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
-def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
+def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     c_x, c_y = x + cursor_x[cursor], y + cursor_y[cursor]
 
     if c_y < 0 or c_y >= terrain.world_gen['height']:
@@ -162,7 +163,7 @@ def assemble_cursor(x, y, cursor, colour):
     }
 
 
-def get_crafting(inv, crafting_list, crafting_sel, blocks, reset=False):
+def get_crafting(inv, crafting_list, crafting_sel, reset=False):
     """ Makes a list of blocks you can craft """
 
     inv = dict(map(lambda a: (a['block'], a['num']), inv))
@@ -192,7 +193,7 @@ def get_crafting(inv, crafting_list, crafting_sel, blocks, reset=False):
     return crafting, max(min(crafting_sel, len(crafting) - 1), 0)
 
 
-def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
+def craft_num(inp, inv, crafting_list, crafting_sel):
     dcraft = False
 
     if inp in '-=':
@@ -214,7 +215,7 @@ def craft_num(inp, inv, crafting_list, crafting_sel, blocks):
     return crafting_list, dcraft
 
 
-def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
+def crafting(inp, inv, inv_sel, crafting_list, crafting_sel):
     """ Crafts the selected item in crafting_list """
 
     dcraft = False
@@ -238,7 +239,7 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel, blocks):
     return inv, max(inv_sel, 0), crafting_list, dcraft
 
 
-def label(list, sel, blocks):
+def label(list, sel):
     try:
         return blocks[list[sel]['block']]['name']
     except IndexError:

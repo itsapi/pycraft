@@ -20,7 +20,6 @@ def main():
         port = getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
         saves.check_map_dir()
-        blocks = server.blocks
 
         while True:
             data = ui.main(meta)
@@ -36,7 +35,7 @@ def main():
                 server_obj = server.ServerInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
-                game(blocks, server_obj)
+                game(server_obj)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -45,7 +44,7 @@ def main():
         print(SHOW_CUR + CLS)
 
 
-def game(blocks, server):
+def game(server):
     x, y = server.pos
     dx = 0
     dy = 0
@@ -81,8 +80,7 @@ def game(blocks, server):
     crafting_list, crafting_sel = player.get_crafting(
         server.inv,
         crafting_list,
-        crafting_sel,
-        blocks
+        crafting_sel
     )
 
     # Game loop
@@ -119,7 +117,7 @@ def game(blocks, server):
                 last_out = time()
 
                 cursor_colour, can_break = player.cursor_colour(
-                    x, y, cursor, server.map_, blocks, server.inv, inv_sel
+                    x, y, cursor, server.map_, server.inv, inv_sel
                 )
 
                 objects = player.assemble_players(
@@ -131,12 +129,11 @@ def game(blocks, server):
                         int(width / 2), y, cursor, cursor_colour
                     ))
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                lights = render.get_lights(extended_view, edges[0])
 
                 out, last_frame = render.render_map(
                     view,
                     objects,
-                    blocks,
                     sun,
                     lights,
                     server.tick,
@@ -144,18 +141,18 @@ def game(blocks, server):
                 )
 
                 crafting_grid = render.render_grid(
-                    player.CRAFT_TITLE, crafting, crafting_list, blocks,
+                    player.CRAFT_TITLE, crafting, crafting_list,
                     terrain.world_gen['height']-1, crafting_sel
                 )
 
                 inv_grid = render.render_grid(
-                    player.INV_TITLE, not crafting, server.inv, blocks,
+                    player.INV_TITLE, not crafting, server.inv,
                     terrain.world_gen['height']-1, inv_sel
                 )
 
-                label = (player.label(crafting_list, crafting_sel, blocks)
+                label = (player.label(crafting_list, crafting_sel)
                         if crafting else
-                        player.label(server.inv, inv_sel, blocks))
+                        player.label(server.inv, inv_sel))
 
                 out += render.render_grids(
                     [[inv_grid, crafting_grid],
@@ -173,7 +170,7 @@ def game(blocks, server):
                 x, y = player.respawn(server.get_meta('spawn'))
 
             # Player falls when no solid block below it
-            if (dt and not terrain.is_solid(blocks, server.map_[str(x)][y+1])
+            if (dt and not terrain.is_solid(server.map_[str(x)][y+1])
                 and server.chunk_loaded(x)):
 
                 if jump > 0:
@@ -201,7 +198,7 @@ def game(blocks, server):
                 if time() >= (1/MPS) + last_move:
                     # Update player position
                     dx, dy, jump = player.get_pos_delta(
-                        str(inp), server.map_, x, y, blocks, jump)
+                        str(inp), server.map_, x, y, jump)
                     y += dy
                     x += dx
 
@@ -210,7 +207,7 @@ def game(blocks, server):
                 new_blocks, inv, inv_sel, dinv = \
                     player.cursor_func(
                         str(inp), server.map_, x, y, cursor,
-                        can_break, inv_sel, server.inv, blocks
+                        can_break, inv_sel, server.inv
                     )
 
                 if dinv:
@@ -225,14 +222,14 @@ def game(blocks, server):
                     # Craft if player pressed craft
                     inv, inv_sel, crafting_list, dcraftC = \
                         player.crafting(str(inp), server.inv, inv_sel,
-                            crafting_list, crafting_sel, blocks)
+                            crafting_list, crafting_sel)
                     if dcraftC:
                         server.inv = inv
 
                     # Increment/decrement craft no.
                     crafting_list, dcraftN = \
                         player.craft_num(str(inp), server.inv, crafting_list,
-                            crafting_sel, blocks)
+                            crafting_sel)
 
                     dcraft = dcraftC or dcraftN
 
@@ -241,7 +238,7 @@ def game(blocks, server):
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
                         player.get_crafting(server.inv, crafting_list,
-                                            crafting_sel, blocks, dcraftC)
+                                            crafting_sel, dcraftC)
                     if not len(crafting_list): crafting = False
 
                 dc = player.move_cursor(inp)
