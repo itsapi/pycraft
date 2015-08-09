@@ -24,14 +24,11 @@ def connect(ip, port):
     return sock
 
 
-def send(sock, data, async):
+def send(sock, data):
     try:
         data = bytes(json.dumps(data) + END, 'ascii')
         debug('Sending:', repr(data))
         sock.sendall(data)
-
-        if not async:
-            return receive(sock)
 
     except OSError:
         debug('Socket closing')
@@ -87,7 +84,7 @@ def requestHandlerFactory(data_handler):
                     response = self.data_handler(self.request, data)
 
                     if response:
-                        send(self.request, response, True)
+                        send(self.request, response)
 
             debug('Handler Exiting')
 
