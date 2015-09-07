@@ -113,7 +113,7 @@ class RemoteInterface:
         debug('name', self._name)
         debug('players', players)
 
-        if self._name in players:
+        if self._name in players and not self.finished_login.is_set():
             self._player = self.current_players[self._name]
             debug('FINISHED LOGIN')
             self.finished_login.set()
