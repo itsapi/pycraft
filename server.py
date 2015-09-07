@@ -149,10 +149,6 @@ class Game:
         self._meta = saves.load_meta(save)
         self._last_tick = time()
 
-    def login(self, name):
-        self._meta = saves.load_player(name, self._meta)
-        return self._meta['players'][name]
-
     def get_chunks(self, chunk_list):
         new_slices = {}
         gen_slices = {}
@@ -189,8 +185,13 @@ class Game:
     def set_player(self, name, player):
         self._meta['players'][name].update(player)
 
+    # NOTE: Should probably be renamed to get_player
+    def login(self, name):
+        self._meta = saves.load_player(name, self._meta)
+        return self._meta['players'][name]
+
     def get_players(self, players):
-        """ Returns logged in player objects """
+        """ Returns player objects """
         return {name: self._meta['players'][name] for name in players}
 
     # TODO: pause and unpause implementation
