@@ -34,7 +34,6 @@ class Server:
         self.local_interface = local_interface
         self.game = Game(save)
         self.default_port = port
-        self.local_interface_login()
 
         self.serving = False
 

@@ -220,6 +220,7 @@ class LocalInterface:
         self._name = name
         self.current_players = {}
         self._server = Server(name, save, port, self)
+        self._server.local_interface_login()
 
     def _send(self, event, args=[]):
         return self._server.handle(None, {'event': event, 'args': args})
