@@ -14,7 +14,11 @@ TPS = 10  # Ticks
 
 
 class RemoteInterface:
-    """ Communicate with remote server. """
+    """
+        Communicate with remote server.
+
+        Uses self._send to communicate with Server
+    """
 
     def __init__(self, name, ip, port):
         self.map_ = {}
@@ -199,6 +203,12 @@ class RemoteInterface:
 
 
 class LocalInterface:
+    """
+        Communicate with local server.
+
+        Communicates directly with self._server
+    """
+
     def __init__(self, name, save, port):
         self.game = True
         self.error = None
