@@ -13,7 +13,7 @@ SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
 
 
-class RemoteInterface():
+class RemoteInterface:
     """ Communicate with remote server. """
 
     def __init__(self, name, ip, port):
@@ -113,7 +113,7 @@ class RemoteInterface():
 
         if self._name in players:
             self._player = self.current_players[self._name]
-            degug('FINISHED LOGIN')
+            debug('FINISHED LOGIN')
             self.finished_login.set()
 
     def _event_remove_player(self, name):
