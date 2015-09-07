@@ -27,6 +27,10 @@ class RemoteInterface:
         self.error = None
         self._name = name
 
+        # We cannot serve, we are connected to a server.
+        # TODO: Maybe we can do this better...?
+        self.serving = None
+
         try:
             self._sock = network.connect(ip, int(port))
         except (ConnectionRefusedError, ValueError):
