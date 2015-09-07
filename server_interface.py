@@ -62,7 +62,6 @@ class RemoteInterface:
 
         self._chunks_requested = set()
 
-        # Async response
         self._send('get_players')
 
         self.redraw = False
@@ -110,9 +109,7 @@ class RemoteInterface:
         self.current_players.update(players)
         self.redraw = True
 
-        debug('name', self._name)
-        debug('players', players)
-
+        # TODO: Move the login checks out of this method
         if self._name in players and not self.finished_login.is_set():
             self._player = self.current_players[self._name]
             debug('FINISHED LOGIN')
@@ -157,6 +154,8 @@ class RemoteInterface:
         edges = [chunk_size * floor(edges[0] / chunk_size),
                  chunk_size * ceil(edges[1] / chunk_size)]
         self.map_ = {x: s for x, s in self.map_.items() if int(x) in range(*edges)}
+
+        # TODO: Figure out if we always need to send this...
         self._send('unload_slices', [edges])
 
     def set_blocks(self, blocks):
