@@ -217,10 +217,12 @@ def pause(server):
     return loop_menu('Paused', lambda: (
         ('Resume', lambda: False),
         ('Help', help_),
-        ((('Disable Multiplayer', server.kill_server)
-            if server.serving else ('Enable Multiplayer', server.init_server))
-            if server.serving is not None else None),
+        (None if server.serving is None else (
+            ('Disable Multiplayer', server.kill_server)
+            if server.serving else
+            ('Enable Multiplayer', server.init_server))),
         (('  Port: {}'.format(server.port),) if server.serving else None),
+
         ('Main Menu', lambda: 'exit')
     ))
 
