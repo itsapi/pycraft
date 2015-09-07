@@ -45,6 +45,9 @@ class Server:
         if self.local_player != sender_name:
             self.local_interface.handle(message)
 
+    def _player_list(self):
+        return list(self.current_players.keys()) + [self.local_player]
+
     def handle(self, sock, data):
         debug('Event:', data['event'])
         debug('  Args:', data['args'])
@@ -101,7 +104,7 @@ class Server:
         self.game.set_player(name, player)
 
     def event_get_players(self):
-        return {'event': 'set_players', 'args': [self.game.get_players(self.current_players.keys())]}
+        return {'event': 'set_players', 'args': [self.game.get_players(self._player_list())]}
 
     def event_unload_slices(self, edges):
         # TODO: Unload slices outside of edges if not loaded by other players
