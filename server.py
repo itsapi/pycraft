@@ -88,10 +88,6 @@ class Server:
             else:
                 players[name] = sock
 
-            if name == self.local_player:
-                if self.serving:
-                    self.local_interface_kill_server()
-
         self.current_players = players
 
     def event_set_blocks(self, blocks):
