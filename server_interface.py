@@ -4,7 +4,7 @@ from console import debug
 from math import radians, floor, ceil
 from time import time
 
-import saves, terrain, render, network
+import saves, terrain, network
 
 
 chunk_size = terrain.world_gen['chunk_size']
