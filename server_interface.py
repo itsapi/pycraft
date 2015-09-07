@@ -37,9 +37,25 @@ class RemoteInterface:
         self._listener_t.daemon = True
         self._listener_t.start()
 
-        if not self._login():
+        # Login
+        self._send('login', [self._name])
+
+        # Server doesn't respond
+        if not self.finished_login.wait(10):
+            self.error = 'No response from server on login'
+            debug(self.error)
+
             self._sock.close()
             return
+
+        # Server responds with error
+        if self.error is not None:
+            debug('Error response from server on login:', self.error)
+
+            self._sock.close()
+            return
+
+        # Login successful!
 
         self._dt = False
         self._last_tick = time()
@@ -51,20 +67,6 @@ class RemoteInterface:
 
         self.redraw = False
         self.view_change = False
-
-    def _login(self):
-        self._send('login', [self._name])
-
-        if not self.finished_login.wait(10):
-            self.error = 'No response from server on login'
-            debug(self.error)
-            return False
-
-        if self.error is not None:
-            debug('Error response from server on login:', self.error)
-            return False
-
-        return True
 
     def _send(self, event, args=[]):
         network.send(self._sock, {'event': event, 'args': args})
