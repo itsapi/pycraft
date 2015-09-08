@@ -47,8 +47,9 @@ def debug(*args, trunc=True):
             print(*args, file=f)
 
 
-LOG = 'pycraft.log'
 DEBUG = os.getenv('PYCRAFT_DEBUG')
+LOG = os.getenv('PYCRAFT_LOG') or 'pycraft.log'
+
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
 CLS_END = '\033[0J'

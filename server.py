@@ -25,6 +25,22 @@ def update_tick(last_tick, cur_tick):
     return dt, last_tick, cur_tick
 
 
+def _debug_event(event, args):
+    debug('  Event:', event)
+    debug('  Args:', args)
+    debug()
+
+
+def debug_event_send(*args):
+    debug('Sending')
+    _debug_event(*args)
+
+
+def debug_event_receive(*args):
+    debug('Received')
+    _debug_event(*args)
+
+
 class Server:
     def __init__(self, player, save, port, local_interface):
 
@@ -38,6 +54,8 @@ class Server:
         self.serving = False
 
     def _update_clients(self, message, sender_name=None):
+        debug_event_send(message['event'], message['args'])
+
         for name, sock in self.current_players.items():
             if name != sender_name:
                 network.send(sock, message)
@@ -49,8 +67,7 @@ class Server:
         return list(self.current_players.keys()) + [self.local_player]
 
     def handle(self, sock, data):
-        debug('Event:', data['event'])
-        debug('  Args:', data['args'])
+        debug_event_receive(data['event'], data['args'])
 
         return (
             {'get_chunks': self.event_get_chunks,

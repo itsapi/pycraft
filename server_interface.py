@@ -1,5 +1,5 @@
 from threading import Thread, Event
-from server import Server
+from server import Server, debug_event_send, debug_event_receive
 from console import debug
 from math import radians, floor, ceil
 from time import time
@@ -76,6 +76,8 @@ class RemoteInterface:
         self.view_change = False
 
     def _send(self, event, args=[]):
+        debug_event_send(event, args)
+
         network.send(self._sock, {'event': event, 'args': args})
 
     def _listener(self):
@@ -88,8 +90,7 @@ class RemoteInterface:
             if data is None:
                 continue
 
-            debug('Event:', data['event'])
-            debug('  Args:', data['args'])
+            debug_event_receive(data['event'], data['args'])
 
             {'set_blocks': self._event_set_blocks,
              'set_chunks': self._event_set_chunks,
