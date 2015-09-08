@@ -53,14 +53,14 @@ class Server:
 
         self.serving = False
 
-    def _update_clients(self, message, sender_name=None):
+    def _update_clients(self, message, exclude=None):
         debug_event_send(message['event'], message['args'], label='Server')
 
         for name, sock in self.current_players.items():
-            if name != sender_name:
+            if name != exclude:
                 network.send(sock, message)
 
-        if self.local_player != sender_name:
+        if self.local_player != exclude:
             self.local_interface.handle(message)
 
     def _player_list(self):
