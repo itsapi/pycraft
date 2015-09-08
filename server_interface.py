@@ -119,7 +119,6 @@ class RemoteInterface:
 
         # TODO: Move the login checks out of this method
         if self._name in players and not self.finished_login.is_set():
-            self._player = self.current_players[self._name]
             debug('FINISHED LOGIN')
             self.finished_login.set()
 
@@ -180,21 +179,21 @@ class RemoteInterface:
 
     @property
     def pos(self):
-        return self._player['player_x'], self._player['player_y']
+        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
 
     @property
     def inv(self):
-        return self._player['inv']
+        return self.current_players[self._name]['inv']
 
     @pos.setter
     def pos(self, pos):
-        self._player['player_x'], self._player['player_y'] = pos
-        self._send('set_player', [self._name, self._player])
+        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
     def inv(self, inv):
-        self._player['inv'] = inv
-        self._send('set_player', [self._name, self._player])
+        self.current_players[self._name]['inv'] = inv
+        self._send('set_player', [self._name, self.current_players[self._name]])
 
     # TODO: do the pause stuff
     def pause(self, paused):
@@ -245,8 +244,6 @@ class LocalInterface:
     def _event_set_players(self, players):
         self.current_players.update(players)
         self.redraw = True
-        if self._name in players:
-            self._player = players[self._name]
 
     def _event_remove_player(self, name):
         self.current_players.pop(name)
@@ -299,19 +296,19 @@ class LocalInterface:
 
     @property
     def pos(self):
-        return self._player['player_x'], self._player['player_y']
+        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
 
     @property
     def inv(self):
-        return self._player['inv']
+        return self.current_players[self._name]['inv']
 
     @pos.setter
     def pos(self, pos):
-        self._player['player_x'], self._player['player_y'] = pos
+        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
 
     @inv.setter
     def inv(self, inv):
-        self._player['inv'] = inv
+        self.current_players[self._name]['inv'] = inv
 
     @property
     def map_(self):
