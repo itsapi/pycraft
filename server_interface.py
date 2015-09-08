@@ -307,6 +307,7 @@ class LocalInterface:
     @pos.setter
     def pos(self, pos):
         self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
     def inv(self, inv):

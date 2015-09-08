@@ -115,6 +115,7 @@ class Server:
 
     def event_set_player(self, name, player):
         self.game.set_player(name, player)
+        self._update_clients({'event': 'set_players', 'args': [{name: player}]}, exclude=name)
 
     def event_get_players(self):
         return {'event': 'set_players', 'args': [self.game.get_players(self._player_list())]}
