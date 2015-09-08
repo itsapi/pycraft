@@ -31,13 +31,13 @@ def _debug_event(event, args):
     debug()
 
 
-def debug_event_send(*args):
-    debug('Sending')
+def debug_event_send(*args, label=None):
+    debug('Sending', '- [{}]'.format(label) if label else None)
     _debug_event(*args)
 
 
-def debug_event_receive(*args):
-    debug('Received')
+def debug_event_receive(*args, label=''):
+    debug('Received', '- [{}]'.format(label) if label else None)
     _debug_event(*args)
 
 
@@ -54,7 +54,7 @@ class Server:
         self.serving = False
 
     def _update_clients(self, message, sender_name=None):
-        debug_event_send(message['event'], message['args'])
+        debug_event_send(message['event'], message['args'], label='Server')
 
         for name, sock in self.current_players.items():
             if name != sender_name:
@@ -67,7 +67,7 @@ class Server:
         return list(self.current_players.keys()) + [self.local_player]
 
     def handle(self, sock, data):
-        debug_event_receive(data['event'], data['args'])
+        debug_event_receive(data['event'], data['args'], label='Server')
 
         return (
             {'get_chunks': self.event_get_chunks,

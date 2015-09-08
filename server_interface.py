@@ -76,7 +76,7 @@ class RemoteInterface:
         self.view_change = False
 
     def _send(self, event, args=[]):
-        debug_event_send(event, args)
+        debug_event_send(event, args, label='RemoteInterface')
 
         network.send(self._sock, {'event': event, 'args': args})
 
@@ -90,7 +90,7 @@ class RemoteInterface:
             if data is None:
                 continue
 
-            debug_event_receive(data['event'], data['args'])
+            debug_event_receive(data['event'], data['args'], label='RemoteInterface')
 
             {'set_blocks': self._event_set_blocks,
              'set_chunks': self._event_set_chunks,
@@ -223,11 +223,12 @@ class LocalInterface:
         self._server.local_interface_login()
 
     def _send(self, event, args=[]):
+        debug_event_send(event, args, label='LocalInterface')
         return self._server.handle(None, {'event': event, 'args': args})
 
     def handle(self, data):
-        debug('Event:', data['event'])
-        debug('  Args:', data['args'])
+
+        debug_event_receive(data['event'], data['args'], label='LocalInterface')
 
         {'set_blocks': self._event_view_change,
          'set_chunks': self._event_view_change,
