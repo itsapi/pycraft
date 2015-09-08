@@ -108,7 +108,7 @@ class Server:
         self.current_players = players
 
     def event_set_blocks(self, blocks):
-        return {'event': 'set_blocks', 'args': [self.game.set_blocks(blocks)]}
+        self._update_clients({'event': 'set_blocks', 'args': [self.game.set_blocks(blocks)]})
 
     def event_get_chunks(self, chunk_list):
         return {'event': 'set_chunks', 'args': [self.game.get_chunks(chunk_list)]}
