@@ -1,9 +1,10 @@
 from threading import Thread, Event
+from math import radians, floor, ceil
+from time import time
+
 from server import Server, debug_event_send, debug_event_receive
 from console import debug
 from network import SocketError
-from math import radians, floor, ceil
-from time import time
 
 import saves, terrain, network
 
