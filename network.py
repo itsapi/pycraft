@@ -9,7 +9,8 @@ from console import debug
 
 END = '<END>'
 
-NetworkLock = threading.Lock()
+SendLock = threading.Lock()
+ReceiveLock = threading.Lock()
 
 
 class SocketError(Exception):
@@ -27,50 +28,49 @@ def connect(ip, port):
 
 
 def send(sock, data):
-    NetworkLock.acquire()
-
-    try:
-        data = bytes(json.dumps(data) + END, 'ascii')
-        debug('Sending:', repr(data))
-        sock.sendall(data)
-
-    except OSError:
-        debug('Socket closing')
-        sock.close()
-
-    NetworkLock.release()
-
-
-def receive(sock):
-    total_data = []
-    data = ''
-    while True:
-        debug('Waiting')
+    with SendLock:
         try:
-            data = str(sock.recv(1024), 'ascii')
+            data = bytes(json.dumps(data) + END, 'ascii')
+            # debug('Sending:', repr(data))
+            sock.sendall(data)
+
         except OSError:
             debug('Socket closing')
             sock.close()
 
-        if END in data:
-            total_data.append(data[:data.find(END)])
-            break
-        total_data.append(data)
-        if len(total_data) > 1:
-            # Check if end_of_data was split
-            last_pair = total_data[-2] + total_data[-1]
-            if END in last_pair:
-                total_data[-2] = last_pair[:last_pair.find(END)]
-                total_data.pop()
-                break
-        elif len(data) == 0:
-            raise SocketError()
 
-    debug('Received:', repr(''.join(total_data)))
-    try:
-        return json.loads(''.join(total_data))
-    except ValueError as e:
-        debug('JSON Error:', e)
+def receive(sock):
+    with ReceiveLock:
+
+        total_data = []
+        data = ''
+        while True:
+            debug('Waiting')
+            try:
+                data = str(sock.recv(1024), 'ascii')
+            except OSError:
+                debug('Socket closing')
+                sock.close()
+
+            if END in data:
+                total_data.append(data[:data.find(END)])
+                break
+            total_data.append(data)
+            if len(total_data) > 1:
+                # Check if end_of_data was split
+                last_pair = total_data[-2] + total_data[-1]
+                if END in last_pair:
+                    total_data[-2] = last_pair[:last_pair.find(END)]
+                    total_data.pop()
+                    break
+            elif len(data) == 0:
+                raise SocketError()
+
+        # debug('Received:', repr(''.join(total_data)))
+        try:
+            return json.loads(''.join(total_data))
+        except ValueError as e:
+            debug('JSON Error:', e)
 
 
 def requestHandlerFactory(data_handler):
