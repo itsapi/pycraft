@@ -104,7 +104,7 @@ def game(server):
                 server.redraw = True
 
             # Sun has moved
-            sun = render.sun(server.tick, width)
+            sun = render.sun(server.time, width)
             if not sun == old_sun:
                 old_sun = sun
                 server.redraw = True
@@ -135,7 +135,7 @@ def game(server):
                     objects,
                     sun,
                     lights,
-                    server.tick,
+                    server.time,
                     last_frame
                 )
 

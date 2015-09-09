@@ -65,12 +65,14 @@ class RemoteInterface:
 
         # Login successful!
 
+        self.time = 0
         self._dt = False
         self._last_tick = time()
 
         self._chunks_requested = set()
 
         self._send('get_players')
+        self._send('get_time')
 
         self.redraw = False
         self.view_change = False
@@ -96,6 +98,7 @@ class RemoteInterface:
              'set_chunks': self._event_set_chunks,
              'set_players': self._event_set_players,
              'remove_player': self._event_remove_player,
+             'set_time': self._event_set_time,
              'logout': self._event_logout,
              'error': self._event_error
              }[data['event']](*data.get('args', []))
@@ -126,6 +129,9 @@ class RemoteInterface:
     def _event_remove_player(self, name):
         self.current_players.pop(name)
         self.redraw = True
+
+    def _event_set_time(self, time):
+        self.time = time
 
     def _event_logout(self, error=None):
         self.game = False
@@ -175,7 +181,13 @@ class RemoteInterface:
         self._event_logout()
 
     def dt(self):
-        # self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
+        if time() >= (1/TPS) + self._last_tick:
+            self._last_tick = time()
+            self.time += 1
+            self._dt = True
+        else:
+            self._dt = False
+
         return self._dt
 
     @property
@@ -200,11 +212,6 @@ class RemoteInterface:
     def pause(self, paused):
         self.local_pause = paused
 
-    # TODO: do the timey-whimy stuff
-    @property
-    def tick(self):
-        return 0
-
 
 class LocalInterface:
     """
@@ -217,6 +224,7 @@ class LocalInterface:
         self.game = True
         self.error = None
         self.serving = False
+        self.time = 0
         self._name = name
         self.current_players = {}
         self._server = Server(name, save, port, self)
@@ -234,6 +242,7 @@ class LocalInterface:
          'set_chunks': self._event_view_change,
          'set_players': self._event_set_players,
          'remove_player': self._event_remove_player,
+         'set_time': self._event_set_time,
          'logout': self._event_logout,
          'error': self._event_error
          }[data['event']](*data.get('args', []))
@@ -250,6 +259,9 @@ class LocalInterface:
     def _event_remove_player(self, name):
         self.current_players.pop(name)
         self.redraw = True
+
+    def _event_set_time(self, time):
+        self.time = time
 
     def _event_logout(self, error=None):
         if error is not None:
@@ -293,8 +305,8 @@ class LocalInterface:
         self._server.local_interface_kill_server()
 
     def dt(self):
-        # self._dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
-        return 0
+        dt, self.time = self._server.local_interface_dt()
+        return dt
 
     @property
     def pos(self):
@@ -324,8 +336,3 @@ class LocalInterface:
     # TODO: do the pause stuff
     def pause(self, paused):
         self.local_pause = paused
-
-    # TODO: do the timey-whimy stuff
-    @property
-    def tick(self):
-        return 0

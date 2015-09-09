@@ -74,6 +74,7 @@ class Server:
              'set_player': self.event_set_player,
              'get_players': self.event_get_players,
              'set_blocks': self.event_set_blocks,
+             'get_time': self.event_get_time,
              'logout': lambda: self.event_logout(sock),
              'login': lambda data: self.event_login(data, sock),
              'unload_slices': self.event_unload_slices
@@ -124,6 +125,9 @@ class Server:
         # TODO: Unload slices outside of edges if not loaded by other players
         pass
 
+    def event_get_time(self):
+        return {'event': 'set_time', 'args': [self.game.time]}
+
     # Methods for local interface only:
 
     def local_interface_login(self):
@@ -155,6 +159,11 @@ class Server:
     def local_interface_map(self):
         return self.game._map
 
+    def local_interface_dt(self):
+        if self.game.time % 10 == 0:
+            self._update_clients({'event': 'set_time', 'args': [self.game.time]})
+        return self.game.dt()
+
 
 class Game:
     """ The game. """
@@ -164,6 +173,7 @@ class Game:
         self._map = {}
         self._meta = saves.load_meta(save)
         self._last_tick = time()
+        self.time = 0
 
     def get_chunks(self, chunk_list):
         new_slices = {}
@@ -216,8 +226,15 @@ class Game:
 
     # TODO: Needs rethinking
     def dt(self):
-        dt, self._last_tick, self._meta['tick'] = update_tick(self._last_tick, self._meta['tick'])
-        return dt
+        if time() >= (1/TPS) + self._last_tick:
+            self._last_tick = time()
+            self.time += 1
+            self._dt = True
+
+        else:
+            self._dt = False
+
+        return self._dt, self.time
 
     # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
     def unload_slices(self):

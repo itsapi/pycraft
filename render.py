@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import cos, sin, radians
 
 import terrain
 from colors import *
@@ -13,7 +13,7 @@ max_light = max(map(lambda b: b.get('light', 0), data.blocks.values()))
 pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
-def render_map(map_, objects, sun, lights, tick, last_frame):
+def render_map(map_, objects, sun, lights, time, last_frame):
     """
         Prints out a frame of the game.
 
@@ -25,7 +25,7 @@ def render_map(map_, objects, sun, lights, tick, last_frame):
         - sun: (x, y) position of the sun.
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int}
-        - tick: the game time.
+        - time: the game time.
     """
 
     # Sorts the dict as a list by pos
@@ -50,7 +50,7 @@ def render_map(map_, objects, sun, lights, tick, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, sun, lights, tick)
+            pixel_out = calc_pixel(x, y, pixel, objects, sun, lights, time)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -113,10 +113,12 @@ def calc_pixel(x, y, pixel_f, objects, sun, lights, tick):
     else: # The block was coloured on startup
         return blocks[pixel_f]['char']
 
+
 def sun(time, width):
     """ Returns position of sun """
 
     sun_r = width / 2
+    time = radians(time/32)
 
     # Set i to +1 for night and -1 for day
     i = -2 * (cos(time) > 0) + 1
@@ -133,6 +135,7 @@ lit = lambda x, y, l: (( ((x-l['x']) ** 2) /  l['radius']    ** 2)
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
+    time = radians(time/32)
     day = cos(time) > 0
 
     if sun[0] in [x, x+1] and sun[1] == y:
