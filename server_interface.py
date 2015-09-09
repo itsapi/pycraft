@@ -1,6 +1,7 @@
 from threading import Thread, Event
 from server import Server, debug_event_send, debug_event_receive
 from console import debug
+from network import SocketError
 from math import radians, floor, ceil
 from time import time
 
@@ -86,7 +87,7 @@ class RemoteInterface:
         while True:
             try:
                 data = network.receive(self._sock)
-            except server.SocketError:
+            except SocketError:
                 break
 
             if data is None:
