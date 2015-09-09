@@ -113,8 +113,9 @@ def title(name):
 
 
 def saves_list(func):
-    return [(save[1]['name'], lambda_gen(func, save[0]))
-            for save in saves.list_saves()]
+    saves_list = saves.list_saves()
+    return ([(save[1]['name'], lambda_gen(func, save[0])) for save in saves_list] +
+            [() if saves_list else None])
 
 
 def load_save():
@@ -123,7 +124,6 @@ def load_save():
     return loop_menu('Load save', lambda: (
         saves_list(lambda s: {'local': True,
                               'save': s}) +
-        [()] +
         [('Add new save', add_save)] +
         [('Delete save', delete_save)] +
         [back])
@@ -159,8 +159,9 @@ def add_save():
 
 
 def server_list(meta, func):
-    return [('{}:{}'.format(*server), lambda_gen(func, server))
-            for server in meta.get('servers', [])]
+    servers_list = meta.get('servers', [])
+    return ([('{}:{}'.format(*server), lambda_gen(func, server)) for server in servers_list] +
+            [() if servers_list else None])
 
 
 def servers(meta):
@@ -170,7 +171,6 @@ def servers(meta):
         server_list(meta, lambda s: {'local': False,
                                      'ip': s[0],
                                      'port': s[1]}) +
-        [()] +
         [('Add new server', lambda: add_server(meta))] +
         [('Delete server', lambda: delete_server(meta))] +
         [back])
