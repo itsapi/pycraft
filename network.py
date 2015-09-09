@@ -9,6 +9,8 @@ from console import debug
 
 END = '<END>'
 
+NetworkLock = threading.Lock()
+
 
 class SocketError(Exception):
     pass
@@ -25,6 +27,8 @@ def connect(ip, port):
 
 
 def send(sock, data):
+    NetworkLock.acquire()
+
     try:
         data = bytes(json.dumps(data) + END, 'ascii')
         debug('Sending:', repr(data))
@@ -33,6 +37,8 @@ def send(sock, data):
     except OSError:
         debug('Socket closing')
         sock.close()
+
+    NetworkLock.release()
 
 
 def receive(sock):
