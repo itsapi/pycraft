@@ -69,7 +69,7 @@ class Server:
     def handle(self, sock, data):
         debug_event_receive(data['event'], data['args'], label='Server')
 
-        return (
+        result = (
             {'get_chunks': self.event_get_chunks,
              'set_player': self.event_set_player,
              'get_players': self.event_get_players,
@@ -80,6 +80,10 @@ class Server:
              'unload_slices': self.event_unload_slices
              }[data['event']](*data.get('args', []))
         )
+
+        if result is not None:
+            debug_event_send(result['event'], result['args'], label='Server')
+            return result
 
     # Handler and local interface mathods
 
