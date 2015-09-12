@@ -14,18 +14,6 @@ SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
 
 
-def update_tick(last_tick, cur_tick):
-    # Increase tick
-    if time() >= (1/TPS) + last_tick:
-        dt = 1
-        cur_tick += SUN_TICK
-        last_tick = time()
-    else:
-        dt = 0
-
-    return dt, last_tick, cur_tick
-
-
 def _debug_event(event, args):
     debug('  Event:', colorStr(event, fg=YELLOW))
     debug('  Args:', args)
