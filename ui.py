@@ -56,7 +56,7 @@ def menu(name, options, selection=0):
                     selection += 1
                     break
             selection %= len(print_map)
-        print(CLS)
+        print(CLS, end='')
     # Execute function of selection
     return options[print_map[selection]][1](), selection
 
@@ -88,7 +88,7 @@ def loop_menu(title, generator):
 def main(meta):
     """ Loops the main menu until the user loads a save. """
 
-    print(CLS)
+    print(CLS, end='')
     return loop_menu('Main menu', lambda: (
         [('Saves', load_save)] +
         [('Multiplayer', lambda: servers(meta))] +
@@ -113,8 +113,9 @@ def title(name):
 
 
 def saves_list(func):
-    return [(save[1]['name'], lambda_gen(func, save[0]))
-            for save in saves.list_saves()]
+    saves_list = saves.list_saves()
+    return ([(save[1]['name'], lambda_gen(func, save[0])) for save in saves_list] +
+            [() if saves_list else None])
 
 
 def load_save():
@@ -123,7 +124,6 @@ def load_save():
     return loop_menu('Load save', lambda: (
         saves_list(lambda s: {'local': True,
                               'save': s}) +
-        [()] +
         [('Add new save', add_save)] +
         [('Delete save', delete_save)] +
         [back])
@@ -146,21 +146,22 @@ def add_save():
     meta = {}
     meta['name'] = input(colorStr(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ' + SHOW_CUR)
-    print(HIDE_CUR)
+    print(HIDE_CUR, end='')
     if not meta['name']:
-        print(CLS)
+        print(CLS, end='')
         return None
 
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ' + SHOW_CUR)
-    print(HIDE_CUR)
+    print(HIDE_CUR, end='')
     save = saves.new_save(meta)
     return {'local': True, 'save': save}
 
 
 def server_list(meta, func):
-    return [('{}:{}'.format(*server), lambda_gen(func, server))
-            for server in meta.get('servers', [])]
+    servers_list = meta.get('servers', [])
+    return ([('{}:{}'.format(*server), lambda_gen(func, server)) for server in servers_list] +
+            [() if servers_list else None])
 
 
 def servers(meta):
@@ -170,7 +171,6 @@ def servers(meta):
         server_list(meta, lambda s: {'local': False,
                                      'ip': s[0],
                                      'port': s[1]}) +
-        [()] +
         [('Add new server', lambda: add_server(meta))] +
         [('Delete server', lambda: delete_server(meta))] +
         [back])
@@ -193,15 +193,15 @@ def add_server(meta):
 
     ip = input(colorStr(' Server IP', style=BOLD)
                + ' (leave blank to cancel): ' + SHOW_CUR)
-    print(HIDE_CUR)
+    print(HIDE_CUR, end='')
     if not ip:
-        print(CLS)
+        print(CLS, end='')
         return None
     port = input(colorStr(' Server port', style=BOLD)
                  + ' (leave blank to cancel): ' + SHOW_CUR)
-    print(HIDE_CUR)
+    print(HIDE_CUR, end='')
     if not port:
-        print(CLS)
+        print(CLS, end='')
         return None
 
     saves.add_server(meta, (ip, port))
@@ -212,7 +212,7 @@ def add_server(meta):
 
 
 def pause(server):
-    print(CLS)
+    print(CLS, end='')
 
     return loop_menu('Paused', lambda: (
         ('Resume', lambda: False),
@@ -245,19 +245,19 @@ def help_():
 
     wait_for_input()
 
-    print(CLS)
+    print(CLS, end='')
     return None
 
 
 def name(meta):
-    print(REDRAW)
+    print(REDRAW, end='')
 
     name = None
     while not name:
         name = input('Type your name: ' + SHOW_CUR)
-        print(HIDE_CUR + REDRAW)
+        print(HIDE_CUR + REDRAW, end='')
 
-    print(CLS)
+    print(CLS, end='')
 
     meta['name'] = name
     saves.save_global_meta(meta)
@@ -270,7 +270,7 @@ def error(message):
 
     wait_for_input()
 
-    print(CLS)
+    print(CLS, end='')
 
 
 def wait_for_input():
