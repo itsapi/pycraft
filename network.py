@@ -1,16 +1,14 @@
 import socket
 import threading
 import socketserver
+import struct
 import json
 import os
 
 from console import debug
 
 
-END = '<END>'
-
 SendLock = threading.Lock()
-ReceiveLock = threading.Lock()
 
 
 class SocketError(Exception):
@@ -30,9 +28,9 @@ def connect(ip, port):
 def send(sock, data):
     with SendLock:
         try:
-            data = bytes(json.dumps(data) + END, 'ascii')
-            # debug('Sending:', repr(data))
-            sock.sendall(data)
+            data = bytes(json.dumps(data), 'ascii')
+            header = struct.pack('I', len(data))
+            sock.sendall(header + data)
 
         except OSError:
             debug('Socket closing')
@@ -40,37 +38,20 @@ def send(sock, data):
 
 
 def receive(sock):
-    with ReceiveLock:
+    data = None
 
-        total_data = []
-        data = ''
-        while True:
-            debug('Waiting')
-            try:
-                data = str(sock.recv(1024), 'ascii')
-            except OSError:
-                debug('Socket closing')
-                sock.close()
+    try:
+        length = struct.unpack('I', sock.recv(4))[0]
+        data = str(sock.recv(length), 'ascii')
+    except OSError:
+        debug('Socket closing')
+        sock.close()
 
-            if END in data:
-                total_data.append(data[:data.find(END)])
-                break
-            total_data.append(data)
-            if len(total_data) > 1:
-                # Check if end_of_data was split
-                last_pair = total_data[-2] + total_data[-1]
-                if END in last_pair:
-                    total_data[-2] = last_pair[:last_pair.find(END)]
-                    total_data.pop()
-                    break
-            elif len(data) == 0:
-                raise SocketError()
-
-        # debug('Received:', repr(''.join(total_data)))
-        try:
-            return json.loads(''.join(total_data))
-        except ValueError as e:
-            debug('JSON Error:', e)
+    debug('Received:', repr(''.join(data)))
+    try:
+        return json.loads(''.join(data))
+    except ValueError as e:
+        debug('JSON Error:', e)
 
 
 def requestHandlerFactory(data_handler):
