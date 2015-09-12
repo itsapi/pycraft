@@ -42,7 +42,7 @@ def supported_chars(*tests):
 
 def debug(*args, trunc=True):
     if DEBUG:
-        args = (arg if trunc and len(str(arg)) < 100 else str(arg)[:100] + '...' for arg in args)
+        args = (str(arg)[:100] + '...' if trunc and len(str(arg)) > 100 else arg for arg in args)
         with open(LOG, 'a') as f:
             print(*args, file=f)
 
