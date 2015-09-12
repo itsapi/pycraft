@@ -1,6 +1,7 @@
 from time import time
 from math import radians, floor, ceil
 from threading import Thread
+from colors import colorStr, YELLOW
 
 import terrain, saves, network
 
@@ -26,7 +27,7 @@ def update_tick(last_tick, cur_tick):
 
 
 def _debug_event(event, args):
-    debug('  Event:', event)
+    debug('  Event:', colorStr(event, fg=YELLOW))
     debug('  Args:', args)
     debug()
 
