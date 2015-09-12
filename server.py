@@ -97,7 +97,7 @@ class Server:
 
             self._update_clients({'event': 'set_players', 'args': [{name: self.game.login(name)}]})
         else:
-            debug('Not Logging in: '+name)
+            debug('Not Logging in: ' + name)
             return {'event': 'error', 'args': [{'event': 'login', 'message': 'Username in use'}]}
 
     def event_logout(self, sock=None):
