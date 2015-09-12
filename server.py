@@ -204,6 +204,7 @@ class Game:
 
     def set_player(self, name, player):
         self._meta['players'][name].update(player)
+        saves.save_meta(self._save, self._meta)
 
     # NOTE: Should probably be renamed to get_player
     def login(self, name):
