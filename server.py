@@ -153,9 +153,10 @@ class Server:
         return self.game._map
 
     def local_interface_dt(self):
-        if self.game.time % 10 == 0:
-            self._update_clients({'event': 'set_time', 'args': [self.game.time]})
-        return self.game.dt()
+        dt, time = self.game.dt()
+        if dt and time % 100 == 0:
+            self._update_clients({'event': 'set_time', 'args': [time]})
+        return dt, time
 
 
 class Game:
