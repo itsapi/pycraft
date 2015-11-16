@@ -19,7 +19,6 @@ def main():
         meta = saves.get_global_meta()
 
         profile = c.getenv_b('PYCRAFT_PROFILE')
-        debug(repr(profile))
 
         name = c.getenv_b('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv_b('PYCRAFT_PORT') or meta.get('port') or 0
