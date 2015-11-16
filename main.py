@@ -1,8 +1,10 @@
+import cProfile
+
 from time import time
 from math import radians
-from os import getenv
 
-from console import CLS, SHOW_CUR, HIDE_CUR, debug
+import console as c
+from console import debug, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface
 
@@ -16,8 +18,11 @@ def main():
     try:
         meta = saves.get_global_meta()
 
-        name = getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
-        port = getenv('PYCRAFT_PORT') or meta.get('port') or 0
+        profile = c.getenv_b('PYCRAFT_PROFILE')
+        debug(repr(profile))
+
+        name = c.getenv_b('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
+        port = c.getenv_b('PYCRAFT_PORT') or meta.get('port') or 0
 
         saves.check_map_dir()
 
@@ -35,7 +40,10 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
-                game(server_obj)
+                if profile:
+                    cProfile.runctx('game(server_obj)', globals(), locals(), filename='game.profile')
+                else:
+                    game(server_obj)
 
             if server_obj.error:
                 ui.error(server_obj.error)
