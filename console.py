@@ -2,9 +2,7 @@ import sys
 import os
 
 
-def getTerminalSize():
-    import os
-    env = os.environ
+def _get_terminal_size():
     def ioctl_GWINSZ(fd):
         try:
             import fcntl, termios, struct, os
@@ -21,7 +19,7 @@ def getTerminalSize():
         except:
             pass
     if not cr:
-        cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
+        cr = (os.getenv('LINES', 25), os.getenv('COLUMNS', 80))
     return int(cr[1]), int(cr[0])
 
 
@@ -47,10 +45,17 @@ def debug(*args, trunc=True):
             print(*args, file=f)
 
 
-DEBUG = os.getenv('PYCRAFT_DEBUG')
-LOG = os.getenv('PYCRAFT_LOG') or 'pycraft.log'
+def getenv_b(opt):
+    """ Converts an enviroment variable into a boolean. """
+    o = os.getenv(opt)
+    if o:
+        return o.lower() in ('true', '1', 'on')
 
-WIDTH, HEIGHT = getTerminalSize()
+
+DEBUG = getenv_b('PYCRAFT_DEBUG')
+LOG = getenv_b('PYCRAFT_LOG') or 'pycraft.log'
+
+WIDTH, HEIGHT = _get_terminal_size()
 CLS = '\033[2J'
 CLS_END = '\033[0J'
 CLS_END_LN = '\033[0K'
