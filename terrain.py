@@ -40,12 +40,15 @@ def slice_height(pos, meta):
 
             gradient = gradient_r if x < pos else gradient_l
 
-            # Check if still in range with new gradient
-            if abs(pos-x) / gradient < world_gen['max_hill']:
+            # Height is distance from hill with gradient
+            d_hill_height = abs(pos-x) / gradient
 
-                # Set height to height of hill minus distance from hill
+            # Cut off anything that would not be a part of the hill assuming
+            #   flat ground.
+            if d_hill_height < world_gen['max_hill']:
+
                 hill_height = (world_gen['ground_height'] +
-                    random.randint(0, world_gen['max_hill']) - abs(pos-x)/gradient)
+                    random.randint(0, world_gen['max_hill']) - d_hill_height)
                 # Make top of hill flat
                 hill_height -= 1 if pos == x else 0
 
@@ -161,6 +164,7 @@ def gen_slice(pos, meta):
         ['_']
     )
 
+    # TODO: Combine loops in each of these functions?
     slice_ = add_tree(slice_, pos, meta)
     slice_ = add_ores(slice_, pos, meta, slice_height_)
     slice_ = add_tall_grass(slice_, pos, meta, slice_height_)
