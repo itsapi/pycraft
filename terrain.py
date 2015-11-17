@@ -103,10 +103,10 @@ def biome(pos, meta):
     biome_type = []
 
     # Check surrounding slices for a biome marker
-    for boime_x in range(pos - int(world_gen['max_biome_size'] / 2),
+    for biome_x in range(pos - int(world_gen['max_biome_size'] / 2),
                          pos + int(world_gen['max_biome_size'] / 2)):
         # Set seed for random numbers based on position
-        random.seed(str(meta['seed']) + str(boime_x) + 'biome')
+        random.seed(str(meta['seed']) + str(biome_x) + 'biome')
 
         # Generate a biome marker with a 5% chance
         if random.random() <= .05:
