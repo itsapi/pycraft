@@ -5,7 +5,7 @@ from data import world_gen
 
 
 # Maximum width of half a tree
-max_half_tree = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
+MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
 
 def move_map(map_, edges):
@@ -49,7 +49,7 @@ def slice_height(pos, meta):
 
 
 def add_tree(slice_, pos, meta, blocks):
-    for x in range(pos - max_half_tree, pos + max_half_tree + 1):
+    for x in range(pos - MAX_HALF_TREE, pos + MAX_HALF_TREE + 1):
         tree_chance = biome(x, meta)
 
         # Set seed for random numbers based on position
