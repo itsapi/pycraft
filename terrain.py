@@ -153,6 +153,16 @@ def add_tall_grass(slice_, pos, meta, slice_height_):
     return slice_
 
 
+def gen_chunk(chunk_pos, meta):
+    chunk = {}
+    for d_pos in range(world_gen['chunk_size']):
+        pos = (chunk_pos * world_gen['chunk_size']) + d_pos
+
+        chunk.update({str(pos): gen_slice(pos, meta)})
+
+    return chunk
+
+
 def gen_slice(pos, meta):
     slice_height_ = slice_height(pos, meta)
 

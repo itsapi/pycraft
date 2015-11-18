@@ -128,7 +128,13 @@ def load_chunk(save, chunk):
     return map_
 
 
-def save_map(save, new_slices):
+def save_chunk(save, chunk_pos, chunk):
+    # TODO: Write this function, so when we generate chunks we don't have to
+    #         save them slowly
+    pass
+
+
+def save_slices(save, new_slices):
     # Group slices by chunk
     chunks = {}
     for pos, slice_ in new_slices.items():
