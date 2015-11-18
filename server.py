@@ -179,7 +179,7 @@ class Game:
         for chunk_num in chunk_list:
             chunk = saves.load_chunk(self._save, chunk_num)
             for i in range(chunk_size):
-                pos = i + chunk_num * chunk_size
+                pos = i + (chunk_num * chunk_size)
                 if not str(pos) in chunk:
                     slice_ = terrain.gen_slice(pos, self._meta)
                     chunk[str(pos)] = slice_
@@ -191,7 +191,6 @@ class Game:
 
         # Save generated terrain to file
         if gen_slices:
-            debug('saving slices', gen_slices.keys())
             saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)

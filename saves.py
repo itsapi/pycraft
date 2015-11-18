@@ -24,7 +24,7 @@ default_player = {
 
 SAVES_DIR = 'saves'
 CHUNK_EXT = '.chunk'
-SLICE_SEP = '<sep>'
+CHUNK_SIZE = world_gen['chunk_size'] * (world_gen['height'] + 1)
 
 save_path = lambda save, filename='': os.path.join(SAVES_DIR, save, filename)
 meta_path = lambda save: save_path(save, 'meta.json')
@@ -73,45 +73,9 @@ def load_meta(save):
     return meta
 
 
-def load_chunk(save, chunk):
-    try:
-        map_ = parse_slices(get_chunk(save, chunk))
-    except FileNotFoundError:
-        map_ = {}
-
-    valid_map = {}
-    for pos, slice_ in map_.items():
-        if pos in range(chunk, chunk + world_gen['chunk_size']):
-
-            if not len(slice_) == world_gen['height']:
-                if len(slice_) < world_gen['height']:
-                    # Extend slice height
-                    slice_ = [' '] * (world_gen['height'] - len(slice_)) + slice_
-                elif len(slice_) > world_gen['height']:
-                    # Truncate slice height
-                    slice_ = slice_[len(slice_) - world_gen['height']:]
-
-            valid_map[pos] = slice_
-
-    save_map(save, map_)
-    return map_
-
-
 def get_meta(save):
     with open(meta_path(save)) as f:
         data = json.load(f)
-
-    return data
-
-
-def get_chunk(save, chunk):
-    data = []
-
-    chunk_file = save_path(save, str(chunk) + CHUNK_EXT)
-
-    if os.path.isfile(chunk_file):
-        with open(chunk_file) as f:
-            data = f.readlines()
 
     return data
 
@@ -130,54 +94,71 @@ def check_meta(meta):
     return meta
 
 
-def parse_slices(data):
-    slices = {}
-
-    for line in data:
-        # Parses map file
-        key, slice_ = line.split(SLICE_SEP)
-        slice_ = list(slice_)
-
-        # Removes new line char if it exists
-        slices[key] = slice_ if not slice_[-1] == '\n' else slice_[:-1]
-
-    return slices
-
-
 def save_meta(save, meta):
     # Save meta file
     with open(meta_path(save), 'w') as f:
         json.dump(meta, f)
 
 
+def chunk_file_name(save, chunk):
+    return save_path(save, str(chunk) + CHUNK_EXT)
+
+
+def load_chunk(save, chunk):
+    map_ = {}
+    chunk_pos = chunk * world_gen['chunk_size']
+
+    try:
+        with open(chunk_file_name(save, chunk)) as data:
+            for d_pos, slice_ in enumerate(data):
+
+                # Truncate to correct size
+                slice_ = slice_[:world_gen['height']]
+
+                height_error = world_gen['height'] - len(slice_)
+                if not height_error == 0:
+                    # Extend slice height
+                    slice_ = (' ' * height_error) + slice_
+
+                map_[str(chunk_pos + d_pos)] = list(slice_)
+
+    except FileNotFoundError:
+        pass
+
+    return map_
+
+
 def save_map(save, new_slices):
     # Group slices by chunk
     chunks = {}
     for pos, slice_ in new_slices.items():
+        chunk_pos = chunk_num(pos)
+        rel_pos = int(pos) % world_gen['chunk_size']
+
         try:
-            chunks[chunk_num(pos)].update({pos: slice_})
+            chunks[chunk_pos].update({rel_pos: slice_})
         except KeyError:
-            chunks[chunk_num(pos)] = {pos: slice_}
+            chunks[chunk_pos] = {rel_pos: slice_}
 
     debug('saving slices', new_slices.keys())
     debug('saving chunks', chunks.keys())
 
     # Update chunk files
     for num, chunk in chunks.items():
-        chunk_file = save_path(save, str(num) + CHUNK_EXT)
 
-        # Update slices in chunk file with new slices
-        try:
-            with open(chunk_file) as f:
-                slices = parse_slices(f.readlines())
-        except (OSError, IOError):
-            slices = {}
-        slices.update(chunk)
+        filename = chunk_file_name(save, num)
+        if os.path.isfile(filename):
+            mode = 'r+'
+        else:
+            mode = 'w'
 
-        # Write slices back to file
-        with open(chunk_file, 'w') as f:
-            for pos, slice_ in slices.items():
-                f.write(str(pos) + SLICE_SEP + ''.join(slice_) + '\n')
+        with open(filename, mode) as file_:
+
+            file_.truncate(CHUNK_SIZE)
+            for pos, slice_ in chunk.items():
+
+                file_pos = file_.seek(int(pos) * (world_gen['height'] + 1))
+                file_.write(''.join(slice_) + '\n')
 
 
 def set_blocks(map_, blocks):
