@@ -129,42 +129,43 @@ def load_chunk(save, chunk):
 
 
 def save_chunk(save, chunk_pos, chunk):
-    # TODO: Write this function, so when we generate chunks we don't have to
-    #         save them slowly
-    pass
+    """ Updates slices within one chunk. """
+
+    filename = chunk_file_name(save, chunk_pos)
+    if os.path.isfile(filename):
+        mode = 'r+'
+    else:
+        mode = 'w'
+
+    with open(filename, mode) as file_:
+
+        file_.truncate(CHUNK_SIZE)
+        for pos, slice_ in chunk.items():
+            rel_pos = int(pos) % world_gen['chunk_size']
+
+            file_.seek(int(rel_pos) * (world_gen['height'] + 1))
+            file_.write(''.join(slice_) + '\n')
 
 
 def save_slices(save, new_slices):
+    """ Updates slices anywhere in the world. """
+
     # Group slices by chunk
     chunks = {}
     for pos, slice_ in new_slices.items():
         chunk_pos = chunk_num(pos)
-        rel_pos = int(pos) % world_gen['chunk_size']
 
         try:
-            chunks[chunk_pos].update({rel_pos: slice_})
+            chunks[chunk_pos].update({pos: slice_})
         except KeyError:
-            chunks[chunk_pos] = {rel_pos: slice_}
+            chunks[chunk_pos] = {pos: slice_}
 
     debug('saving slices', new_slices.keys())
     debug('saving chunks', chunks.keys())
 
     # Update chunk files
-    for num, chunk in chunks.items():
-
-        filename = chunk_file_name(save, num)
-        if os.path.isfile(filename):
-            mode = 'r+'
-        else:
-            mode = 'w'
-
-        with open(filename, mode) as file_:
-
-            file_.truncate(CHUNK_SIZE)
-            for pos, slice_ in chunk.items():
-
-                file_pos = file_.seek(int(pos) * (world_gen['height'] + 1))
-                file_.write(''.join(slice_) + '\n')
+    for chunk_pos, chunk in chunks.items():
+        save_chunk(save, chunk_pos, chunk)
 
 
 def set_blocks(map_, blocks):

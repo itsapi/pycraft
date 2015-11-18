@@ -169,7 +169,6 @@ class Game:
 
     def get_chunks(self, chunk_list):
         new_slices = {}
-        gen_slices = {}
 
         debug('loading chunks', chunk_list)
 
@@ -179,17 +178,10 @@ class Game:
             chunk = saves.load_chunk(self._save, chunk_pos)
             if not chunk:
                 chunk = terrain.gen_chunk(chunk_pos, self._meta)
-                gen_slices.update(chunk)
+                saves.save_chunk(self._save, chunk_pos, chunk)
             new_slices.update(chunk)
-            debug(new_slices.keys(), trunc=False)
 
-        debug('generated slices', gen_slices.keys())
         debug('new slices', new_slices.keys())
-
-        # Save generated terrain to file
-        if gen_slices:
-            # TODO: Use save_chunk once it is written.
-            saves.save_slices(self._save, gen_slices)
 
         self._map.update(new_slices)
         return new_slices
