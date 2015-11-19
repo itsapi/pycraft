@@ -1,4 +1,5 @@
 import random
+from collections import OrderedDict
 from math import ceil
 
 import render
@@ -153,7 +154,120 @@ def add_tall_grass(slice_, pos, meta, slice_height_):
     return slice_
 
 
+class Cache(OrderedDict):
+    """ Implements a Dict with a size limit.
+        Beyond which it replaces the oldest item. """
+
+    def __init__(self, *args, **kwds):
+        self._limit = kwds.pop("limit", None)
+        OrderedDict.__init__(self, *args, **kwds)
+        self._check_limit()
+
+    def __setitem__(self, key, value):
+        OrderedDict.__setitem__(self, key, value)
+        self._check_limit()
+
+    def _check_limit(self):
+        if self._limit is not None:
+            while len(self) > self._limit:
+                self.popitem(last=False)
+
+
+features = Cache(limit=(world_gen['chunk_size'] * 4))  # Magic number!
+
+
+def gen_features(features, range_, meta):
+    """ Ensures the features within `range` exist in `features` """
+
+    for x in range_:
+        if features.get(str(x)) is None:
+
+            # Init to empty, so 'no features' is cached.
+            features[str(x)] = []
+
+            # Biomes
+            random.seed(str(meta['seed']) + str(x) + 'biome')
+            if random.random() <= .05:
+
+                attrs = {}
+                attrs['tree_chance'] = random.choice(world_gen['biome_tree_weights'])
+
+                if str(x) not in features:
+                    features[str(x)] = []
+
+                features[str(x)].append({
+                    'type': 'biome',
+                    'attrs': attrs
+                })
+
+            # Hills
+            random.seed(str(meta['seed']) + str(x) + 'hill')
+            if random.random() <= 0.05:
+
+                attrs = {}
+                attrs['gradient_l'] = random.randint(1, world_gen['min_grad']),
+                attrs['gradient_r'] = random.randint(1, world_gen['min_grad']),
+                attrs['height'] = random.randint(0, world_gen['max_hill'])
+
+                if str(x) not in features:
+                    features[str(x)] = []
+
+                features[str(x)].append({
+                    'type': 'hill',
+                    'attrs': attrs
+                })
+
+            # Trees
+
+            # TODO: `tree_chance` depends on the biome...?
+            tree_chance = 0
+
+            random.seed(str(meta['seed']) + str(x) + 'tree')
+            if random.random() <= tree_chance:
+
+                attrs = {}
+                attrs['type'] = random.choice(world_gen['trees'])
+
+                # Centre tree slice (contains trunk)
+                center_leaves = tree[int(len(tree)/2)]
+                trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1]) if leaf)
+                attrs['height'] = random.randint(2, air_height - len(center_leaves) + trunk_depth)
+
+                features[str(x)].append({
+                    'type': 'tree',
+                    'attrs': attrs
+                })
+
+            # Ores
+            # NOTE: Ores seem to be the way to model the generalisation of the
+            #         rest of the features after
+            for ore in world_gen['ores'].values():
+
+                random.seed(str(meta['seed']) + str(x) + ore['char'])
+                if random.random() <= ore['chance']:
+
+                    attrs = {}
+                    attrs['type'] = ore['char']
+                    attrs['ore_root_height'] = random.randint(ore['lower'], ore['upper'])
+
+                    features[str(x)].append({
+                        'type': 'ore_root',
+                        'attrs': attrs
+                    })
+
+            # TODO: Grass?
+
+
 def gen_chunk(chunk_pos, meta):
+    # First generate all the features we will need
+    #   for all the slice is in this chunk,
+
+    MAX_FEATURE_RANGE = 0  # TODO: Temp!
+
+    feature_range = (chunk_pos - MAX_FEATURE_RANGE,
+                     chunk_pos + world_gen['chunk_size'] + MAX_FEATURE_RANGE)
+    gen_features(features, feature_range, meta)
+
     chunk = {}
     for d_pos in range(world_gen['chunk_size']):
         pos = (chunk_pos * world_gen['chunk_size']) + d_pos
