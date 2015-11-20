@@ -379,7 +379,8 @@ world_gen = {
             'lower': 1
         }
     },
-    'trees': (
+    'trees': (  # TODO: Preprocessing should be done on these, to give the data
+                #         the terrain gen needs.
         ((0, 1, 1),
          (1, 1, 0),
          (0, 1, 1)),
