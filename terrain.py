@@ -110,8 +110,8 @@ def biome(pos, meta):
         random.seed(str(meta['seed']) + str(biome_x) + 'biome')
 
         # Generate a biome marker with a 5% chance
-        if random.random() <= .05:
-            biome_type.append(random.choice(world_gen['biome_tree_weights']))
+        # if random.random() <= .05:
+        #     biome_type.append(random.choice(world_gen['biome_tree_weights']))
 
     # If not plains or forest, it's normal
     return max(set(biome_type), key=biome_type.count) if biome_type else .05
@@ -173,32 +173,44 @@ class Cache(OrderedDict):
                 self.popitem(last=False)
 
 
-features = Cache(limit=(world_gen['chunk_size'] * 4))  # Magic number!
+# TODO: This probably shouldn't stay here...
+n_chunks_in_cache = 4
+features = {
+    'chunks': Cache(limit=n_chunks_in_cache),
+    'slices': Cache(limit=n_chunks_in_cache * world_gen['chunk_size'])
+}
 
 
 def gen_features(features, range_, meta):
     """ Ensures the features within `range` exist in `features` """
 
     for x in range_:
-        if features.get(str(x)) is None:
+        chunk = x // world_gen['chunk_size']
 
+        # TODO: Each of these `if` blocks should be abstracted into a function
+        #         which just returns the `attrs` object.
+
+        if features['chunks'].get(str(chunk)) is None:
             # Init to empty, so 'no features' is cached.
-            features[str(x)] = []
+            features['chunks'][str(chunk)] = {}
 
-            # Biomes
-            random.seed(str(meta['seed']) + str(x) + 'biome')
-            if random.random() <= .05:
+            # TODO: ATM using basic per chunk biomes, see #71
+            random.seed(str(meta['seed']) + str(chunk) + 'biome')
 
-                attrs = {}
-                attrs['tree_chance'] = random.choice(world_gen['biome_tree_weights'])
+            biomes_population = []
+            for name, data in world_gen['biomes'].items():
+                biomes_population.extend([name] * int(data['chance'] * 100))
 
-                if str(x) not in features:
-                    features[str(x)] = []
+            attrs = {}
+            attrs['type'] = random.choice(biomes_population)
 
-                features[str(x)].append({
-                    'type': 'biome',
-                    'attrs': attrs
-                })
+            features['chunks'][str(chunk)]['biome'] = attrs
+
+        current_chunk_biome = features['chunks'][str(chunk)]['biome']['type']
+
+        if features['slices'].get(str(x)) is None:
+            # Init to empty, so 'no features' is cached.
+            features['slices'][str(x)] = {}
 
             # Hills
             random.seed(str(meta['seed']) + str(x) + 'hill')
@@ -209,34 +221,24 @@ def gen_features(features, range_, meta):
                 attrs['gradient_r'] = random.randint(1, world_gen['min_grad']),
                 attrs['height'] = random.randint(0, world_gen['max_hill'])
 
-                if str(x) not in features:
-                    features[str(x)] = []
-
-                features[str(x)].append({
-                    'type': 'hill',
-                    'attrs': attrs
-                })
+                features['slices'][str(x)]['hill'] = attrs
 
             # Trees
-
-            # TODO: `tree_chance` depends on the biome...?
-            tree_chance = 0
-
             random.seed(str(meta['seed']) + str(x) + 'tree')
+            tree_chance = world_gen['biomes'][current_chunk_biome]['trees']
             if random.random() <= tree_chance:
 
                 attrs = {}
                 attrs['type'] = random.choice(world_gen['trees'])
 
                 # Centre tree slice (contains trunk)
+                # TODO: This calculation could be done on start-up, and stored
+                #         with each tree type.
                 center_leaves = tree[int(len(tree)/2)]
                 trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1]) if leaf)
                 attrs['height'] = random.randint(2, air_height - len(center_leaves) + trunk_depth)
 
-                features[str(x)].append({
-                    'type': 'tree',
-                    'attrs': attrs
-                })
+                features['slices'][str(x)]['tree'] = attrs
 
             # Ores
             # NOTE: Ores seem to be the way to model the generalisation of the
@@ -247,13 +249,10 @@ def gen_features(features, range_, meta):
                 if random.random() <= ore['chance']:
 
                     attrs = {}
-                    attrs['type'] = ore['char']
                     attrs['ore_root_height'] = random.randint(ore['lower'], ore['upper'])
 
-                    features[str(x)].append({
-                        'type': 'ore_root',
-                        'attrs': attrs
-                    })
+                    feature_name = ore['char'] + '_ore_root'
+                    features['slices'][str(x)][feature_name] = attrs
 
             # TODO: Grass?
 

@@ -320,8 +320,21 @@ world_gen = {
     'ground_height': 10,
     'chunk_size': 16,
     'max_biome_size': 50,
-    'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'tall_grass_rate': .25,
+    'biomes': {
+        'plains': {
+            'chance': .4,
+            'trees': 0
+        },
+        'normal': {
+            'chance': .4,
+            'trees': .05
+        },
+        'forest': {
+            'chance': .2,
+            'trees': .2
+        }
+    },
     'ores': {
         'coal': {
             'char': 'x',
