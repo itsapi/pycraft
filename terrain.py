@@ -185,7 +185,8 @@ def init_features():
 
 init_features()
 
-# # TODO: Use this for are the other functions!
+
+# # TODO: Use this for the other functions!
 # def gen_features(generator, features, feature_group_name, chunk_pos, meta):
 #     """ Ensures the features within `range` exist in `features` """
 
