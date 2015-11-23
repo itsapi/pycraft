@@ -129,8 +129,9 @@ def sun(time, width):
 
 
 # Checks if a point is within a lights range.
-lit = lambda x, y, l: (( ((x-l['x']) ** 2) /  l['radius']    ** 2)
-                     + ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) < 1)
+lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
+                        ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
+
 
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
@@ -247,6 +248,7 @@ def render_grids(grids, x):
     # Sort out grids
     # Gets row from grid if it exists, else pads with ' '
     get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+
     merged_grids = []
     for row in grids:
         for y in range(max(map(len, row))):
