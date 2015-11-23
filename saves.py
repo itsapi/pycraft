@@ -26,6 +26,7 @@ SAVES_DIR = 'saves'
 CHUNK_EXT = '.chunk'
 CHUNK_SIZE = world_gen['chunk_size'] * (world_gen['height'] + 1)
 
+
 save_path = lambda save, filename='': os.path.join(SAVES_DIR, save, filename)
 meta_path = lambda save: save_path(save, 'meta.json')
 chunk_num = lambda x: int(x) // world_gen['chunk_size']

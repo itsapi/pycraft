@@ -53,9 +53,32 @@ def get_pos_delta(char, map_, x, y, jump):
     return dx, dy, jump
 
 
+def get_block_below(map_, block_x, block_y):
+    try:
+        return map_[block_x][block_y + 1]
+    except IndexError:
+        return None
+
+
+def can_place(map_, block_x, block_y, inv_block):
+
+    placed_on = blocks[inv_block].get('placed_on')
+    placed_on_solid = blocks[inv_block].get('placed_on_solid')
+
+    if placed_on is None and placed_on_solid is None:
+        can_place = True
+    else:
+
+        block_below = get_block_below(map_, block_x, block_y)
+        can_place = (placed_on is not None and block_below in placed_on or
+                     placed_on_solid and blocks[block_below]['solid'])
+
+    return can_place
+
+
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
-    block_y = y + cursor_y[cursor]
     block_x = str(x + cursor_x[cursor])
+    block_y = y + cursor_y[cursor]
     block = map_[block_x][block_y]
     inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
@@ -64,30 +87,16 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
 
     if inp in 'k' and block_y >= 0 and block_y < terrain.world_gen['height']:
 
-        # If pressing k and block is air
+        # If pressing k and block is air and can place
         if (block == ' ' and len(inv) and
-            blocks[inv_block]['breakable']):
+                blocks[inv_block]['breakable'] and
+                can_place(map_, block_x, block_y, inv_block)):
 
-            try:
-                block_below = map_[block_x][block_y + 1]
-            except IndexError:
-                block_below = None
-
-            placed_on = blocks[inv_block].get('placed_on')
-            placed_on_solid = blocks[inv_block].get('placed_on_solid')
-
-            if placed_on is None and placed_on_solid is None:
-                can_place = True
-            else:
-                can_place = (placed_on is not None and block_below in placed_on
-                             or placed_on_solid and blocks[block_below]['solid'])
-
-            if can_place:
-                # Place block in world from selected inv slot
-                slices[block_x] = {}
-                slices[block_x][block_y] = inv_block
-                inv, inv_sel = rem_inv(inv, inv_sel)
-                dinv = True
+            # Place block in world from selected inv slot
+            slices[block_x] = {}
+            slices[block_x][block_y] = inv_block
+            inv, inv_sel = rem_inv(inv, inv_sel)
+            dinv = True
 
         # If pressing k and block is not air and breakable
         elif blocks[block]['breakable'] and can_break:
