@@ -124,7 +124,7 @@ def add_ores(slice_, pos, meta, slice_height_):
             # Set seed for random numbers based on position and ore
             random.seed(str(meta['seed']) + str(x) + ore['char'])
 
-            # Gernerate a ore with a probability
+            # Generate an ore with a probability
             if random.random() <= ore['chance']:
                 root_ore_height = random.randint(ore['lower'], ore['upper'])
 
@@ -146,7 +146,7 @@ def add_tall_grass(slice_, pos, meta, slice_height_):
     # Set seed for random numbers based on position and grass
     random.seed(str(meta['seed']) + str(pos) + 'grass')
 
-    # Gernerate a grass with a probability
+    # Generate a grass with a probability
     if random.random() <= world_gen['tall_grass_rate']:
         sy = world_gen['height'] - slice_height_ - 1
         slice_[sy] = spawn_hierarchy(('v', slice_[sy]))
