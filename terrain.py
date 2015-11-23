@@ -358,12 +358,14 @@ def gen_chunk(chunk_n, meta):
     # Build slices
     chunk = {}
     for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
+        # Add missing ground heights
+        ground_heights.setdefault(str(x), world_gen['ground_height'])
 
         # Form slice of sky, grass, stone, bedrock
         chunk[str(x)] = (
-            [' '] * (world_gen['height'] - ground_heights[x]) +
+            [' '] * (world_gen['height'] - ground_heights[str(x)]) +
             ['-'] +
-            ['#'] * (ground_heights[x] - 2) +  # 2 for grass and bedrock
+            ['#'] * (ground_heights[str(x)] - 2) +  # 2 for grass and bedrock
             ['_']
         )
 
