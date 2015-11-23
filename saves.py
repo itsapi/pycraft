@@ -42,9 +42,8 @@ def new_save(meta):
     # Find unique dir name
     save = meta['name'].lower()
 
-    bad_chars = (' /\\!"£$%^*()=.?><\'@#~;:]}[{|`¬')
-    for bad_char in bad_chars:
-        save = save.replace(bad_char, '_')
+    save = ''.join(c if c.isalpha() else '_' for c in save)
+    print(save)
 
     while os.path.isdir(save_path(save)):
         save += '-'
