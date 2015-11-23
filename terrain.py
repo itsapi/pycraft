@@ -266,7 +266,7 @@ def gen_tree_features(features, ground_heights, chunk_pos, meta):
             if random.random() <= tree_chance:
 
                 attrs = {}
-                attrs['type'] = random.randint(0, len(world_gen['trees']))
+                attrs['type'] = random.randint(0, len(world_gen['trees'])-1)
 
                 # Centre tree slice (contains trunk)
                 # TODO: This calculation could be done on start-up, and stored
@@ -277,7 +277,7 @@ def gen_tree_features(features, ground_heights, chunk_pos, meta):
 
                 # Get space above ground
                 air_height = world_gen['height'] - ground_heights[str(x)]
-                attrs['height'] = random.randint(2, air_height - len(center_leaves) + trunk_depth)
+                attrs['height'] = random.randint(2, air_height - len(center_leaves) + attrs['trunk_depth'])
 
                 features['slices'][str(x)]['tree'] = attrs
 
@@ -334,7 +334,7 @@ def gen_chunk(chunk_pos, meta):
                 abs_pos = feature_x + d_x
 
                 gradient = hill['gradient_l'] if feature_x < 0 else hill['gradient_r']
-                hill_height = hill['height'] - (abs(d_x) / gradient)
+                hill_height = hill['height'] - int(abs(d_x) / gradient)
 
                 # Make top of hill flat
                 if d_x == 0:
@@ -377,7 +377,7 @@ def gen_chunk(chunk_pos, meta):
                 leaf_x = feature_x + (leaf_dx - half_leaves)
 
                 air_height = world_gen['height'] - ground_heights[str(leaf_x)]
-                leaf_height = air_height - tree['tree_height'] - len(leaf_slice) + tree['trunk_depth']
+                leaf_height = air_height - tree['height'] - len(leaf_slice) + tree['trunk_depth']
 
                 # Add leaves to slice
                 for leaf_dy, leaf in enumerate(leaf_slice):
@@ -387,7 +387,7 @@ def gen_chunk(chunk_pos, meta):
 
             # Add trunk to slice
             air_height = world_gen['height'] - ground_heights[str(feature_x)]
-            for trunk_y in range(air_height - tree['tree_height'], air_height):
+            for trunk_y in range(air_height - tree['height'], air_height):
                 chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
 
         # All ores
