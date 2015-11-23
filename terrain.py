@@ -154,7 +154,7 @@ def add_tall_grass(slice_, pos, meta, slice_height_):
     return slice_
 
 
-class Cache(OrderedDict):
+class TerrainCache(OrderedDict):
     """ Implements a Dict with a size limit.
         Beyond which it replaces the oldest item. """
 
@@ -174,13 +174,16 @@ class Cache(OrderedDict):
 
 
 # TODO: This probably shouldn't stay here...
-n_chunks_in_cache = 4
-features = {
-    'chunks': Cache(limit=n_chunks_in_cache),
-    'slices': Cache(limit=n_chunks_in_cache * world_gen['chunk_size'])
-}
+features = {}
+def init_features():
+    global features
+    cache_size = 2 * ((world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size'])
+    features = {
+        'chunks': TerrainCache(limit=(cache_size // world_gen['chunk_size']) + 1),
+        'slices': TerrainCache(limit=cache_size)
+    }
 
-RAD = 16
+init_features()
 
 # # TODO: Use this for are the other functions!
 # def gen_features(generator, features, feature_group_name, chunk_pos, meta):
