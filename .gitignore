@@ -54,8 +54,11 @@ docs/_build/
 
 saves/
 
+meta.json
+
 *.sublime-project
 *.sublime-workspace
 *.caret
 
-meta.json
+.floo
+.flooignore
