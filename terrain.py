@@ -323,7 +323,8 @@ def gen_chunk(chunk_n, meta):
     #   for all the slice is in this chunk
 
     gen_biome_features(features, chunk_pos, meta)
-    gen_hill_features(features, RAD * 2, chunk_pos, meta)
+    gen_hill_features(features, chunk_pos, meta)
+
 
     # Insert hills because the trees and ores depend on the ground height.
     ground_heights = {}
@@ -337,17 +338,14 @@ def gen_chunk(chunk_n, meta):
                              hill['height'] * hill['gradient_r']):
                 abs_pos = feature_x + d_x
 
-                gradient = hill['gradient_l'] if feature_x < 0 else hill['gradient_r']
+                gradient = hill['gradient_l'] if d_x < 0 else hill['gradient_r']
                 hill_height = hill['height'] - int(abs(d_x) / gradient)
-
-                # Make top of hill flat
-                if d_x == 0:
-                    hill_height -= 1
 
                 ground_height = world_gen['ground_height'] + hill_height
 
                 old_height = ground_heights.get(str(abs_pos), 0)
                 ground_heights[str(abs_pos)] = max(ground_height, old_height)
+
 
     # We have to generate the ground heights before we can calculate the
     #   features which depend on them
