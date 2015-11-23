@@ -173,12 +173,12 @@ class Game:
         debug('loading chunks', chunk_list)
 
         # Generates new terrain
-        for chunk_pos in chunk_list:
+        for chunk_n in chunk_list:
 
-            chunk = saves.load_chunk(self._save, chunk_pos)
+            chunk = saves.load_chunk(self._save, chunk_n)
             if not chunk:
-                chunk = terrain.gen_chunk(chunk_pos, self._meta)
-                saves.save_chunk(self._save, chunk_pos, chunk)
+                chunk = terrain.gen_chunk(chunk_n, self._meta)
+                saves.save_chunk(self._save, chunk_n, chunk)
             new_slices.update(chunk)
 
         debug('new slices', new_slices.keys())

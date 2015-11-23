@@ -100,16 +100,16 @@ def save_meta(save, meta):
         json.dump(meta, f)
 
 
-def chunk_file_name(save, chunk):
-    return save_path(save, str(chunk) + CHUNK_EXT)
+def chunk_file_name(save, chunk_n):
+    return save_path(save, str(chunk_n) + CHUNK_EXT)
 
 
-def load_chunk(save, chunk):
+def load_chunk(save, chunk_n):
     map_ = {}
-    chunk_pos = chunk * world_gen['chunk_size']
+    chunk_pos = chunk_n * world_gen['chunk_size']
 
     try:
-        with open(chunk_file_name(save, chunk)) as data:
+        with open(chunk_file_name(save, chunk_n)) as data:
             for d_pos, slice_ in enumerate(data):
 
                 # Truncate to correct size
@@ -128,10 +128,10 @@ def load_chunk(save, chunk):
     return map_
 
 
-def save_chunk(save, chunk_pos, chunk):
+def save_chunk(save, chunk_n, chunk):
     """ Updates slices within one chunk. """
 
-    filename = chunk_file_name(save, chunk_pos)
+    filename = chunk_file_name(save, chunk_n)
     if os.path.isfile(filename):
         mode = 'r+'
     else:

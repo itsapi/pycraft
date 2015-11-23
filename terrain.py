@@ -222,8 +222,11 @@ def gen_biome_features(features, chunk_pos, meta):
         features['chunks'][str(chunk_pos)]['biome'] = attrs
 
 
-def gen_hill_features(features, rad, chunk_pos, meta):
-    for x in range(chunk_pos - rad, chunk_pos + world_gen['chunk_size'] + rad):
+def gen_hill_features(features, chunk_pos, meta):
+    max_hill_rad = world_gen['max_hill'] * world_gen['min_grad']
+
+    for x in range(chunk_pos - max_hill_rad,
+                   chunk_pos + world_gen['chunk_size'] + max_hill_rad):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
@@ -313,7 +316,8 @@ def gen_ore_features(features, ground_heights, chunk_pos, meta):
                     features['slices'][str(x)][feature_name] = attrs
 
 
-def gen_chunk(chunk_pos, meta):
+def gen_chunk(chunk_n, meta):
+    chunk_pos = chunk_n * world_gen['chunk_size']
 
     # First generate all the features we will need
     #   for all the slice is in this chunk
