@@ -38,7 +38,6 @@ def new_save(meta):
     save = meta['name'].lower()
 
     save = ''.join(c if c.isalpha() else '_' for c in save)
-    print(save)
 
     while os.path.isdir(save_path(save)):
         save += '-'
