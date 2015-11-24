@@ -1,7 +1,7 @@
 from time import time
 from math import radians
 
-from console import CLS, SHOW_CUR, HIDE_CUR, in_game_debug
+from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render
 
@@ -242,6 +242,11 @@ def game(blocks, meta, map_, save):
             if char in 'c':
                 redraw = True
                 crafting = not crafting and len(crafting_list)
+
+            # Hard pause
+            if DEBUG and char in '\n':
+                input()
+                char = '0'
 
             # Pause game
             if char in ' \n':
