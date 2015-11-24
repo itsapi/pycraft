@@ -4,7 +4,7 @@ from time import time
 from math import radians
 
 import console as c
-from console import log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
+from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface
 
@@ -273,6 +273,11 @@ def game(server):
             if char in 'c':
                 server.redraw = True
                 crafting = not crafting and len(crafting_list)
+
+            # Hard pause
+            if DEBUG and char in '\n':
+                input()
+                char = '0'
 
             # Pause game
             if char in ' \n':
