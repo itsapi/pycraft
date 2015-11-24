@@ -44,6 +44,11 @@ def debug(*args, trunc=True):
             print(*args, file=f)
 
 
+def in_game_debug(string, x, y):
+    if IN_GAME_DEBUG:
+        print(POS_STR(x, y, string))
+
+
 def getenv_b(opt):
     """ Converts an enviroment variable into a boolean. """
     o = os.getenv(opt)
@@ -52,6 +57,7 @@ def getenv_b(opt):
 
 
 DEBUG = getenv_b('PYCRAFT_DEBUG')
+IN_GAME_DEBUG = getenv_b('PYCRAFT_IN_GAME_DEBUG')
 LOG = getenv_b('PYCRAFT_LOG') or 'pycraft.log'
 
 WIDTH, HEIGHT = _get_terminal_size()
@@ -61,6 +67,7 @@ CLS_END_LN = '\033[0K'
 REDRAW = '\033[0;0f'
 HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
+POS_STR = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 if DEBUG:
     open(LOG, 'w').close()
