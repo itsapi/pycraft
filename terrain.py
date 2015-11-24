@@ -343,13 +343,15 @@ def gen_chunk(chunk_n, meta):
                 abs_pos = feature_x + d_x
 
                 gradient = hill['gradient_l'] if d_x < 0 else hill['gradient_r']
-                hill_height = hill['height'] - int(abs(d_x) / gradient)
+                hill_height = int(hill['height'] - (abs(d_x) / gradient))
+
+                if d_x == 0:
+                    hill_height -= 1
 
                 ground_height = world_gen['ground_height'] + hill_height
 
                 old_height = ground_heights.get(str(abs_pos), 0)
                 ground_heights[str(abs_pos)] = max(ground_height, old_height)
-
 
     # We have to generate the ground heights before we can calculate the
     #   features which depend on them
