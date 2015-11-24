@@ -5,7 +5,7 @@ import random
 from shutil import rmtree
 
 from terrain import world_gen
-from console import debug
+from console import log
 
 
 default_meta = {
@@ -159,8 +159,8 @@ def save_slices(save, new_slices):
         except KeyError:
             chunks[chunk_pos] = {pos: slice_}
 
-    debug('saving slices', new_slices.keys())
-    debug('saving chunks', chunks.keys())
+    log('saving slices', new_slices.keys())
+    log('saving chunks', chunks.keys())
 
     # Update chunk files
     for chunk_pos, chunk in chunks.items():

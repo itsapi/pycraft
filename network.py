@@ -5,7 +5,7 @@ import struct
 import json
 import os
 
-from console import debug
+from console import log
 
 
 SendLock = threading.Lock()
@@ -33,7 +33,7 @@ def send(sock, data):
             sock.sendall(header + data)
 
         except OSError:
-            debug('Socket closing')
+            log('Socket closing')
             sock.close()
 
 
@@ -44,14 +44,14 @@ def receive(sock):
         length = struct.unpack('I', sock.recv(4))[0]
         data = str(sock.recv(length), 'ascii')
     except OSError:
-        debug('Socket closing')
+        log('Socket closing')
         sock.close()
 
-    debug('Received:', repr(''.join(data)))
+    log('Received:', repr(''.join(data)))
     try:
         return json.loads(''.join(data))
     except ValueError as e:
-        debug('JSON Error:', e)
+        log('JSON Error:', e)
 
 
 def requestHandlerFactory(data_handler):
@@ -73,7 +73,7 @@ def requestHandlerFactory(data_handler):
                     if response:
                         send(self.request, response)
 
-            debug('Handler Exiting')
+            log('Handler Exiting')
 
     return ThreadedTCPRequestHandler
 

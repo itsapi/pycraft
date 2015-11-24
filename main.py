@@ -4,7 +4,7 @@ from time import time
 from math import radians
 
 import console as c
-from console import debug, in_game_debug, CLS, SHOW_CUR, HIDE_CUR
+from console import log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface
 
@@ -12,7 +12,7 @@ import saves, ui, terrain, player, render, server_interface
 def main():
     print(HIDE_CUR + CLS)
 
-    debug('Start\n')
+    log('Start\n')
 
     # Menu loop
     try:
@@ -98,7 +98,7 @@ def game(server):
 
             slice_list = terrain.detect_edges(server.map_, extended_edges)
             if slice_list:
-                debug('slices to load', slice_list)
+                log('slices to load', slice_list)
                 chunk_list = terrain.get_chunk_list(slice_list)
                 server.get_chunks(chunk_list)
                 server.unload_slices(extended_edges)
@@ -167,7 +167,7 @@ def game(server):
                 )
 
                 print(out)
-                in_game_debug('({}, {})'.format(x, y), 0, 0)
+                in_game_log('({}, {})'.format(x, y), 0, 0)
             else:
                 df = 0
 

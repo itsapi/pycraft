@@ -1,6 +1,5 @@
 import terrain
 from colors import *
-from console import debug
 
 blocks = terrain.blocks
 

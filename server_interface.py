@@ -2,8 +2,8 @@ from threading import Thread, Event
 from math import radians, floor, ceil
 from time import time
 
-from server import Server, debug_event_send, debug_event_receive
-from console import debug
+from server import Server, log_event_send, log_event_receive
+from console import log
 from network import SocketError
 
 import saves, terrain, network
@@ -53,14 +53,14 @@ class RemoteInterface:
         # Server doesn't respond
         if not self.finished_login.wait(10):
             self.error = 'No response from server on login'
-            debug(self.error)
+            log(self.error)
 
             self._sock.close()
             return
 
         # Server responds with error
         if self.error is not None:
-            debug('Error response from server on login:', self.error)
+            log('Error response from server on login:', self.error)
 
             self._sock.close()
             return
@@ -80,7 +80,7 @@ class RemoteInterface:
         self.view_change = False
 
     def _send(self, event, args=[]):
-        debug_event_send(event, args, label='RemoteInterface')
+        log_event_send(event, args, label='RemoteInterface')
 
         network.send(self._sock, {'event': event, 'args': args})
 
@@ -94,7 +94,7 @@ class RemoteInterface:
             if data is None:
                 continue
 
-            debug_event_receive(data['event'], data['args'], label='RemoteInterface')
+            log_event_receive(data['event'], data['args'], label='RemoteInterface')
 
             {'set_blocks': self._event_set_blocks,
              'set_chunks': self._event_set_chunks,
@@ -125,7 +125,7 @@ class RemoteInterface:
 
         # TODO: Move the login checks out of this method
         if self._name in players and not self.finished_login.is_set():
-            debug('FINISHED LOGIN')
+            log('FINISHED LOGIN')
             self.finished_login.set()
 
     def _event_remove_player(self, name):
@@ -150,7 +150,7 @@ class RemoteInterface:
         self.finished_login.set()
 
         self.error = 'Error from server: ' + error['event'] + ': ' + event['message']
-        debug(self.error)
+        log(self.error)
         self.game = False
 
     # Main loop methods:
@@ -233,12 +233,12 @@ class LocalInterface:
         self._server.local_interface_login()
 
     def _send(self, event, args=[]):
-        debug_event_send(event, args, label='LocalInterface')
+        log_event_send(event, args, label='LocalInterface')
         return self._server.handle(None, {'event': event, 'args': args})
 
     def handle(self, data):
 
-        debug_event_receive(data['event'], data['args'], label='LocalInterface')
+        log_event_receive(data['event'], data['args'], label='LocalInterface')
 
         {'set_blocks': self._event_view_change,
          'set_chunks': self._event_view_change,
@@ -272,7 +272,7 @@ class LocalInterface:
 
     def _event_error(self, error):
         self.error = 'Error from server: ' + error['event'] + ': ' + event['message']
-        debug(self.error)
+        log(self.error)
         self.game = False
 
     # Main loop methods:
