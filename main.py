@@ -1,7 +1,7 @@
 from time import time
 from math import radians
 
-from console import CLS, SHOW_CUR, HIDE_CUR
+from console import CLS, SHOW_CUR, HIDE_CUR, in_game_debug
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render
 
@@ -145,6 +145,7 @@ def game(blocks, meta, map_, save):
                 )
 
                 print(out)
+                in_game_debug('({}, {})'.format(x, y), 0, 0)
             else:
                 df = 0
 

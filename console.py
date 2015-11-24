@@ -45,8 +45,14 @@ def debug (*args):
             print(*args, file=f)
 
 
+def in_game_debug(string, x, y):
+    if IN_GAME_DEBUG:
+        print(POS_STR(x, y, string))
+
+
 LOG = 'pycraft.log'
 DEBUG = os.getenv('PYCRAFT_DEBUG')
+IN_GAME_DEBUG = os.getenv('PYCRAFT_IN_GAME_DEBUG')
 WIDTH, HEIGHT = getTerminalSize()
 CLS = '\033[2J'
 CLS_END = '\033[0J'
