@@ -54,6 +54,7 @@ CLS_END_LN = '\033[0K'
 REDRAW = '\033[0;0f'
 HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
+POS_STR = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
 open(LOG, 'w').close()

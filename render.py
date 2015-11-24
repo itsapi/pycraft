@@ -1,15 +1,12 @@
 from math import cos, sin
 
 from colors import *
-from console import CLS, CLS_END, CLS_END_LN, REDRAW, supported_chars
+from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
 from data import world_gen, blocks
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
-
-
-pos_str = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
 
 def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
@@ -55,10 +52,10 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
             try:
                 if not last_frame[y][x] == pixel_out:
                     # Changed
-                    diff += pos_str(x, y, pixel_out)
+                    diff += POS_STR(x, y, pixel_out)
             except IndexError:
                 # Doesn't exsit
-                diff += pos_str(x, y, pixel_out)
+                diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
 
@@ -251,7 +248,7 @@ def render_grids(grids, x):
             merged_grids.append(' '.join(map(lambda g: get_row(g, y), row)))
 
     return ''.join(
-        pos_str(x, y, ' ' + row + CLS_END_LN)
+        POS_STR(x, y, ' ' + row + CLS_END_LN)
             for y, row in enumerate(merged_grids)
     )
 
