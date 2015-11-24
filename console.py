@@ -1,5 +1,6 @@
 import sys
 import os
+import ast
 
 
 def _get_terminal_size():
@@ -37,8 +38,8 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
 
 
-def debug(*args, trunc=True):
-    if DEBUG:
+def debug(*args, trunc=True, m=0):
+    if DEBUG and (m in DEBUG_MODES or 0 in DEBUG_MODES):
         args = (str(arg)[:100] + '...' if trunc and len(str(arg)) > 100 else arg for arg in args)
         with open(LOG, 'a') as f:
             print(*args, file=f)
@@ -57,8 +58,14 @@ def getenv_b(opt):
 
 
 DEBUG = getenv_b('PYCRAFT_DEBUG')
+if os.getenv('PYCRAFT_DEBUG_MODES'):
+    DEBUG_MODES = ast.literal_eval(os.getenv('PYCRAFT_DEBUG_MODES'))
+else:
+    # 0 for all modes
+    DEBUG_MODES = [0]
+
 IN_GAME_DEBUG = getenv_b('PYCRAFT_IN_GAME_DEBUG')
-LOG = getenv_b('PYCRAFT_LOG') or 'pycraft.log'
+LOG = os.getenv('PYCRAFT_LOG') or 'pycraft.log'
 
 WIDTH, HEIGHT = _get_terminal_size()
 CLS = '\033[2J'
