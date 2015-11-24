@@ -38,15 +38,15 @@ def supported_chars(*tests):
     return '?' * len(tests[0])
 
 
-def debug(*args, trunc=True, m=0):
-    if DEBUG and (m in DEBUG_MODES or 0 in DEBUG_MODES):
+def log(*args, trunc=True, m=0):
+    if LOGGING and (m in LOGGING_MODES or 0 in LOGGING_MODES):
         args = (str(arg)[:100] + '...' if trunc and len(str(arg)) > 100 else arg for arg in args)
-        with open(LOG, 'a') as f:
+        with open(LOG_FILE, 'a') as f:
             print(*args, file=f)
 
 
-def in_game_debug(string, x, y):
-    if IN_GAME_DEBUG:
+def in_game_log(string, x, y):
+    if IN_GAME_LOGGING:
         print(POS_STR(x, y, string))
 
 
@@ -57,15 +57,16 @@ def getenv_b(opt):
         return o.lower() in ('true', '1', 'on')
 
 
-DEBUG = getenv_b('PYCRAFT_DEBUG')
-if os.getenv('PYCRAFT_DEBUG_MODES'):
-    DEBUG_MODES = ast.literal_eval(os.getenv('PYCRAFT_DEBUG_MODES'))
+LOGGING = getenv_b('PYCRAFT_DEBUG')
+LOGGING = getenv_b('PYCRAFT_LOGGING')
+if os.getenv('PYCRAFT_LOGGING_MODES'):
+    LOGGING_MODES = ast.literal_eval(os.getenv('PYCRAFT_LOGGING_MODES'))
 else:
     # 0 for all modes
-    DEBUG_MODES = [0]
+    LOGGING_MODES = [0]
 
-IN_GAME_DEBUG = getenv_b('PYCRAFT_IN_GAME_DEBUG')
-LOG = os.getenv('PYCRAFT_LOG') or 'pycraft.log'
+IN_GAME_LOGGING = getenv_b('PYCRAFT_IN_GAME_LOGGING')
+LOG_FILE = os.getenv('PYCRAFT_LOG_FILE') or 'pycraft.log'
 
 WIDTH, HEIGHT = _get_terminal_size()
 CLS = '\033[2J'
@@ -76,5 +77,5 @@ HIDE_CUR = '\033[?25l'
 SHOW_CUR = '\033[?25h'
 POS_STR = lambda x, y, s: '\033[{};{}H{}'.format(y+1, x+1, s)
 
-if DEBUG:
-    open(LOG, 'w').close()
+if LOGGING:
+    open(LOG_FILE, 'w').close()

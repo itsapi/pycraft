@@ -5,7 +5,7 @@ from colors import colorStr, YELLOW
 
 import terrain, saves, network
 
-from console import debug
+from console import log
 
 
 chunk_size = terrain.world_gen['chunk_size']
@@ -14,20 +14,20 @@ SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
 
 
-def _debug_event(event, args):
-    debug('  Event:', colorStr(event, fg=YELLOW))
-    debug('  Args:', args)
-    debug()
+def _log_event(event, args):
+    log('  Event:', colorStr(event, fg=YELLOW))
+    log('  Args:', args)
+    log()
 
 
-def debug_event_send(*args, label=None):
-    debug('Sending', '- [{}]'.format(label) if label else None)
-    _debug_event(*args)
+def log_event_send(*args, label=None):
+    log('Sending', '- [{}]'.format(label) if label else None)
+    _log_event(*args)
 
 
-def debug_event_receive(*args, label=''):
-    debug('Received', '- [{}]'.format(label) if label else None)
-    _debug_event(*args)
+def log_event_receive(*args, label=''):
+    log('Received', '- [{}]'.format(label) if label else None)
+    _log_event(*args)
 
 
 class Server:
@@ -43,7 +43,7 @@ class Server:
         self.serving = False
 
     def _update_clients(self, message, exclude=None):
-        debug_event_send(message['event'], message['args'], label='Server')
+        log_event_send(message['event'], message['args'], label='Server')
 
         for name, sock in self.current_players.items():
             if name != exclude:
@@ -56,7 +56,7 @@ class Server:
         return list(self.current_players.keys()) + [self.local_player]
 
     def handle(self, sock, data):
-        debug_event_receive(data['event'], data['args'], label='Server')
+        log_event_receive(data['event'], data['args'], label='Server')
 
         result = (
             {'get_chunks': self.event_get_chunks,
@@ -71,14 +71,14 @@ class Server:
         )
 
         if result is not None:
-            debug_event_send(result['event'], result['args'], label='Server')
+            log_event_send(result['event'], result['args'], label='Server')
             return result
 
     # Handler and local interface mathods
 
     def event_login(self, name, sock):
         if name not in self.current_players.keys() and not name == self.local_player:
-            debug('Logging in: ' + name)
+            log('Logging in: ' + name)
 
             if not name == self.local_player:
                 # local_player already contains the local_player name
@@ -86,7 +86,7 @@ class Server:
 
             self._update_clients({'event': 'set_players', 'args': [{name: self.game.login(name)}]})
         else:
-            debug('Not Logging in: ' + name)
+            log('Not Logging in: ' + name)
             return {'event': 'error', 'args': [{'event': 'login', 'message': 'Username in use'}]}
 
     def event_logout(self, sock=None):
@@ -94,7 +94,7 @@ class Server:
         players = {}
         for name, conn in self.current_players.items():
             if conn == sock:
-                debug('Logging out', name, sock)
+                log('Logging out', name, sock)
                 self._update_clients({'event': 'remove_player', 'args': [name]}, name)
             else:
                 players[name] = sock
@@ -133,10 +133,10 @@ class Server:
         self.serving = True
         self.port, self._stop_server = network.start(self.handle, self.default_port)
 
-        debug('Server started on port', self.port)
+        log('Server started on port', self.port)
 
     def local_interface_kill_server(self):
-        debug('Server stopped')
+        log('Server stopped')
 
         self.serving = False
         self._update_clients({'event': 'logout', 'args': ['Server Closed']})
@@ -173,7 +173,7 @@ class Game:
         new_slices = {}
         gen_slices = {}
 
-        debug('loading chunks', chunk_list)
+        log('loading chunks', chunk_list)
 
         # Generates new terrain
         for chunk_num in chunk_list:
@@ -186,12 +186,12 @@ class Game:
                     gen_slices[str(pos)] = slice_
             new_slices.update(chunk)
 
-        debug('generated slices', gen_slices.keys())
-        debug('new slices', new_slices.keys())
+        log('generated slices', gen_slices.keys())
+        log('new slices', new_slices.keys())
 
         # Save generated terrain to file
         if gen_slices:
-            debug('saving slices', gen_slices.keys())
+            log('saving slices', gen_slices.keys())
             saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
