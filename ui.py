@@ -148,9 +148,21 @@ def help_():
     out += 'Back...\n'
     print(out)
 
-    with BlockingInput() as bi:
-        while not str(bi.char()) in ' \n':
-            pass
+    wait_for_input()
 
     print(CLS)
     return None
+
+
+def error(message):
+    print(CLS + REDRAW + '\n' + colorStr(message, fg=RED) + '\n\nBack...\n')
+
+    wait_for_input()
+
+    print(CLS, end='')
+
+
+def wait_for_input():
+    with BlockingInput() as bi:
+        while not str(bi.char()) in ' \n':
+            pass
