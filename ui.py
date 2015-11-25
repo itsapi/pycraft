@@ -122,7 +122,7 @@ def new():
     save = saves.new_save(meta)
 
     if save is None:
-        return error('Error creating save')
+        error('Error creating save')
     else:
         return saves.load_save(save)
 
