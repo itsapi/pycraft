@@ -155,7 +155,11 @@ def add_save():
                          + ' (leave blank to randomise): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     save = saves.new_save(meta)
-    return {'local': True, 'save': save}
+
+    if save is None:
+        return error('Error creating save')
+    else:
+        return {'local': True, 'save': save}
 
 
 def server_list(meta, func):
