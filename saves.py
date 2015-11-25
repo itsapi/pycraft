@@ -41,10 +41,15 @@ def new_save(meta):
 
     while os.path.isdir(save_path(save)):
         save += '-'
-    os.mkdir(save_path(save))
 
-    save_meta(save, meta)
-    return save
+    try:
+        os.mkdir(save_path(save))
+    except OSError:
+        save = None
+    else:
+        save_meta(save, meta)
+    finally:
+        return save
 
 
 def delete_save(save):

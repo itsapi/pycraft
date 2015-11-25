@@ -120,7 +120,11 @@ def new():
     meta['seed'] = input(colorStr(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
-    return saves.load_save(save)
+
+    if save is None:
+        return error('Error creating save')
+    else:
+        return saves.load_save(save)
 
 
 def pause():
