@@ -33,6 +33,7 @@ def game(blocks, meta, map_, save):
     dinv = False # Inventory
     dcraft = False # Crafting
     width = 40
+    height = terrain.world_gen['height'] - 1
     FPS = 15 # Max
     TPS = 10 # Ticks
     IPS = 20 # Input
@@ -126,12 +127,12 @@ def game(blocks, meta, map_, save):
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list, blocks,
-                    terrain.world_gen['height']-1, crafting_sel
+                    height, crafting_sel
                 )
 
                 inv_grid = render.render_grid(
                     player.INV_TITLE, not crafting, meta['inv'], blocks,
-                    terrain.world_gen['height']-1, inv_sel
+                    height, inv_sel
                 )
 
                 label = (player.label(crafting_list, crafting_sel, blocks)
@@ -139,9 +140,11 @@ def game(blocks, meta, map_, save):
                         player.label(meta['inv'], inv_sel, blocks))
 
                 out += render.render_grids(
-                    [[inv_grid, crafting_grid],
-                     [[label]]],
-                    width
+                    [
+                        [inv_grid, crafting_grid],
+                        [[label]]
+                    ],
+                    width, height
                 )
 
                 print(out)
