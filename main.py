@@ -158,11 +158,11 @@ def game(blocks, meta, map_, save):
                 x, y = player.respawn(meta)
 
             # Player falls when no solid block below it
-            if dt and not terrain.is_solid(blocks, map_[str(x)][y+1]):
+            if dt:
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
-                else:
+                elif not terrain.is_solid(blocks, map_[str(x)][y+1]):
                     # Fall
                     y += 1
                     redraw = True
