@@ -256,7 +256,7 @@ def gen_hill_features(features, chunk_pos, meta):
 def gen_tree_features(features, ground_heights, chunk_pos, meta):
     current_chunk_biome = features['chunks'][str(chunk_pos)]['biome']['type']
 
-    for x in range(chunk_pos - RAD, chunk_pos + world_gen['chunk_size'] + RAD):
+    for x in range(chunk_pos - MAX_HALF_TREE, chunk_pos + world_gen['chunk_size'] + MAX_HALF_TREE):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
