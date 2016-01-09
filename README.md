@@ -1,10 +1,10 @@
 # Pycraft (Termcraft)
 
-A console based 2D Minecraft, runs best on *nix with Python 3.3+. Built by [grit96](//github.com/grit96) and [olls](//github.com/olls).
+A console based 2D Minecraft, runs best on *nix with Python 3.3+. Built by [grit96](https://github.com/grit96) and [olls](https://github.com/olls).
 
 Usage: `python3 main.py`
 
-![Pycraft gameplay image](http://cdn.dvbris.com/pycraft.gif)
+![Pycraft gameplay image](https://cdn.dvbris.com/pycraft.gif)
 
 ## Controls
 
