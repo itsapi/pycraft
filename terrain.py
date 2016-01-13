@@ -407,7 +407,7 @@ def gen_chunk(chunk_n, meta):
                 leaf_x = feature_x + (leaf_dx - half_leaves)
 
                 if chunk_pos <= leaf_x < chunk_pos + world_gen['chunk_size']:
-                    air_height = world_gen['height'] - ground_heights[str(leaf_x)]
+                    air_height = world_gen['height'] - ground_heights[str(feature_x)]
                     leaf_height = air_height - tree['height'] - len(leaf_slice) + tree['trunk_depth']
 
                     # Add leaves to slice
