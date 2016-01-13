@@ -157,7 +157,7 @@ def add_save():
     save = saves.new_save(meta)
 
     if save is None:
-        return error('Error creating save')
+        error('Error creating save')
     else:
         return {'local': True, 'save': save}
 

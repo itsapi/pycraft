@@ -343,7 +343,6 @@ def gen_chunk(chunk_n, meta):
     gen_biome_features(features, chunk_pos, meta)
     gen_hill_features(features, chunk_pos, meta)
 
-
     # Insert hills because the trees and ores depend on the ground height.
     ground_heights = {}
     for feature_x, slice_features in features['slices'].items():
@@ -392,6 +391,8 @@ def gen_chunk(chunk_n, meta):
             ['_']
         )
 
+    trees_gen = 0
+
     # Insert trees and ores
     for feature_x, slice_features in features['slices'].items():
         feature_x = int(feature_x)
@@ -405,19 +406,23 @@ def gen_chunk(chunk_n, meta):
             for leaf_dx, leaf_slice in enumerate(leaves):
                 leaf_x = feature_x + (leaf_dx - half_leaves)
 
-                air_height = world_gen['height'] - ground_heights[str(leaf_x)]
-                leaf_height = air_height - tree['height'] - len(leaf_slice) + tree['trunk_depth']
+                if chunk_pos <= leaf_x < chunk_pos + world_gen['chunk_size']:
+                    air_height = world_gen['height'] - ground_heights[str(leaf_x)]
+                    leaf_height = air_height - tree['height'] - len(leaf_slice) + tree['trunk_depth']
 
-                # Add leaves to slice
-                for leaf_dy, leaf in enumerate(leaf_slice):
-                    if leaf:
-                        leaf_y = leaf_height + leaf_dy
-                        chunk[str(leaf_x)][leaf_y] = spawn_hierarchy(('@', chunk[str(leaf_x)][leaf_y]))
+                    # Add leaves to slice
+                    for leaf_dy, leaf in enumerate(leaf_slice):
+                        if leaf:
+                            leaf_y = leaf_height + leaf_dy
+                            chunk[str(leaf_x)][leaf_y] = spawn_hierarchy(('@', chunk[str(leaf_x)][leaf_y]))
 
-            # Add trunk to slice
-            air_height = world_gen['height'] - ground_heights[str(feature_x)]
-            for trunk_y in range(air_height - tree['height'], air_height):
-                chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
+            # Add trunk if in chunk
+            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
+                trees_gen += 1
+                air_height = world_gen['height'] - ground_heights[str(feature_x)]
+                for trunk_y in range(air_height - tree['height'], air_height):
+                    chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
+                # chunk[str(feature_x)][air_height - 1] = spawn_hierarchy(('|', chunk[str(feature_x)][air_height - 1]))
 
         # All ores
         for name, ore in world_gen['ores'].items():
