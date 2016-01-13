@@ -234,7 +234,7 @@ def gen_biome_features(features, chunk_pos, meta):
             biomes_population.extend([name] * int(data['chance'] * 100))
 
         attrs = {}
-        attrs['type'] = random.choice(biomes_population)
+        attrs['type'] = random.choice(sorted(biomes_population))
 
         features['chunks'][str(chunk_pos)]['biome'] = attrs
 
