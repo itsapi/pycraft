@@ -129,6 +129,18 @@ def add_ores(slice_, pos, meta, slice_height_):
             if random.random() <= ore['chance']:
                 root_ore_height = random.randint(ore['lower'], ore['upper'])
 
+                # TODO: Use this for vain gen!
+                """
+                    # Generates ore at random position around root ore
+                    # TODO: Do we need a `vain_density` value per ore type?
+
+                    pot_vain_blocks = ore['vain_size'] ** 2
+                    # The bits describe the shape of the vain,
+                    #   top to bottom, left to right.
+                    vain_shape = random.getkrandbits(pot_vain_blocks)
+                    this_ores = vain_shape[]
+                """
+
                 # Generates ore at random position around root ore
                 random.seed(str(meta['seed']) + str(pos) + ore['char'])
                 ore_height = (root_ore_height +
@@ -435,6 +447,7 @@ def detect_edges(map_, edges):
 
 
 def spawn_hierarchy(tests):
+    # TODO: Use argument expansion for tests
     return max(tests, key=lambda block: blocks[block]['hierarchy'])
 
 
