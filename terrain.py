@@ -4,6 +4,7 @@ from math import ceil
 
 import render
 from data import world_gen
+from console import log
 
 
 # Maximum width of half a tree
@@ -255,6 +256,7 @@ def gen_hill_features(features, chunk_pos, meta):
 
 def gen_tree_features(features, ground_heights, chunk_pos, meta):
     current_chunk_biome = features['chunks'][str(chunk_pos)]['biome']['type']
+    log(current_chunk_biome, m=1)
 
     for x in range(chunk_pos - MAX_HALF_TREE, chunk_pos + world_gen['chunk_size'] + MAX_HALF_TREE):
 
@@ -357,7 +359,12 @@ def gen_chunk(chunk_n, meta):
     #   features which depend on them
 
     gen_tree_features(features, ground_heights, chunk_pos, meta)
-    gen_ore_features(features, ground_heights, chunk_pos, meta)
+    # gen_ore_features(features, ground_heights, chunk_pos, meta)
+
+    log('chunk_pos', chunk_pos, m=1)
+    tree_features = list(filter(lambda f: f[1].get('tree'), features['slices'].items()))
+    log('trees in cache\n', [str(f[0]) for f in tree_features], m=1, trunc=0)
+    log('trees in range', [str(f[0]) for f in tree_features if (chunk_pos <= int(f[0]) < chunk_pos + world_gen['chunk_size'])], m=1, trunc=0)
 
     # Build slices
     chunk = {}
@@ -412,6 +419,8 @@ def gen_chunk(chunk_n, meta):
                     abs_pos = x + d_x
 
                     pass
+
+    log('trees gen:', trees_gen, m=1)
 
     return chunk
 

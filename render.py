@@ -2,7 +2,7 @@ from math import cos, sin, radians
 
 import terrain
 from colors import *
-from console import DEBUG, CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
+from console import DEBUG, CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars, log
 import data
 from data import world_gen
 
