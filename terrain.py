@@ -298,14 +298,16 @@ def build_ore(chunk, chunk_pos, x, ore_feature, ore, ground_heights):
             block_x = block_dx + x
             block_y = block_dy + ore_feature['root_height']
 
-            # Won't allow ore above surface
-            if chunk_pos <= block_x < chunk_pos + world_gen['chunk_size']:
+            if in_chunk(block_x, chunk_pos):
+                # Won't allow ore above surface
                 if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
                     chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
 
 
 def gen_chunk(chunk_n, meta):
     chunk_pos = chunk_n * world_gen['chunk_size']
+
+    # TODO: Allow more than one feature per x in features?
 
     # First generate all the features we will need
     #   for all the slice is in this chunk
@@ -366,19 +368,19 @@ def gen_chunk(chunk_n, meta):
     for feature_x, slice_features in features['slices'].items():
         feature_x = int(feature_x)
 
-        if slice_features.get('tree'):
-            tree_feature = slice_features['tree']
-            build_tree(chunk, chunk_pos, feature_x, tree_feature, ground_heights)
+        for feature_name, feature in slice_features.items():
 
-        if slice_features.get('grass'):
-            grass_feature = slice_features['grass']
-            build_grass(chunk, chunk_pos, feature_x, grass_feature, ground_heights)
+            if feature_name == 'tree':
+                build_tree(chunk, chunk_pos, feature_x, feature, ground_heights)
 
-        for name, ore in world_gen['ores'].items():
-            feature_name = name + '_ore_root'
+            elif feature_name == 'grass':
+                build_grass(chunk, chunk_pos, feature_x, feature, ground_heights)
 
-            if slice_features.get(feature_name):
-                ore_feature = slice_features[feature_name]
-                build_ore(chunk, chunk_pos, feature_x, ore_feature, ore, ground_heights)
+            else:
+                for name, ore in world_gen['ores'].items():
+                    ore_name = name + '_ore_root'
+
+                    if feature_name == ore_name:
+                        build_ore(chunk, chunk_pos, feature_x, feature, ore, ground_heights)
 
     return chunk
