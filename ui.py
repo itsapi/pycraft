@@ -28,16 +28,22 @@ def menu(name, options, selection=0):
             print_map[i] = j
             i += 1
 
+    padding = 5
+    max_height = HEIGHT - padding
     char = None
     with BlockingInput() as bi:
         while not str(char) in ' \n':
+            offset = selection - max(
+                min(selection, max_height - padding),
+                selection + min(0, max_height - len(options))
+            )
 
             # Print menu
             out = ''
-            for i, option in enumerate(options):
+            for i, option in enumerate(options[offset:offset+max_height]):
                 if option == ():
                     pass
-                elif i == print_map.get(selection):
+                elif offset + i == print_map.get(selection):
                     out += STAR + colorStr(option[0], style=BOLD) + STAR
                 else:
                     out += ' ' + option[0] + ' '
@@ -56,7 +62,7 @@ def menu(name, options, selection=0):
                     selection += 1
                     break
             selection %= len(print_map)
-        print(CLS, end='')
+            print(CLS, end='')
     # Execute function of selection
     return options[print_map[selection]][1](), selection
 

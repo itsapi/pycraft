@@ -1,6 +1,6 @@
 import cProfile
 
-from time import time
+from time import time, sleep
 from math import radians
 
 import console as c
@@ -92,6 +92,7 @@ def game(server):
     # Game loop
     with NonBlockingInput() as nbi:
         while server.game:
+            sleep(1/1000)
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
@@ -109,6 +110,7 @@ def game(server):
                 extended_view = terrain.move_map(server.map_, extended_edges)
                 old_edges = edges
                 server.redraw = True
+                server.view_change = False
 
             # Sun has moved
             sun = render.sun(server.time, width)
