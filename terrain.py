@@ -18,6 +18,9 @@ EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
 
+MAX_HILL_RAD = world_gen['max_hill'] * world_gen['min_grad']
+hill_range = lambda chunk_pos: range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)
+
 blocks = render.blocks
 
 
@@ -74,7 +77,7 @@ class TerrainCache(OrderedDict):
 features = {}
 def init_features():
     global features
-    cache_size = 2 * ((world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size'])
+    cache_size = (world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size']
     features = {
         'chunks': TerrainCache(limit=(cache_size // world_gen['chunk_size']) + 1),
         'slices': TerrainCache(limit=cache_size)
@@ -124,10 +127,7 @@ def gen_biome_features(features, chunk_pos, meta):
 
 
 def gen_hill_features(features, chunk_pos, meta):
-    max_hill_rad = world_gen['max_hill'] * world_gen['min_grad']
-
-    for x in range(chunk_pos - max_hill_rad,
-                   chunk_pos + world_gen['chunk_size'] + max_hill_rad):
+    for x in hill_range(chunk_pos):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
@@ -316,7 +316,7 @@ def gen_chunk(chunk_n, meta):
     gen_hill_features(features, chunk_pos, meta)
 
     # Insert hills because the trees and ores depend on the ground height.
-    ground_heights = {}
+    ground_heights = {str(x): world_gen['ground_height'] for x in hill_range(chunk_pos)}
     for feature_x, slice_features in features['slices'].items():
         feature_x = int(feature_x)
 
@@ -337,6 +337,12 @@ def gen_chunk(chunk_n, meta):
 
                 old_height = ground_heights.get(str(abs_pos), 0)
                 ground_heights[str(abs_pos)] = max(ground_height, old_height)
+
+    int_x = list(map(int, ground_heights.keys()))
+    log('chunk', chunk_pos, m=1)
+    log('max', max(int_x), m=1)
+    log('min', min(int_x), m=1)
+    log('gh diff', set(hill_range(chunk_pos)) - set(int_x), m=1, trunc=False)
 
     # We have to generate the ground heights before we can calculate the
     #   features which depend on them
