@@ -247,6 +247,63 @@ def gen_grass_features(features, ground_heights, chunk_pos, meta):
                 features['slices'][str(x)]['grass'] = attrs
 
 
+def in_chunk(pos, chunk_pos):
+    return chunk_pos <= pos < chunk_pos + world_gen['chunk_size']
+
+
+def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
+    """ Adds a tree feature at x to the chunk. """
+
+    # Add trunk
+    if in_chunk(x, chunk_pos):
+        air_height = world_gen['height'] - ground_heights[str(x)]
+        for trunk_y in range(air_height - tree_feature['height'], air_height):
+            chunk[str(x)][trunk_y] = spawn_hierarchy(('|', chunk[str(x)][trunk_y]))
+
+    # Add leaves
+    leaves = world_gen['trees'][tree_feature['type']]
+    half_leaves = int(len(leaves) / 2)
+
+    for leaf_dx, leaf_slice in enumerate(leaves):
+        leaf_x = x + (leaf_dx - half_leaves)
+
+        if in_chunk(leaf_x, chunk_pos):
+            air_height = world_gen['height'] - ground_heights[str(x)]
+            leaf_height = air_height - tree_feature['height'] - len(leaf_slice) + tree_feature['trunk_depth']
+
+            for leaf_dy, leaf in enumerate(leaf_slice):
+                if leaf:
+                    leaf_y = leaf_height + leaf_dy
+                    chunk[str(leaf_x)][leaf_y] = spawn_hierarchy(('@', chunk[str(leaf_x)][leaf_y]))
+
+
+def build_grass(chunk, chunk_pos, x, grass_feature, ground_heights):
+    """ Adds a grass feature at x to the chunk. """
+
+    if in_chunk(x, chunk_pos):
+        grass_y = world_gen['height'] - ground_heights[str(x)] - 1
+        chunk[str(x)][grass_y] = spawn_hierarchy(('v', chunk[str(x)][grass_y]))
+
+
+def build_ore(chunk, chunk_pos, x, ore_feature, ore, ground_heights):
+    """ Adds an ore feature at x to the chunk. """
+
+    for block_pos in range(ore['vain_size'] ** 2):
+        if ore_feature['vain_shape'][block_pos] < ore['vain_density']:
+
+            # Centre on root ore
+            block_dx = (block_pos % ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
+            block_dy = int(block_pos / ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
+
+            block_x = block_dx + x
+            block_y = block_dy + ore_feature['root_height']
+
+            # Won't allow ore above surface
+            if chunk_pos <= block_x < chunk_pos + world_gen['chunk_size']:
+                if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
+                    chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
+
+
 def gen_chunk(chunk_n, meta):
     chunk_pos = chunk_n * world_gen['chunk_size']
 
@@ -305,72 +362,23 @@ def gen_chunk(chunk_n, meta):
             ['_']
         )
 
-    trees_gen = 0
-    grass_gen = 0
-    ores_gen = 0
-
     # Insert trees and ores
     for feature_x, slice_features in features['slices'].items():
         feature_x = int(feature_x)
 
-        # Tree
         if slice_features.get('tree'):
-            tree = slice_features['tree']
-            leaves = world_gen['trees'][tree['type']]
-            half_leaves = int(len(leaves) / 2)
-
-            for leaf_dx, leaf_slice in enumerate(leaves):
-                leaf_x = feature_x + (leaf_dx - half_leaves)
-
-                if chunk_pos <= leaf_x < chunk_pos + world_gen['chunk_size']:
-                    air_height = world_gen['height'] - ground_heights[str(feature_x)]
-                    leaf_height = air_height - tree['height'] - len(leaf_slice) + tree['trunk_depth']
-
-                    # Add leaves to slice
-                    for leaf_dy, leaf in enumerate(leaf_slice):
-                        if leaf:
-                            leaf_y = leaf_height + leaf_dy
-                            chunk[str(leaf_x)][leaf_y] = spawn_hierarchy(('@', chunk[str(leaf_x)][leaf_y]))
-
-            # Add trunk if in chunk
-            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
-                trees_gen += 1
-                air_height = world_gen['height'] - ground_heights[str(feature_x)]
-                for trunk_y in range(air_height - tree['height'], air_height):
-                    chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
+            tree_feature = slice_features['tree']
+            build_tree(chunk, chunk_pos, feature_x, tree_feature, ground_heights)
 
         if slice_features.get('grass'):
-            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
-                grass_gen += 1
-                grass_feature = slice_features['grass']
-                grass_y = world_gen['height'] - ground_heights[str(feature_x)] - 1
-                chunk[str(feature_x)][grass_y] = spawn_hierarchy(('v', chunk[str(feature_x)][grass_y]))
+            grass_feature = slice_features['grass']
+            build_grass(chunk, chunk_pos, feature_x, grass_feature, ground_heights)
 
-        # All ores
         for name, ore in world_gen['ores'].items():
             feature_name = name + '_ore_root'
 
             if slice_features.get(feature_name):
-                ores_gen += 1
                 ore_feature = slice_features[feature_name]
-
-                for block_pos in range(ore['vain_size'] ** 2):
-                    if ore_feature['vain_shape'][block_pos] < ore['vain_density']:
-
-                        # Centre on root ore
-                        block_dx = (block_pos % ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
-                        block_dy = int(block_pos / ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
-
-                        block_x = block_dx + feature_x
-                        block_y = block_dy + ore_feature['root_height']
-
-                        # Won't allow ore above surface
-                        if chunk_pos <= block_x < chunk_pos + world_gen['chunk_size']:
-                            if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
-                                chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
-
-    log('trees gen:', trees_gen, m=1)
-    log('grass gen:', grass_gen, m=1)
-    log('ores gen:', ores_gen, m=1)
+                build_ore(chunk, chunk_pos, feature_x, ore_feature, ore, ground_heights)
 
     return chunk
