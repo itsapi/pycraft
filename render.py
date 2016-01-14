@@ -242,7 +242,7 @@ def render_grid(title, selected, grid, max_height, sel=None):
     return out
 
 
-def render_grids(grids, x):
+def render_grids(grids, x, max_height):
     """
         Prints out the grids on the right side of the game.
     """
@@ -255,6 +255,8 @@ def render_grids(grids, x):
     for row in grids:
         for y in range(max(map(len, row))):
             merged_grids.append(' '.join(map(lambda g: get_row(g, y), row)))
+
+    merged_grids.extend('' for _ in range(max_height - len(merged_grids)))
 
     return ''.join(
         POS_STR(x, y, ' ' + row + CLS_END_LN)
