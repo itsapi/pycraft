@@ -306,6 +306,8 @@ def gen_chunk(chunk_n, meta):
         )
 
     trees_gen = 0
+    grass_gen = 0
+    ores_gen = 0
 
     # Insert trees and ores
     for feature_x, slice_features in features['slices'].items():
@@ -337,11 +339,19 @@ def gen_chunk(chunk_n, meta):
                 for trunk_y in range(air_height - tree['height'], air_height):
                     chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
 
+        if slice_features.get('grass'):
+            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
+                grass_gen += 1
+                grass_feature = slice_features['grass']
+                grass_y = world_gen['height'] - ground_heights[str(feature_x)] - 1
+                chunk[str(feature_x)][grass_y] = spawn_hierarchy(('v', chunk[str(feature_x)][grass_y]))
+
         # All ores
         for name, ore in world_gen['ores'].items():
             feature_name = name + '_ore_root'
 
             if slice_features.get(feature_name):
+                ores_gen += 1
                 ore_feature = slice_features[feature_name]
 
                 for block_pos in range(ore['vain_size'] ** 2):
@@ -359,12 +369,8 @@ def gen_chunk(chunk_n, meta):
                             if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
                                 chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
 
-        if slice_features.get('grass'):
-            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
-                grass_feature = slice_features['grass']
-                grass_y = world_gen['height'] - ground_heights[str(feature_x)] - 1
-                chunk[str(feature_x)][grass_y] = spawn_hierarchy(('v', chunk[str(feature_x)][grass_y]))
-
     log('trees gen:', trees_gen, m=1)
+    log('grass gen:', grass_gen, m=1)
+    log('ores gen:', ores_gen, m=1)
 
     return chunk
