@@ -8,7 +8,6 @@ from console import log, DEBUG
 
 
 # Maximum width of half a tree
-# TODO: Do the two half ranges like ores
 MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
 largest_ore = max(map(lambda ore: world_gen['ores'][ore]['vain_size'], world_gen['ores']))
@@ -47,10 +46,6 @@ def is_solid(block):
     return blocks[block]['solid']
 
 
-def ground_height(slice_):
-    return next(i for i, block in enumerate(slice_) if blocks[block]['solid'])
-
-
 class TerrainCache(OrderedDict):
     """ Implements a Dict with a size limit.
         Beyond which it replaces the oldest item. """
@@ -74,7 +69,7 @@ class TerrainCache(OrderedDict):
 features = {}
 def init_features():
     global features
-    cache_size = 2 * ((world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size'])
+    cache_size = (world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size']
     features = {
         'chunks': TerrainCache(limit=(cache_size // world_gen['chunk_size']) + 1),
         'slices': TerrainCache(limit=cache_size)
