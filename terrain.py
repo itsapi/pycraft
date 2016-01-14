@@ -46,6 +46,10 @@ def is_solid(block):
     return blocks[block]['solid']
 
 
+def in_chunk(pos, chunk_pos):
+    return chunk_pos <= pos < chunk_pos + world_gen['chunk_size']
+
+
 class TerrainCache(OrderedDict):
     """ Implements a Dict with a size limit.
         Beyond which it replaces the oldest item. """
@@ -240,10 +244,6 @@ def gen_grass_features(features, ground_heights, chunk_pos, meta):
                 attrs['y'] = ground_heights[str(x)]
 
                 features['slices'][str(x)]['grass'] = attrs
-
-
-def in_chunk(pos, chunk_pos):
-    return chunk_pos <= pos < chunk_pos + world_gen['chunk_size']
 
 
 def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
