@@ -382,5 +382,6 @@ def gen_chunk(chunk_n, meta):
 
                     if feature_name == ore_name:
                         build_ore(chunk, chunk_pos, feature_x, feature, ore, ground_heights)
+                        break
 
     return chunk
