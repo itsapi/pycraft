@@ -257,7 +257,7 @@ def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
     # Add trunk
     if in_chunk(x, chunk_pos):
         air_height = world_gen['height'] - ground_heights[str(x)]
-        for trunk_y in range(air_height - tree_feature['height'], air_height - (DEBUG * 3)):
+        for trunk_y in range(air_height - tree_feature['height'], air_height - (bool(DEBUG) * 3)):
             chunk[str(x)][trunk_y] = spawn_hierarchy(('|', chunk[str(x)][trunk_y]))
 
     # Add leaves
