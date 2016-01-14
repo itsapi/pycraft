@@ -8,7 +8,12 @@ from console import log
 
 
 # Maximum width of half a tree
+# TODO: Do the two half ranges like ores
 MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
+
+largest_ore = max(map(lambda ore: world_gen['ores'][ore]['vain_size'], world_gen['ores']))
+MAX_ORE_RANGE = (int((largest_ore - 1) / 2), (int(largest_ore / 2) + 1))
+
 EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
@@ -304,7 +309,7 @@ def gen_tree_features(features, ground_heights, chunk_pos, meta):
 
 
 def gen_ore_features(features, ground_heights, chunk_pos, meta):
-    for x in range(chunk_pos - RAD, chunk_pos + world_gen['chunk_size'] + RAD):
+    for x in range(chunk_pos - MAX_ORE_RANGE[0], chunk_pos + world_gen['chunk_size'] + MAX_ORE_RANGE[1]):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
@@ -326,10 +331,18 @@ def gen_ore_features(features, ground_heights, chunk_pos, meta):
                 if random.random() <= ore['chance']:
 
                     attrs = {}
-                    attrs['root_height'] = random.randint(
+                    attrs['root_height'] = world_gen['height'] - random.randint(
                         ore['lower'],
                         min(ore['upper'], (ground_heights[str(x)] - 1))  # -1 for grass.
                     )
+
+                    # Generates ore at random position around root ore
+                    # TODO: Do we need a `vain_density` value per ore type?
+                    pot_vain_blocks = ore['vain_size'] ** 2
+
+                    # The bits describe the shape of the vain,
+                    #   top to bottom, left to right.
+                    attrs['vain_shape'] = random.getrandbits(pot_vain_blocks)
 
                     features['slices'][str(x)][feature_name] = attrs
 
@@ -370,7 +383,7 @@ def gen_chunk(chunk_n, meta):
     #   features which depend on them
 
     gen_tree_features(features, ground_heights, chunk_pos, meta)
-    # gen_ore_features(features, ground_heights, chunk_pos, meta)
+    gen_ore_features(features, ground_heights, chunk_pos, meta)
 
     log('chunk_pos', chunk_pos, m=1)
     tree_features = list(filter(lambda f: f[1].get('tree'), features['slices'].items()))
@@ -422,20 +435,28 @@ def gen_chunk(chunk_n, meta):
                 air_height = world_gen['height'] - ground_heights[str(feature_x)]
                 for trunk_y in range(air_height - tree['height'], air_height):
                     chunk[str(feature_x)][trunk_y] = spawn_hierarchy(('|', chunk[str(feature_x)][trunk_y]))
-                # chunk[str(feature_x)][air_height - 1] = spawn_hierarchy(('|', chunk[str(feature_x)][air_height - 1]))
 
         # All ores
         for name, ore in world_gen['ores'].items():
             feature_name = name + '_ore_root'
 
             if slice_features.get(feature_name):
-                ore = slice_features[feature_name]
+                ore_feature = slice_features[feature_name]
 
-                for d_x in range(-hill['height'] * hill['gradient_l'],
-                                 hill['height'] * hill['gradient_r']):
-                    abs_pos = x + d_x
+                for block_pos in range(ore['vain_size'] ** 2):
+                    if ore_feature['vain_shape'] & (1 << block_pos):
 
-                    pass
+                        # Centre on root ore
+                        block_dx = (block_pos % ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
+                        block_dy = int(block_pos / ore['vain_size']) - int((ore['vain_size'] - 1) / 2)
+
+                        block_x = block_dx + feature_x
+                        block_y = block_dy + ore_feature['root_height']
+
+                        # Won't allow ore above surface
+                        if chunk_pos <= block_x < chunk_pos + world_gen['chunk_size']:
+                            if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
+                                chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
 
     log('trees gen:', trees_gen, m=1)
 
