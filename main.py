@@ -109,6 +109,7 @@ def game(server):
                 extended_view = terrain.move_map(server.map_, extended_edges)
                 old_edges = edges
                 server.redraw = True
+                server.view_change = False
 
             # Sun has moved
             sun = render.sun(server.time, width)
