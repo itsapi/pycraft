@@ -62,6 +62,7 @@ def game(server):
     dinv = False  # Inventory
     dcraft = False  # Crafting
     width = 40
+    height = terrain.world_gen['height'] - 1
     FPS = 15  # Max
     IPS = 20  # Input
     MPS = 15  # Movement
@@ -150,12 +151,12 @@ def game(server):
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
-                    terrain.world_gen['height']-1, crafting_sel
+                    height, crafting_sel
                 )
 
                 inv_grid = render.render_grid(
                     player.INV_TITLE, not crafting, server.inv,
-                    terrain.world_gen['height']-1, inv_sel
+                    height, inv_sel
                 )
 
                 label = (player.label(crafting_list, crafting_sel)
@@ -163,9 +164,11 @@ def game(server):
                         player.label(server.inv, inv_sel))
 
                 out += render.render_grids(
-                    [[inv_grid, crafting_grid],
-                     [[label]]],
-                    width
+                    [
+                        [inv_grid, crafting_grid],
+                        [[label]]
+                    ],
+                    width, height
                 )
 
                 print(out)
@@ -179,13 +182,11 @@ def game(server):
                 x, y = player.respawn(server.get_meta('spawn'))
 
             # Player falls when no solid block below it
-            if (dt and not terrain.is_solid(server.map_[str(x)][y+1])
-                and server.chunk_loaded(x)):
-
+            if dt and server.chunk_loaded(x):
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
-                else:
+                elif not terrain.is_solid(server.map_[str(x)][y+1]):
                     # Fall
                     y += 1
                     server.pos = x, y
