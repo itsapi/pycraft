@@ -337,12 +337,11 @@ def gen_ore_features(features, ground_heights, chunk_pos, meta):
                     )
 
                     # Generates ore at random position around root ore
-                    # TODO: Do we need a `vain_density` value per ore type?
                     pot_vain_blocks = ore['vain_size'] ** 2
 
-                    # The bits describe the shape of the vain,
+                    # Describes the shape of the vain,
                     #   top to bottom, left to right.
-                    attrs['vain_shape'] = random.getrandbits(pot_vain_blocks)
+                    attrs['vain_shape'] = [b / 100 for b in random.sample(range(0, 100), pot_vain_blocks)]
 
                     features['slices'][str(x)][feature_name] = attrs
 
@@ -444,7 +443,7 @@ def gen_chunk(chunk_n, meta):
                 ore_feature = slice_features[feature_name]
 
                 for block_pos in range(ore['vain_size'] ** 2):
-                    if ore_feature['vain_shape'] & (1 << block_pos):
+                    if ore_feature['vain_shape'][block_pos] < ore['vain_density']:
 
                         # Centre on root ore
                         block_dx = (block_pos % ore['vain_size']) - int((ore['vain_size'] - 1) / 2)

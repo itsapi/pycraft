@@ -335,10 +335,12 @@ world_gen = {
             'trees': .2
         }
     },
+    # TODO: Densities need tuning.
     'ores': {
         'coal': {
             'char': 'x',
             'vain_size': 4,
+            'vain_density': .4,
             'chance': 0.05,
             'upper': 30,
             'lower': 1
@@ -346,6 +348,7 @@ world_gen = {
         'iron': {
             'char': '+',
             'vain_size': 3,
+            'vain_density': .3,
             'chance': 0.03,
             'upper': 15,
             'lower': 1
@@ -353,6 +356,7 @@ world_gen = {
         'redstone': {
             'char': ':',
             'vain_size': 4,
+            'vain_density': .6,
             'chance': 0.03,
             'upper': 7,
             'lower': 1
@@ -360,13 +364,15 @@ world_gen = {
         'gold': {
             'char': '"',
             'vain_size': 2,
+            'vain_density': .3,
             'chance': 0.02,
             'upper': 10,
             'lower': 1
         },
         'diamond': {
             'char': 'o',
-            'vain_size': 1,
+            'vain_size': 2,
+            'vain_density': .5,
             'chance': 0.01,
             'upper': 5,
             'lower': 1
@@ -374,6 +380,7 @@ world_gen = {
         'emerald': {
             'char': '.',
             'vain_size': 1,
+            'vain_density': 1,
             'chance': 0.002,
             'upper': 7,
             'lower': 1
