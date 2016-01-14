@@ -225,17 +225,26 @@ def gen_ore_features(features, ground_heights, chunk_pos, meta):
                     features['slices'][str(x)][feature_name] = attrs
 
 
-# TODO: Convert to new terrain system
-def add_tall_grass(slice_, pos, meta, slice_height_):
-    # Set seed for random numbers based on position and grass
-    random.seed(str(meta['seed']) + str(pos) + 'grass')
+def gen_grass_features(features, ground_heights, chunk_pos, meta):
+    for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
 
-    # Generate a grass with a probability
-    if random.random() <= world_gen['tall_grass_rate']:
-        sy = world_gen['height'] - slice_height_ - 1
-        slice_[sy] = spawn_hierarchy(('v', slice_[sy]))
+        # TODO: Each of these `if` blocks should be abstracted into a function
+        #         which just returns the `attrs` object.
 
-    return slice_
+        if features['slices'].get(str(x)) is None:
+            # Init to empty, so 'no features' is cached.
+            features['slices'][str(x)] = {}
+
+        # If it is not None, it has all ready been generated.
+        if features['slices'][str(x)].get('grass') is None:
+
+            random.seed(str(meta['seed']) + str(x) + 'grass')
+            if random.random() <= world_gen['tall_grass_rate']:
+
+                attrs = {}
+                attrs['y'] = ground_heights[str(x)]
+
+                features['slices'][str(x)]['grass'] = attrs
 
 
 def gen_chunk(chunk_n, meta):
@@ -275,6 +284,7 @@ def gen_chunk(chunk_n, meta):
 
     gen_tree_features(features, ground_heights, chunk_pos, meta)
     gen_ore_features(features, ground_heights, chunk_pos, meta)
+    gen_grass_features(features, ground_heights, chunk_pos, meta)
 
     log('chunk_pos', chunk_pos, m=1)
     tree_features = list(filter(lambda f: f[1].get('tree'), features['slices'].items()))
@@ -348,6 +358,12 @@ def gen_chunk(chunk_n, meta):
                         if chunk_pos <= block_x < chunk_pos + world_gen['chunk_size']:
                             if world_gen['height'] > block_y > world_gen['height'] - ground_heights[str(block_x)]:
                                 chunk[str(block_x)][block_y] = spawn_hierarchy((ore['char'], chunk[str(block_x)][block_y]))
+
+        if slice_features.get('grass'):
+            if chunk_pos <= feature_x < chunk_pos + world_gen['chunk_size']:
+                grass_feature = slice_features['grass']
+                grass_y = world_gen['height'] - ground_heights[str(feature_x)] - 1
+                chunk[str(feature_x)][grass_y] = spawn_hierarchy(('v', chunk[str(feature_x)][grass_y]))
 
     log('trees gen:', trees_gen, m=1)
 
