@@ -12,9 +12,9 @@ CRAFT_TITLE = 'Crafting'
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
 
-    left_slice = map_[str(x - 1)]
-    player_slice = map_[str(x)]
-    right_slice = map_[str(x + 1)]
+    left_slice = map_[x - 1]
+    player_slice = map_[x]
+    right_slice = map_[x + 1]
 
     feet_y = y
     head_y = y - 1
@@ -77,7 +77,7 @@ def can_place(map_, block_x, block_y, inv_block, blocks):
 
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     inv = meta['inv']
-    block_x = str(x + cursor_x[cursor])
+    block_x = x + cursor_x[cursor]
     block_y = y + cursor_y[cursor]
     block = map_[block_x][block_y]
     inv_block = inv[inv_sel]['block'] if len(inv) else None
@@ -124,7 +124,7 @@ def move_sel(inp):
 
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
-    block = blocks[ map_[ str(x + cursor_x[cursor]) ][ y + cursor_y[cursor] ] ]
+    block = blocks[ map_[ x + cursor_x[cursor] ][ y + cursor_y[cursor] ] ]
 
     try:
         strength = blocks[inv[inv_sel]['block']]['strength']

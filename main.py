@@ -77,8 +77,8 @@ def game(blocks, meta, map_, save):
             # Generates new terrain
             slice_list = terrain.detect_edges(map_, extended_edges)
             for pos in slice_list:
-                new_slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
-                map_[str(pos)] = new_slices[str(pos)]
+                new_slices[pos] = terrain.gen_slice(pos, meta, blocks)
+                map_[pos] = new_slices[pos]
 
             # Save new terrain to file
             if new_slices:
@@ -162,14 +162,14 @@ def game(blocks, meta, map_, save):
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
-                elif not terrain.is_solid(blocks, map_[str(x)][y+1]):
+                elif not terrain.is_solid(blocks, map_[x][y+1]):
                     # Fall
                     y += 1
                     redraw = True
 
             # If no block below, kill player
             try:
-                block = map_[str(x)][y+1]
+                block = map_[x][y+1]
             except IndexError:
                 alive = False
 

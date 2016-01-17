@@ -132,7 +132,8 @@ def parse_slices(data):
 
     for line in data:
         # Parses map file
-        key, slice_ = line.split(SLICE_SEP)
+        parts = line.split(SLICE_SEP)
+        key, slice_ = int(parts[0]), parts[1]
         slice_ = list(slice_)
 
         # Removes new line char if it exists
