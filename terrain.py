@@ -18,7 +18,6 @@ EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
 
 MAX_HILL_RAD = world_gen['max_hill'] * world_gen['min_grad']
-hill_range = lambda chunk_pos: range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)
 
 blocks = render.blocks
 
@@ -130,7 +129,7 @@ def gen_biome_features(features, chunk_pos, meta):
 
 
 def gen_hill_features(features, chunk_pos, meta):
-    for x in hill_range(chunk_pos):
+    for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
@@ -317,7 +316,7 @@ def gen_chunk(chunk_n, meta):
     gen_hill_features(features, chunk_pos, meta)
 
     # Generate hill heights and biomes map for the tree and ore generation.
-    ground_heights = {str(x): world_gen['ground_height'] for x in hill_range(chunk_pos)}
+    ground_heights = {str(x): world_gen['ground_height'] for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)}
     # Store feature_x with the value for calculating precedence.
     slices_biome = {str(x): ('normal', None) for x in range(chunk_pos - world_gen['max_biome'], chunk_pos + world_gen['chunk_size'] + world_gen['max_biome'])}
 
@@ -368,7 +367,7 @@ def gen_chunk(chunk_n, meta):
     log('chunk', chunk_pos, m=1)
     log('max', max(int_x), m=1)
     log('min', min(int_x), m=1)
-    log('gh diff', set(hill_range(chunk_pos)) - set(int_x), m=1, trunc=False)
+    log('gh diff', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(int_x), m=1, trunc=False)
 
     gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta)
     gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta)
