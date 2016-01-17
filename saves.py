@@ -124,7 +124,7 @@ def load_chunk(save, chunk_n):
                     # Extend slice height
                     slice_ = (' ' * height_error) + slice_
 
-                map_[str(chunk_pos + d_pos)] = list(slice_)
+                map_[chunk_pos + d_pos] = list(slice_)
 
     except FileNotFoundError:
         pass
@@ -178,8 +178,8 @@ def set_blocks(map_, blocks):
     for x, col in blocks.items():
         for y, block in col.items():
             try:
-                new_slices[str(x)] = map_[str(x)]
-                map_[str(x)][int(y)] = new_slices[str(x)][int(y)] = block
+                new_slices[x] = map_[x]
+                map_[x][y] = new_slices[x][y] = block
             except KeyError:
                 pass
 

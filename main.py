@@ -186,7 +186,7 @@ def game(server):
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
-                elif not terrain.is_solid(server.map_[str(x)][y+1]):
+                elif not terrain.is_solid(server.map_[x][y+1]):
                     # Fall
                     y += 1
                     server.pos = x, y
@@ -194,7 +194,7 @@ def game(server):
 
             # If no block below, kill player
             try:
-                block = server.map_[str(x)][y+1]
+                block = server.map_[x][y+1]
             except IndexError:
                 alive = False
 

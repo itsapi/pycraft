@@ -12,9 +12,9 @@ CRAFT_TITLE = 'Crafting'
 
 def get_pos_delta(char, map_, x, y, jump):
 
-    left_slice = map_[str(x - 1)]
-    player_slice = map_[str(x)]
-    right_slice = map_[str(x + 1)]
+    left_slice = map_[x - 1]
+    player_slice = map_[x]
+    right_slice = map_[x + 1]
 
     feet_y = y
     head_y = y - 1
@@ -74,7 +74,7 @@ def can_place(map_, block_x, block_y, inv_block):
 
 
 def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
-    block_x = str(x + cursor_x[cursor])
+    block_x = x + cursor_x[cursor]
     block_y = y + cursor_y[cursor]
     block = map_[block_x][block_y]
     inv_block = inv[inv_sel]['block'] if len(inv) else None
@@ -126,7 +126,7 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     if c_y < 0 or c_y >= terrain.world_gen['height']:
         return WHITE, False
 
-    block = blocks[ map_[ str(c_x) ][ c_y ] ]
+    block = blocks[ map_[ c_x ][ c_y ] ]
 
     try:
         strength = blocks[inv[inv_sel]['block']]['strength']
