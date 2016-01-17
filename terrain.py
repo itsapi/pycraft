@@ -76,7 +76,7 @@ class TerrainCache(OrderedDict):
 features = {}
 def init_features():
     global features
-    cache_size = (world_gen['max_hill'] * world_gen['min_grad'] * 2) + world_gen['chunk_size']
+    cache_size = (world_gen['max_biome'] * 2) + world_gen['chunk_size']
     features = {
         'chunks': TerrainCache(limit=(cache_size // world_gen['chunk_size']) + 1),
         'slices': TerrainCache(limit=cache_size)
@@ -369,6 +369,7 @@ def gen_chunk(chunk_n, meta):
     log('max', max(int_x), m=1)
     log('min', min(int_x), m=1)
     log('gh diff', set(hill_range(chunk_pos)) - set(int_x), m=1, trunc=False)
+    log('slices_biome', list(filter(lambda slice_: (int(slice_[0])%16 == 0) or (int(slice_[0])+1)%16 == 0, sorted(slices_biome.items()))), m=1, trunc=False)
 
     gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta)
     gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta)
