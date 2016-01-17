@@ -319,20 +319,23 @@ world_gen = {
     'min_grad': 5,
     'ground_height': 10,
     'chunk_size': 16,
-    'max_biome_size': 50,
-    'tall_grass_rate': .25,
+    'min_biome': 16,
+    'max_biome': 64,
     'biomes': {
         'plains': {
-            'chance': .4,
-            'trees': 0
+            'chance': .3,
+            'trees': 0,
+            'grass': .15
         },
         'normal': {
-            'chance': .4,
-            'trees': .05
+            'chance': .3,
+            'trees': .05,
+            'grass': .1
         },
         'forest': {
-            'chance': .2,
-            'trees': .2
+            'chance': .3,
+            'trees': .2,
+            'grass': 0
         }
     },
     # TODO: Densities need tuning.
