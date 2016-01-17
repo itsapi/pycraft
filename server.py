@@ -8,8 +8,6 @@ import terrain, saves, network
 from console import log
 
 
-chunk_size = terrain.world_gen['chunk_size']
-
 SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
 
@@ -171,35 +169,26 @@ class Game:
 
     def get_chunks(self, chunk_list):
         new_slices = {}
-        gen_slices = {}
 
         log('loading chunks', chunk_list)
 
         # Generates new terrain
-        for chunk_num in chunk_list:
-            chunk = saves.load_chunk(self._save, chunk_num)
-            for i in range(chunk_size):
-                pos = i + chunk_num * chunk_size
-                if not str(pos) in chunk:
-                    slice_ = terrain.gen_slice(pos, self._meta)
-                    chunk[str(pos)] = slice_
-                    gen_slices[str(pos)] = slice_
+        for chunk_n in chunk_list:
+
+            chunk = saves.load_chunk(self._save, chunk_n)
+            if not chunk:
+                chunk = terrain.gen_chunk(chunk_n, self._meta)
+                saves.save_chunk(self._save, chunk_n, chunk)
             new_slices.update(chunk)
 
-        log('generated slices', gen_slices.keys())
         log('new slices', new_slices.keys())
-
-        # Save generated terrain to file
-        if gen_slices:
-            log('saving slices', gen_slices.keys())
-            saves.save_map(self._save, gen_slices)
 
         self._map.update(new_slices)
         return new_slices
 
     def set_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
-        saves.save_map(self._save, new_slices)
+        saves.save_slices(self._save, new_slices)
         return blocks
 
     def set_player(self, name, player):

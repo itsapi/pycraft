@@ -319,13 +319,31 @@ world_gen = {
     'min_grad': 5,
     'ground_height': 10,
     'chunk_size': 16,
-    'max_biome_size': 50,
-    'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
-    'tall_grass_rate': .25,
+    'min_biome': 16,
+    'max_biome': 64,
+    'biomes': {
+        'plains': {
+            'chance': .3,
+            'trees': 0,
+            'grass': .15
+        },
+        'normal': {
+            'chance': .3,
+            'trees': .05,
+            'grass': .1
+        },
+        'forest': {
+            'chance': .3,
+            'trees': .2,
+            'grass': 0
+        }
+    },
+    # TODO: Densities need tuning.
     'ores': {
         'coal': {
             'char': 'x',
             'vain_size': 4,
+            'vain_density': .4,
             'chance': 0.05,
             'upper': 30,
             'lower': 1
@@ -333,6 +351,7 @@ world_gen = {
         'iron': {
             'char': '+',
             'vain_size': 3,
+            'vain_density': .3,
             'chance': 0.03,
             'upper': 15,
             'lower': 1
@@ -340,6 +359,7 @@ world_gen = {
         'redstone': {
             'char': ':',
             'vain_size': 4,
+            'vain_density': .6,
             'chance': 0.03,
             'upper': 7,
             'lower': 1
@@ -347,13 +367,15 @@ world_gen = {
         'gold': {
             'char': '"',
             'vain_size': 2,
+            'vain_density': .3,
             'chance': 0.02,
             'upper': 10,
             'lower': 1
         },
         'diamond': {
             'char': 'o',
-            'vain_size': 1,
+            'vain_size': 2,
+            'vain_density': .5,
             'chance': 0.01,
             'upper': 5,
             'lower': 1
@@ -361,12 +383,14 @@ world_gen = {
         'emerald': {
             'char': '.',
             'vain_size': 1,
+            'vain_density': 1,
             'chance': 0.002,
             'upper': 7,
             'lower': 1
         }
     },
-    'trees': (
+    'trees': (  # TODO: Preprocessing should be done on these, to give the data
+                #         the terrain gen needs.
         ((0, 1, 1),
          (1, 1, 0),
          (0, 1, 1)),

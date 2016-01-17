@@ -2,7 +2,7 @@ from math import cos, sin, radians
 
 import terrain
 from colors import *
-from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
+from console import DEBUG, CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars, log
 import data
 from data import world_gen
 
@@ -35,7 +35,7 @@ def render_map(map_, objects, sun, lights, time, last_frame):
     #         [2, '##  ']]
 
     # Separates the pos and data
-    map_ = tuple(zip(*map_))[1]
+    world_positions, map_ = tuple(zip(*map_))
 
     # Orientates the data
     map_ = zip(*map_)
@@ -49,6 +49,10 @@ def render_map(map_, objects, sun, lights, time, last_frame):
         for x, pixel in enumerate(row):
 
             pixel_out = calc_pixel(x, y, pixel, objects, sun, lights, time)
+
+            if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
+                pixel_out = colorStr('*', bg=RED, fg=YELLOW)
+
             this_frame[-1].append(pixel_out)
 
             try:
