@@ -273,7 +273,7 @@ def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
             leaf_height = air_height - tree_feature['height'] - len(leaf_slice) + tree_feature['trunk_depth']
 
             for leaf_dy, leaf in enumerate(leaf_slice):
-                if leaf:
+                if (bool(DEBUG) and leaf_dy == 0) or (not bool(DEBUG) and leaf):
                     leaf_y = leaf_height + leaf_dy
                     chunk[str(leaf_x)][leaf_y] = spawn_hierarchy(('@', chunk[str(leaf_x)][leaf_y]))
 
