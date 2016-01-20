@@ -57,6 +57,8 @@ def getenv_b(opt):
         return o.lower() in ('true', '1', 'on')
 
 
+getenv = os.getenv
+
 DEBUG = getenv_b('PYCRAFT_DEBUG')
 LOGGING = getenv_b('PYCRAFT_LOGGING')
 if os.getenv('PYCRAFT_LOGGING_MODES'):

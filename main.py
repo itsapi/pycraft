@@ -20,8 +20,8 @@ def main():
 
         profile = c.getenv_b('PYCRAFT_PROFILE')
 
-        name = c.getenv_b('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
-        port = c.getenv_b('PYCRAFT_PORT') or meta.get('port') or 0
+        name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
+        port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
         saves.check_map_dir()
 
