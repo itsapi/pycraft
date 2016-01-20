@@ -149,7 +149,7 @@ class RemoteInterface:
     def _event_error(self, error):
         self.finished_login.set()
 
-        self.error = 'Error from server: ' + error['event'] + ': ' + event['message']
+        self.error = 'Error from server: ' + error['event'] + ': ' + error['message']
         log(self.error)
         self.game = False
 
