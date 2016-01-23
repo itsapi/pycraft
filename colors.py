@@ -15,28 +15,32 @@ def _has_colors(stream):
         return False
 
 
-BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = list(range(8))
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, LIGHT_GRAY, \
+    DARK_GRAY, LIGHT_RED, LIGHT_GREEN, LIGHT_YELLOW, LIGHT_BLUE, \
+    LIGHT_MAGENTA, LIGTH_CYAN, WHITE = range(16)
+
 NORMAL, BOLD, DARK, ITALICS, UNDERLINE,\
-    _, _, INVERT, CLEAR, STRIKETHROUGH = list(range(10))
-LIGHT = 'light'
+    _, _, INVERT, CLEAR, STRIKETHROUGH = range(10)
+
 _has_colors = _has_colors(sys.stdout)
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
 def colorStr(text, fg=None, bg=None, style=None):
+    code = ''
     if _has_colors:
-        if style == LIGHT:
-            fg += 60
-            style = None
+        if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
+        if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
+        if style is not None: code += '\x1b[{}m'.format(style)
+    return code + text + '\x1b[0m'
 
-        seq = '\x1b['
-        seq += str(0 if bg is None else (bg + 40)) + ';'
-        seq += (str(style) + ';') if style is not None else ''
-        seq += str((WHITE if fg is None else fg) + 30)
-        seq += 'm{}\x1b[0m'.format(text)
-        return seq
-    else:
-        return text
+
+def rgb(r, g, b):
+    return 16 + int(r*5)*36 + int(g*5)*6 + int(b*5)
+
+
+def gray(value):
+    return 232 + int(value*23)
 
 
 def bold(t, yes=True):
@@ -48,5 +52,8 @@ def unColorStr(text):
 
 
 if __name__ == '__main__':
-    for style in range(10):
-        print(colorStr('hello world', fg=RED, style=style))
+    for r in range(6):
+        for g in range(6):
+            for b in range(6):
+                print(colorStr('##', fg=rgb(r/5, g/5, b/5), bg=rgb((5-r)/5, (5-g)/5, (5-b)/5), style=BOLD), end='')
+        print()
