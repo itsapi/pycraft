@@ -16,6 +16,33 @@ def move_map(map_, edges):
     return slices
 
 
+def apply_gravity(map_, blocks):
+    start_pos = (list(map_.keys())[0],
+                 world_gen['height'] - 1)
+    connected_to_ground = explore_map(map_, blocks, start_pos)
+    all_solid = [b for s in [filter(lambda b: is_solid(blocks, b), map_[s]) for s in map_] for b in s]
+
+    print('{}/{} - {}'.format(len(connected_to_ground), len(all_solid), len(all_solid) - len(connected_to_ground)))
+
+def explore_map(map_, blocks, start_pos, found=[]):
+    try:
+        current_block = map_[start_pos[0]][start_pos[1]]
+    except (IndexError, KeyError):
+        current_block = None
+
+    # print(start_pos, current_block)
+
+    if current_block is not None and is_solid(blocks, current_block) and start_pos not in found:
+        found.append(start_pos)
+
+        found = explore_map(map_, blocks, (int(start_pos[0])    ,   int(start_pos[1]) - 1), found)  # Above
+        found = explore_map(map_, blocks, (int(start_pos[0]) + 1,   int(start_pos[1])    ), found)  # Right
+        found = explore_map(map_, blocks, (int(start_pos[0])    ,   int(start_pos[1]) - 1), found)  # Below
+        found = explore_map(map_, blocks, (int(start_pos[0]) - 1,   int(start_pos[1])    ), found)  # Leift
+
+    return found
+
+
 def slice_height(pos, meta):
     slice_height_ = world_gen['ground_height']
 

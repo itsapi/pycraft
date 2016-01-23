@@ -149,6 +149,7 @@ def game(blocks, meta, map_, save):
 
                 print(out)
                 in_game_debug('({}, {})'.format(x, y), 0, 0)
+                terrain.apply_gravity(view, blocks)
             else:
                 df = 0
 
