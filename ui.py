@@ -3,7 +3,7 @@ import json
 
 from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT
-from colors import *
+from colours import *
 
 import saves
 from data import help_data
@@ -21,7 +21,7 @@ def menu(name, options):
         - options: a tuple of option name and option function
     """
 
-    STAR = colorStr('*', YELLOW)
+    STAR = colour_str('*', YELLOW)
 
     selection = 0
     char = None
@@ -32,7 +32,7 @@ def menu(name, options):
             out = ''
             for i, option in enumerate(options):
                 if i == selection:
-                    out += STAR + colorStr(option[0], style=BOLD) + STAR
+                    out += STAR + colour_str(option[0], style=BOLD) + STAR
                 else:
                     out += ' ' + option[0] + ' '
                 out += '\n'
@@ -79,7 +79,7 @@ def lambda_gen(func, var):
 def title(name):
     """ Returns a padded coloured string containing the title. """
     return ' {title}\n\n'.format(
-        title = colorStr('{name}\n {_}'.format(
+        title = colour_str('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
         ), style=BOLD)
@@ -111,13 +111,13 @@ def new():
 
     print(REDRAW + title('New save'), end='')
     meta = {}
-    meta['name'] = input(colorStr(' Save name', style=BOLD)
+    meta['name'] = input(colour_str(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ')
     if not meta['name']:
         print(CLS)
         return None
 
-    meta['seed'] = input(colorStr(' Map seed', style=BOLD)
+    meta['seed'] = input(colour_str(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
 
@@ -159,7 +159,7 @@ def help_():
 
 
 def error(message):
-    print(CLS + REDRAW + '\n' + colorStr(message, fg=RED) + '\n\nBack...\n')
+    print(CLS + REDRAW + '\n' + colour_str(message, fg=RED) + '\n\nBack...\n')
 
     wait_for_input()
 

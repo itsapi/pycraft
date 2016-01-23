@@ -1,6 +1,6 @@
 from math import cos, sin
 
-from colors import *
+from colours import *
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
 from data import world_gen, blocks
 
@@ -99,7 +99,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
         if fg is None:
             fg = blocks[pixel_f]['colours']['fg']
 
-        return colorStr(
+        return colour_str(
             blocks[pixel_f]['char'],
             bg = bg,
             fg = fg,
@@ -208,7 +208,7 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
 
         colour = blocks[slot['block']]['colours']
         if colour['bg'] is None:
-            block_char = colorStr(
+            block_char = colour_str(
                 block_char,
                 fg=colour['fg'],
                 bg=None,
@@ -221,7 +221,7 @@ def render_grid(title, selected, grid, blocks, max_height, sel=None):
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=block_char,
-            n=colorStr(num, bg=RED) if selected and i == sel else num,
+            n=colour_str(num, bg=RED) if selected and i == sel else num,
             v=v,
             trail=trailing
         ))
@@ -240,7 +240,7 @@ def render_grids(grids, x, max_height):
 
     # Sort out grids
     # Gets row from grid if it exists, else pads with ' '
-    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(unColorStr(g[0]))
+    get_row = lambda g, y: g[y] if y < len(g) else ' ' * len(uncolour_str(g[0]))
 
     merged_grids = []
     for row in grids:
@@ -264,7 +264,7 @@ def gen_blocks():
 
         # If bg is transparent, it must be coloured at runtime.
         if blocks[key]['colours']['bg'] is not None:
-            blocks[key]['char'] = colorStr(
+            blocks[key]['char'] = colour_str(
                 blocks[key]['char'],
                 block['colours']['fg'],
                 block['colours']['bg'],

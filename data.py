@@ -1,4 +1,4 @@
-from colors import *
+from colours import *
 
 
 blocks = {
@@ -68,7 +68,7 @@ blocks = {
         'name': 'Stone',
         'colours': {
             'fg': None,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': CLEAR
         },
         'solid': True,
@@ -80,7 +80,7 @@ blocks = {
         'name': 'Coal',
         'colours': {
             'fg': LIGHT_GRAY,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': None
         },
         'solid': True,
@@ -92,7 +92,7 @@ blocks = {
         'name': 'Iron',
         'colours': {
             'fg': LIGHT_RED,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': None
         },
         'solid': True,
@@ -104,7 +104,7 @@ blocks = {
         'name': 'Redstone',
         'colours': {
             'fg': RED,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': DARK
         },
         'solid': True,
@@ -116,7 +116,7 @@ blocks = {
         'name': 'Gold',
         'colours': {
             'fg': YELLOW,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': None
         },
         'solid': True,
@@ -128,7 +128,7 @@ blocks = {
         'name': 'Diamond',
         'colours': {
             'fg': LIGHT_BLUE,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': None
         },
         'solid': True,
@@ -140,7 +140,7 @@ blocks = {
         'name': 'Emerald',
         'colours': {
             'fg': GREEN,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': DARK
         },
         'solid': True,
@@ -152,7 +152,7 @@ blocks = {
         'name': 'Bedrock',
         'colours': {
             'fg': LIGHT_GRAY,
-            'bg': gray(.15),
+            'bg': grey(.15),
             'style': None
         },
         'solid': True,

@@ -1,5 +1,5 @@
 import terrain
-from colors import *
+from colours import *
 from console import debug
 
 
