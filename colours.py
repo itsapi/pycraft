@@ -2,17 +2,8 @@ import sys
 import re
 
 
-def _has_colors(stream):
-    if not hasattr(stream, 'isatty'):
-        return False
-    if not stream.isatty():
-        return False
-    try:
-        import curses
-        curses.setupterm()
-        return curses.tigetnum('colors') > 2
-    except:
-        return False
+def _has_colours(stream):
+    return hasattr(stream, 'isatty') and stream.isatty()
 
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, LIGHT_GRAY, \
@@ -22,13 +13,13 @@ BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, LIGHT_GRAY, \
 NORMAL, BOLD, DARK, ITALICS, UNDERLINE,\
     _, _, INVERT, CLEAR, STRIKETHROUGH = range(10)
 
-_has_colors = _has_colors(sys.stdout)
+_has_colours = _has_colours(sys.stdout)
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
 def colour_str(text, fg=None, bg=None, style=None):
     code = ''
-    if _has_colors:
+    if _has_colours:
         if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
         if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
         if style is not None: code += '\x1b[{}m'.format(style)
