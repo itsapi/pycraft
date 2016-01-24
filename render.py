@@ -1,7 +1,7 @@
 from math import cos, sin
 
 from colours import *
-from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
+from console import *
 from data import world_gen, blocks
 
 
@@ -109,6 +109,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
     else: # The block was coloured on startup
         return blocks[pixel_f]['char']
 
+
 def sun(time, width):
     """ Returns position of sun """
 
@@ -126,24 +127,26 @@ def sun(time, width):
 lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
                         ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
 
-
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
-    day = cos(time) > 0
-
     if sun[0] in [x, x+1] and sun[1] == y:
         # Sun pixel
-        if day:
-            return YELLOW
-        else:
-            return WHITE
+        return YELLOW if cos(time) > 0 else WHITE
     else:
         # Sky pixel
-        if day or any(map(lambda l: lit(x, y, l), lights)):
-            return CYAN
+        day, night = (0,.4,1), (0,0,.2)
+        # day, night = (1,1,1), (0,0,0)
+        shade = (cos(time) + 1) / 2
+
+        if any(map(lambda l: lit(x, y, l), lights)):
+            return rgb(*day)
         else:
-            return BLUE
+            return rgb(*(lerp(day[i], shade, night[i]) for i in range(3)))
+
+
+def lerp(a, s, b):
+  return b * (1 - s) + (a * s)
 
 
 def get_lights(_map, start_x, blocks):
