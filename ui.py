@@ -131,6 +131,7 @@ def load_save():
         saves_list(lambda s: {'local': True,
                               'save': s}) +
         [('Add new save', add_save)] +
+        [('Rename save', rename_save)] +
         [('Delete save', delete_save)] +
         [back])
     )
@@ -143,6 +144,26 @@ def delete_save():
         [back])
     )
     return None
+
+
+def rename_save():
+    """ A menu for selecting a save to rename. """
+    save = loop_menu('Rename Save', lambda: (
+        saves_list(lambda s: s) +
+        [back])
+    )
+
+    if not save:
+      return None
+
+    print(REDRAW + title('Rename save'), end='')
+    meta = saves.get_meta(save)
+    meta['name'] = input(colorStr(' Save name', style=BOLD)
+                         + ' (leave blank to cancel): ' + SHOW_CUR)
+    print(HIDE_CUR + CLS, end='')
+
+    if meta['name']:
+        saves.save_meta(save, meta)
 
 
 def add_save():
