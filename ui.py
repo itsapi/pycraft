@@ -154,7 +154,7 @@ def rename_save():
     )
 
     if not save:
-      return None
+        return None
 
     print(REDRAW + title('Rename save'), end='')
     meta = saves.get_meta(save)
