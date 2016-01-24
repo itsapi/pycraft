@@ -192,7 +192,8 @@ blocks = {
         },
         'crafts': 4,
         'light': 7,
-        'placed_on_solid': True
+        'placed_on_solid': True,
+        'placed_on_wall': True
     },
     '=': {
         'char': '=',
