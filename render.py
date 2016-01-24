@@ -123,9 +123,10 @@ def sun(time, width):
     return x, y
 
 
-# Checks if a point is within a lights range.
-lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
-                        ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
+# Distance from l['center'] in terms of l['radius']
+lit = lambda x, y, l: ((((x-l['x'])**2) / l['radius']**2) +
+                       (((y-l['y'])**2) / (l['radius']/2)**2))
+
 
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
@@ -136,17 +137,23 @@ def sky(x, y, time, sun, lights):
     else:
         # Sky pixel
         day, night = (0,.4,1), (0,0,.2)
-        # day, night = (1,1,1), (0,0,0)
         shade = (cos(time) + 1) / 2
+        sky_colour = lerp_n(night, shade, day)
 
-        if any(map(lambda l: lit(x, y, l), lights)):
-            return rgb(*day)
+        if lights:
+            distance = min(min(map(lambda l: lit(x, y, l), lights)), 1)
+            # TODO: Shouldn't need to do max with sky_colour...
+            return max(rgb(*lerp_n(day, distance, sky_colour)), rgb(*sky_colour))
         else:
-            return rgb(*(lerp(day[i], shade, night[i]) for i in range(3)))
+            return rgb(*sky_colour)
 
 
 def lerp(a, s, b):
-  return b * (1 - s) + (a * s)
+  return a * (1 - s) + (b * s)
+
+
+def lerp_n(a, s, b):
+    return tuple(lerp(a[i], s, b[i]) for i in range(min(len(a), len(b))))
 
 
 def get_lights(_map, start_x, blocks):
