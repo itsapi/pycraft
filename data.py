@@ -30,9 +30,9 @@ blocks = {
         'char': 'v',
         'name': 'Tall Grass',
         'colours': {
-            'fg': GREEN,
+            'fg': rgb(.1, .8, .1),
             'bg': None,
-            'style': DARK
+            'style': None
         },
         'solid': False,
         'breakable': True,
@@ -43,8 +43,8 @@ blocks = {
         'char': '#',
         'name': 'Wood',
         'colours': {
-            'fg': LIGHT_GRAY,
-            'bg': MAGENTA,
+            'fg': rgb(.45, .26, .12),
+            'bg': rgb(0.3, 0.25, 0.15),
             'style': None
         },
         'solid': True,
@@ -56,7 +56,7 @@ blocks = {
         'name': 'Leaves',
         'colours': {
             'fg': GREEN,
-            'bg': GREEN,
+            'bg': rgb(0.15, 0.37, 0.09),
             'style': DARK
         },
         'solid': True,
@@ -79,9 +79,9 @@ blocks = {
         'char': 'x',
         'name': 'Coal',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0, 0, 0),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
@@ -91,9 +91,9 @@ blocks = {
         'char': '+',
         'name': 'Iron',
         'colours': {
-            'fg': LIGHT_RED,
+            'fg': rgb(0.8, 0.19, 0.15),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
@@ -103,7 +103,7 @@ blocks = {
         'char': ':',
         'name': 'Redstone',
         'colours': {
-            'fg': RED,
+            'fg': rgb(0.88, 0.06, 0.0),
             'bg': grey(.15),
             'style': DARK
         },
@@ -115,9 +115,9 @@ blocks = {
         'char': '"',
         'name': 'Gold',
         'colours': {
-            'fg': YELLOW,
+            'fg': rgb(.8, .4, 0),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
@@ -127,9 +127,9 @@ blocks = {
         'char': 'o',
         'name': 'Diamond',
         'colours': {
-            'fg': LIGHT_BLUE,
+            'fg': rgb(0.0, 0.41, 0.64),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
@@ -139,9 +139,9 @@ blocks = {
         'char': 'o',
         'name': 'Emerald',
         'colours': {
-            'fg': GREEN,
+            'fg': rgb(0.02, 0.88, 0.25),
             'bg': grey(.15),
-            'style': DARK
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
@@ -151,7 +151,7 @@ blocks = {
         'char': '#',
         'name': 'Bedrock',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': grey(.3),
             'bg': grey(.15),
             'style': None
         },
@@ -163,7 +163,7 @@ blocks = {
         'char': '/',
         'name': 'Sticks',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0.3, 0.25, 0.15),
             'bg': None,
             'style': None
         },
@@ -198,7 +198,7 @@ blocks = {
         'char': '=',
         'name': 'Ladder',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0.3, 0.27, 0.19),
             'bg': None,
             'style': None
         },
@@ -251,7 +251,7 @@ blocks = {
         'char': '⚒T',
         'name': 'Wooden Pickaxe',
         'colours': {
-            'fg': MAGENTA,
+            'fg': rgb(0.3, 0.25, 0.15),
             'bg': None,
             'style': DARK
         },
@@ -283,9 +283,9 @@ blocks = {
         'char': '⚒T',
         'name': 'Iron Pickaxe',
         'colours': {
-            'fg': RED,
+            'fg': rgb(0.8, 0.19, 0.15),
             'bg': None,
-            'style': DARK
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
@@ -299,9 +299,9 @@ blocks = {
         'char': '⚒T',
         'name': 'Diamond Pickaxe',
         'colours': {
-            'fg': CYAN,
+            'fg': rgb(0.0, 0.41, 0.64),
             'bg': None,
-            'style': DARK
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
