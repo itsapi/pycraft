@@ -19,12 +19,12 @@ def move_map(map_, edges):
 def apply_gravity(map_, blocks):
     start_pos = (list(map_.keys())[0],
                  world_gen['height'] - 1)
-    connected_to_ground = explore_map(map_, blocks, start_pos)
+    connected_to_ground = explore_map(map_, blocks, start_pos, [])
     all_solid = [b for s in [filter(lambda b: is_solid(blocks, b), map_[s]) for s in map_] for b in s]
 
     print('{}/{} - {}'.format(len(connected_to_ground), len(all_solid), len(all_solid) - len(connected_to_ground)))
 
-def explore_map(map_, blocks, start_pos, found=[]):
+def explore_map(map_, blocks, start_pos, found):
     if start_pos[1] < 0:
         return found
 
