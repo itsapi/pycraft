@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import cos, sin, sqrt, modf
 
 from colours import *
 from console import *
@@ -136,16 +136,16 @@ def sky(x, y, time, sun, lights):
         return YELLOW if cos(time) > 0 else WHITE
     else:
         # Sky pixel
-        day, night = (0,.4,1), (0,0,.2)
+        day, night = (0,2,5), (0,0,1)
         shade = (cos(time) + 1) / 2
-        sky_colour = lerp_n(night, shade, day)
+        sky_colour = lerp_colour(night, shade, day)
 
         if lights:
             distance = min(min(map(lambda l: lit(x, y, l), lights)), 1)
             # TODO: Shouldn't need to do max with sky_colour...
-            return max(rgb(*lerp_n(day, distance, sky_colour)), rgb(*sky_colour))
+            return max(rgb6(*lerp_colour(day, distance, sky_colour)), rgb6(*sky_colour))
         else:
-            return rgb(*sky_colour)
+            return rgb6(*sky_colour)
 
 
 def lerp(a, s, b):
@@ -154,6 +154,28 @@ def lerp(a, s, b):
 
 def lerp_n(a, s, b):
     return tuple(lerp(a[i], s, b[i]) for i in range(min(len(a), len(b))))
+
+
+def colour_diff(a, b):
+    return sqrt((b[0]-a[0])**2 + (b[1]-a[1])**2 + (b[2]-a[2])**2)
+
+
+def lerp_colour(a, s, b):
+    result = a
+    distance = colour_diff(a, b)
+
+    if distance:
+        result = list(map(int, lerp_n(a, s, b)))
+
+        next_ = lerp_n(a, min(s + (1/distance), 1), b)
+
+        fractional_colour_diff, _ = modf(s * distance)
+        channel = int(fractional_colour_diff * 3)
+
+        for c in range(channel + 1):
+            result[channel] = next_[channel]
+
+    return result
 
 
 def get_lights(_map, start_x, blocks):
