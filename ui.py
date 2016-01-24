@@ -33,6 +33,7 @@ def menu(name, options, selection=0):
     char = None
     with BlockingInput() as bi:
         while not str(char) in ' \n':
+            selection %= len(print_map)
             offset = selection - max(
                 min(selection, max_height - padding),
                 selection + min(0, max_height - len(options))
@@ -61,7 +62,6 @@ def menu(name, options, selection=0):
                 if char in 'Ss'+DOWN:
                     selection += 1
                     break
-            selection %= len(print_map)
             print(CLS, end='')
     # Execute function of selection
     return options[print_map[selection]][1](), selection
