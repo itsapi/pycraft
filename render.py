@@ -114,13 +114,19 @@ def sun(time, width):
     """ Returns position of sun """
 
     sun_r = width / 2
+    day = cos(time) > 0
 
     # Set i to +1 for night and -1 for day
-    i = -2 * (cos(time) > 0) + 1
+    i = -2 * day + 1
     x = int(sun_r * i * sin(time) + sun_r + 1)
     y = int(sun_r * i * cos(time) + sun_y)
 
-    return x, y
+    return {
+        'x': x,
+        'y': y,
+        'colour': world_gen['sun_colour'] if day else world_gen['moon_colour'],
+        'light_colour': world_gen['sun_light_colour'] if day else world_gen['moon_light_colour']
+    }
 
 
 # Distance from l['center'] in terms of l['radius']
@@ -131,9 +137,8 @@ lit = lambda x, y, l: ((((x-l['x'])**2) / l['radius']**2) +
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
-    if sun[0] in [x, x+1] and sun[1] == y:
-        # Sun pixel
-        return YELLOW if cos(time) > 0 else WHITE
+    if sun['x'] in [x, x+1] and sun['y'] == y:
+        return rgb6(*sun['colour'])
     else:
         # Sky pixel
         shade = (cos(time) + 1) / 2
@@ -180,9 +185,9 @@ def lerp_colour(a, s, b):
 def get_lights(_map, start_x, blocks, sun):
     lights = [{
         'radius': world_gen['sun_light_radius'],
-        'x': sun[0],
-        'y': sun[1],
-        'colour': world_gen['sun_colour']
+        'x': sun['x'],
+        'y': sun['y'],
+        'colour': sun['light_colour']
     }]
 
     for x, slice_ in _map.items():

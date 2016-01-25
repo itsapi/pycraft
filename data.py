@@ -325,7 +325,10 @@ world_gen = {
     'day_colour': (0,2,5),
     'night_colour': (0,0,1),
     'sun_light_radius': 25,
-    'sun_colour': (0,5,5),
+    'sun_colour': (4,3,0),
+    'moon_colour': (5,5,5),
+    'sun_light_colour': (0,5,5),
+    'moon_light_colour': (3,3,4),
     'ores': {
         'coal': {
             'char': 'x',
