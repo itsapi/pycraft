@@ -322,6 +322,8 @@ world_gen = {
     'max_biome_size': 50,
     'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'tall_grass_rate': .25,
+    'day_colour': (0,2,5),
+    'night_colour': (0,0,1),
     'ores': {
         'coal': {
             'char': 'x',

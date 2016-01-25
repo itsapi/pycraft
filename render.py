@@ -136,14 +136,13 @@ def sky(x, y, time, sun, lights):
         return YELLOW if cos(time) > 0 else WHITE
     else:
         # Sky pixel
-        day, night = (0,2,5), (0,0,1)
         shade = (cos(time) + 1) / 2
-        sky_colour = lerp_colour(night, shade, day)
+        sky_colour = lerp_colour(world_gen['night_colour'], shade, world_gen['day_colour'])
 
         if lights:
-            distance = min(min(map(lambda l: lit(x, y, l), lights)), 1)
+            light_colour, distance = min(min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1]), (sky_colour, 1), key=lambda l: l[1])
             # TODO: Shouldn't need to do max with sky_colour...
-            return max(rgb6(*lerp_colour(day, distance, sky_colour)), rgb6(*sky_colour))
+            return max(rgb6(*lerp_colour(light_colour, distance, sky_colour)), rgb6(*sky_colour))
         else:
             return rgb6(*sky_colour)
 
@@ -191,7 +190,8 @@ def get_lights(_map, start_x, blocks):
             lambda pixel: {
                 'radius': blocks[pixel[1]]['light'],
                 'x': x-start_x,
-                'y': pixel[0]
+                'y': pixel[0],
+                'colour': (5, 0, 0)
             },
             slice_lights
         ))
