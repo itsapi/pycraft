@@ -168,34 +168,6 @@ def lerp_n(a, s, b):
     return tuple(lerp(a[i], s, b[i]) for i in range(min(len(a), len(b))))
 
 
-def colour_diff(a, b):
-    return sqrt((b[0]-a[0])**2 + (b[1]-a[1])**2 + (b[2]-a[2])**2)
-
-
-def lerp_colour(a, s, b):
-    """
-        Interpolates between two colours, stepping through only one
-        channel at a time to attemp to result in a smoother
-        transition.
-    """
-
-    result = a
-    distance = colour_diff(a, b)
-
-    if distance:
-        result = list(map(int, lerp_n(a, s, b)))
-
-        next_ = lerp_n(a, min(s + (1/distance), 1), b)
-
-        fractional_colour_diff, _ = modf(s * distance)
-        channel = int(fractional_colour_diff * 3)
-
-        for c in range(channel + 1):
-            result[channel] = next_[channel]
-
-    return result
-
-
 def rgb_to_hsv(colour):
     r, g, b = colour
 
