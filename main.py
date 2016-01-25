@@ -80,6 +80,10 @@ def game(blocks, meta, map_, save):
                 new_slices[str(pos)] = terrain.gen_slice(pos, meta, blocks)
                 map_[str(pos)] = new_slices[str(pos)]
 
+            map_, redraw_ = terrain.apply_gravity(map_, blocks)
+            if redraw_:
+                redraw = True
+
             # Save new terrain to file
             if new_slices:
                 saves.save_map(save, new_slices)
@@ -149,7 +153,6 @@ def game(blocks, meta, map_, save):
 
                 print(out)
                 in_game_debug('({}, {})'.format(x, y), 0, 0)
-                terrain.apply_gravity(view, blocks)
             else:
                 df = 0
 
