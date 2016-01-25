@@ -146,14 +146,18 @@ def sky(x, y, time, bk_objects, lights):
 
     # Sky pixel
     shade = (cos(time) + 1) / 2
-    sky_colour = lerp_colour_hsv(world_gen['night_colour'], shade, world_gen['day_colour'])
+    sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
 
-    if lights:
-        light_colour, distance = min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1])
-        # TODO: Shouldn't need to do max with sky_colour...
-        return max(rgb6(*lerp_colour_hsv(light_colour, distance, sky_colour)), rgb6(*sky_colour))
-    else:
-        return rgb6(*sky_colour)
+    # Get all lights which effect this pixel
+    pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+
+    # Calculate light level for each light source
+    lights = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
+
+    # Get brightest light
+    light = max(lights, key=lambda l: l[2], default=sky_colour)
+
+    return rgb6(*hsv_to_rgb(light))
 
 
 def lerp(a, s, b):
@@ -190,15 +194,6 @@ def lerp_colour(a, s, b):
             result[channel] = next_[channel]
 
     return result
-
-
-def lerp_colour_hsv(a, s, b):
-    a = rgb_to_hsv(a)
-    b = rgb_to_hsv(b)
-
-    result = lerp_n(a, s, b)
-
-    return hsv_to_rgb(result)
 
 
 def rgb_to_hsv(colour):
