@@ -113,7 +113,7 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                lights = render.get_lights(extended_view, edges[0], blocks, sun)
 
                 out, last_frame = render.render_map(
                     view,

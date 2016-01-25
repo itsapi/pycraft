@@ -324,6 +324,8 @@ world_gen = {
     'tall_grass_rate': .25,
     'day_colour': (0,2,5),
     'night_colour': (0,0,1),
+    'sun_light_radius': 25,
+    'sun_colour': (0,5,5),
     'ores': {
         'coal': {
             'char': 'x',

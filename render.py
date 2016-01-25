@@ -177,8 +177,13 @@ def lerp_colour(a, s, b):
     return result
 
 
-def get_lights(_map, start_x, blocks):
-    lights = []
+def get_lights(_map, start_x, blocks, sun):
+    lights = [{
+        'radius': world_gen['sun_light_radius'],
+        'x': sun[0],
+        'y': sun[1],
+        'colour': world_gen['sun_colour']
+    }]
 
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
@@ -191,7 +196,7 @@ def get_lights(_map, start_x, blocks):
                 'radius': blocks[pixel[1]]['light'],
                 'x': x-start_x,
                 'y': pixel[0],
-                'colour': (5, 0, 0)
+                'colour': (0, 3, 4)
             },
             slice_lights
         ))
