@@ -169,6 +169,12 @@ def colour_diff(a, b):
 
 
 def lerp_colour(a, s, b):
+    """
+        Interpolates between two colours, stepping through only one
+        channel at a time to attemp to result in a smoother
+        transition.
+    """
+
     result = a
     distance = colour_diff(a, b)
 
