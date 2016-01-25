@@ -133,8 +133,8 @@ def bk_objects(time, width):
 
 
 # Distance from l['center'] in terms of l['radius']
-lit = lambda x, y, l: ((((x-l['x'])**2) / l['radius']**2) +
-                       (((y-l['y'])**2) / (l['radius']/2)**2))
+lit = lambda x, y, l: min((((x-l['x'])**2) / l['radius']**2) +
+                          (((y-l['y'])**2) / (l['radius']/2)**2), 1)
 
 
 def sky(x, y, time, bk_objects, lights):
@@ -149,7 +149,7 @@ def sky(x, y, time, bk_objects, lights):
     sky_colour = lerp_colour(world_gen['night_colour'], shade, world_gen['day_colour'])
 
     if lights:
-        light_colour, distance = min(min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1]), (sky_colour, 1), key=lambda l: l[1])
+        light_colour, distance = min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1])
         # TODO: Shouldn't need to do max with sky_colour...
         return max(rgb6(*lerp_colour(light_colour, distance, sky_colour)), rgb6(*sky_colour))
     else:
