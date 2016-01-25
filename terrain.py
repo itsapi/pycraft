@@ -24,6 +24,7 @@ def apply_gravity(map_, blocks):
 
     print('{}/{} - {}'.format(len(connected_to_ground), len(all_solid), len(all_solid) - len(connected_to_ground)))
 
+
 def explore_map(map_, blocks, start_pos, found):
     if start_pos[1] < 0:
         return found
@@ -40,7 +41,7 @@ def explore_map(map_, blocks, start_pos, found):
 
         found = explore_map(map_, blocks, (int(start_pos[0])    ,   int(start_pos[1]) - 1), found)  # Above
         found = explore_map(map_, blocks, (int(start_pos[0]) + 1,   int(start_pos[1])    ), found)  # Right
-        found = explore_map(map_, blocks, (int(start_pos[0])    ,   int(start_pos[1]) - 1), found)  # Below
+        found = explore_map(map_, blocks, (int(start_pos[0])    ,   int(start_pos[1]) + 1), found)  # Below
         found = explore_map(map_, blocks, (int(start_pos[0]) - 1,   int(start_pos[1])    ), found)  # Left
 
     return found
