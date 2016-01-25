@@ -146,12 +146,12 @@ def sky(x, y, time, bk_objects, lights):
 
     # Sky pixel
     shade = (cos(time) + 1) / 2
-    sky_colour = lerp_colour(world_gen['night_colour'], shade, world_gen['day_colour'])
+    sky_colour = lerp_colour_hsv(world_gen['night_colour'], shade, world_gen['day_colour'])
 
     if lights:
         light_colour, distance = min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1])
         # TODO: Shouldn't need to do max with sky_colour...
-        return max(rgb6(*lerp_colour(light_colour, distance, sky_colour)), rgb6(*sky_colour))
+        return max(rgb6(*lerp_colour_hsv(light_colour, distance, sky_colour)), rgb6(*sky_colour))
     else:
         return rgb6(*sky_colour)
 
@@ -190,6 +190,78 @@ def lerp_colour(a, s, b):
             result[channel] = next_[channel]
 
     return result
+
+
+def lerp_colour_hsv(a, s, b):
+    a = rgb_to_hsv(a)
+    b = rgb_to_hsv(b)
+
+    result = lerp_n(a, s, b)
+
+    return hsv_to_rgb(result)
+
+
+def rgb_to_hsv(colour):
+    r, g, b = colour
+
+    min_c = min(*colour);
+    max_c = max(*colour);
+    v = max_c;
+
+    delta = max_c - min_c;
+
+    if not max_c == 0:
+        s = delta / max_c;
+    else:
+        s = 0;
+        h = -1;
+        return
+
+    if r == max_c:
+        # Between yellow & magenta
+        h = (g - b) / delta
+    elif g == max_c:
+        # Between cyan & yellow
+        h = 2 + (b - r) / delta
+    else:
+        # Between magenta & cyan
+        h = 4 + (r - g) / delta
+
+    h *= 60
+
+    if h < 0:
+        h += 360
+
+    return h, s, v
+
+
+def hsv_to_rgb(colour):
+    h, s, v = colour
+
+    if s == 0:
+        # Grey
+        return (v, v, v)
+
+    # Sector 0 to 5
+    h /= 60
+
+    i = int(h);
+
+    # Factorial part of h
+    f = h - i
+
+    p = v * (1 - s)
+    q = v * (1 - s * f)
+    t = v * (1 - s * (1 - f))
+
+    return {
+        0: (v, t, p),
+        1: (q, v, p),
+        2: (p, v, t),
+        3: (p, q, v),
+        4: (t, p, v),
+        5: (v, p, q)
+    }[i]
 
 
 def get_lights(_map, start_x, blocks, bk_objects):
