@@ -110,8 +110,8 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
         return blocks[pixel_f]['char']
 
 
-def sun(time, width):
-    """ Returns position of sun """
+def bk_objects(time, width):
+    """ Returns objects for rendering to the background """
 
     sun_r = width / 2
     day = cos(time) > 0
@@ -121,12 +121,15 @@ def sun(time, width):
     x = int(sun_r * i * sin(time) + sun_r + 1)
     y = int(sun_r * i * cos(time) + sun_y)
 
-    return {
+    return [{
         'x': x,
         'y': y,
+        'width': 2,
+        'height': 1,
         'colour': world_gen['sun_colour'] if day else world_gen['moon_colour'],
-        'light_colour': world_gen['sun_light_colour'] if day else world_gen['moon_light_colour']
-    }
+        'light_colour': world_gen['sun_light_colour'] if day else world_gen['moon_light_colour'],
+        'light_radius': world_gen['sun_light_radius']
+    }]
 
 
 # Distance from l['center'] in terms of l['radius']
@@ -134,22 +137,23 @@ lit = lambda x, y, l: ((((x-l['x'])**2) / l['radius']**2) +
                        (((y-l['y'])**2) / (l['radius']/2)**2))
 
 
-def sky(x, y, time, sun, lights):
+def sky(x, y, time, bk_objects, lights):
     """ Returns the sky colour. """
 
-    if sun['x'] in [x, x+1] and sun['y'] == y:
-        return rgb6(*sun['colour'])
-    else:
-        # Sky pixel
-        shade = (cos(time) + 1) / 2
-        sky_colour = lerp_colour(world_gen['night_colour'], shade, world_gen['day_colour'])
+    for obj in bk_objects:
+        if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
+            return rgb6(*obj['colour'])
 
-        if lights:
-            light_colour, distance = min(min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1]), (sky_colour, 1), key=lambda l: l[1])
-            # TODO: Shouldn't need to do max with sky_colour...
-            return max(rgb6(*lerp_colour(light_colour, distance, sky_colour)), rgb6(*sky_colour))
-        else:
-            return rgb6(*sky_colour)
+    # Sky pixel
+    shade = (cos(time) + 1) / 2
+    sky_colour = lerp_colour(world_gen['night_colour'], shade, world_gen['day_colour'])
+
+    if lights:
+        light_colour, distance = min(min(map(lambda l: (l['colour'], lit(x, y, l)), lights), key=lambda l: l[1]), (sky_colour, 1), key=lambda l: l[1])
+        # TODO: Shouldn't need to do max with sky_colour...
+        return max(rgb6(*lerp_colour(light_colour, distance, sky_colour)), rgb6(*sky_colour))
+    else:
+        return rgb6(*sky_colour)
 
 
 def lerp(a, s, b):
@@ -182,13 +186,13 @@ def lerp_colour(a, s, b):
     return result
 
 
-def get_lights(_map, start_x, blocks, sun):
-    lights = [{
-        'radius': world_gen['sun_light_radius'],
-        'x': sun['x'],
-        'y': sun['y'],
-        'colour': sun['light_colour']
-    }]
+def get_lights(_map, start_x, blocks, bk_objects):
+    lights = list(map(lambda obj: {
+        'radius': obj['light_radius'],
+        'x': obj['x'],
+        'y': obj['y'],
+        'colour': obj['light_colour']
+    }, bk_objects))
 
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
