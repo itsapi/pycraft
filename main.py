@@ -177,8 +177,8 @@ def game(blocks, meta, map_, save):
 
                         radius = 5
                         # TODO: Redo this quick hack
-                        for tx in range(ex - radius, ex + radius):
-                            for ty in range(ey - radius//2, ey + radius//2):
+                        for tx in range(ex - radius*2, ex + radius*2):
+                            for ty in range(ey - radius, ey + radius):
                                 if terrain.circle(tx, ty, {'x': ex, 'y': ey, 'radius': radius}):
 
                                     new_new_slices.setdefault(tx, map_[tx])
