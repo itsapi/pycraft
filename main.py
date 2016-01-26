@@ -1,5 +1,6 @@
 from time import time
 from math import radians
+from random import random
 
 from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
 from nbinput import NonBlockingInput
@@ -286,12 +287,18 @@ def process_events(events, map_, blocks):
             blast_strength = 85
             for tx in range(ex - radius*2, ex + radius*2):
                 for ty in range(ey - radius, ey + radius):
-                    if (render.in_circle(tx, ty, ex, ey, radius) and
-                            tx in map_ and ty >= 0 and ty < len(map_[tx]) and
+
+                    if (render.in_circle(tx, ty, ex, ey, radius) and tx in map_ and ty >= 0 and ty < len(map_[tx]) and
                             player.can_strength_break(map_[tx][ty], blast_strength, blocks)):
 
                         new_slices.setdefault(tx, map_[tx])
-                        new_slices[tx][ty] = ' '
+
+                        if not render.in_circle(tx, ty, ex, ey, radius - 1):
+                            if random() < .5:
+                                new_slices[tx][ty] = ' '
+                        else:
+                            new_slices[tx][ty] = ' '
+
 
             events.remove(event)
         else:
