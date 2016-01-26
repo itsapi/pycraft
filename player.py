@@ -126,7 +126,7 @@ def move_sel(inp):
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     x, y = x + cursor_x[cursor], y + cursor_y[cursor]
 
-    if y in map_[x]:
+    if x in map_ and y >= 0 and y < len(map_[x]):
         block = blocks[map_[x][y]]
 
         try:
