@@ -106,7 +106,7 @@ def game(blocks, meta, map_, save):
                 redraw = False
                 last_out = time()
 
-                cursor_colour, can_break = player.cursor_colour(
+                cursor_colour = player.cursor_colour(
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
                 )
 
@@ -168,7 +168,7 @@ def game(blocks, meta, map_, save):
                     y += 1
                     redraw = True
 
-                new_new_slices = process_events(events, map_)
+                new_new_slices = process_events(events, map_, blocks)
                 new_slices.update(new_new_slices)
                 map_.update(new_new_slices)
 
@@ -195,10 +195,7 @@ def game(blocks, meta, map_, save):
                     last_move = time()
 
                 new_new_slices, meta['inv'], inv_sel, new_events, dinv = \
-                    player.cursor_func(
-                        str(inp), map_, x, y, cursor,
-                        can_break, inv_sel, meta, blocks
-                    )
+                    player.cursor_func(str(inp), map_, x, y, cursor, inv_sel, meta, blocks)
 
                 map_.update(new_new_slices)
                 new_slices.update(new_new_slices)
@@ -277,19 +274,21 @@ def game(blocks, meta, map_, save):
                 dt = 0
 
 
-def process_events(events, map_):
+def process_events(events, map_, blocks):
     new_slices = {}
 
-    # Boom
     for event in events:
         if event['time_remaining'] <= 0:
             ex, ey = event['pos']
 
+            # Boom
             radius = 5
+            blast_strengh = 85
             for tx in range(ex - radius*2, ex + radius*2):
                 for ty in range(ey - radius, ey + radius):
                     if (terrain.in_circle(tx, ty, ex, ey, radius) and
-                            tx in map_ and ty >= 0 and ty < len(map_[tx])):
+                            tx in map_ and ty >= 0 and ty < len(map_[tx]) and
+                            player.can_break(map_[tx][ty], blast_strengh, blocks)):
 
                         new_slices.setdefault(tx, map_[tx])
                         new_slices[tx][ty] = ' '

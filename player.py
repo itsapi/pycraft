@@ -9,6 +9,8 @@ cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
+DEFAULT_STRENGH = 20
+
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
 
@@ -75,7 +77,7 @@ def can_place(map_, block_x, block_y, inv_block, blocks):
     return can_place
 
 
-def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
+def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     inv = meta['inv']
     block_x = x + cursor_x[cursor]
     block_y = y + cursor_y[cursor]
@@ -87,6 +89,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     slices = {}
 
     if inp in 'k' and block_y >= 0:
+        tool_strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_STRENGH)
 
         # If pressing k and block is air and can press
         if (block == ' ' and len(inv) and
@@ -106,7 +109,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
                 })
 
         # If pressing k and block is not air and breakable
-        elif blocks[block]['breakable'] and can_break:
+        elif can_break(block, tool_strength, blocks):
 
             # Destroy block
             block = map_[block_x][block_y]
@@ -130,22 +133,21 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
+def can_break(block_target, strength, blocks):
+    return blocks[block_target]['breakable'] and strength >= blocks[block_target]['hierarchy']
+
+
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     x, y = x + cursor_x[cursor], y + cursor_y[cursor]
+    strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_STRENGH)
 
-    if x in map_ and y >= 0 and y < len(map_[x]):
-        block = blocks[map_[x][y]]
-
-        try:
-            strength = blocks[inv[inv_sel]['block']]['strength']
-        except (IndexError, KeyError):
-            strength = 20
-
-        can_break = block['breakable'] and strength >= block['hierarchy']
+    if (x in map_ and y >= 0 and y < len(map_[x]) and
+            can_break(map_[x][y], strength, blocks)):
+        colour = WHITE
     else:
-        can_break = False
+        colour = RED
 
-    return [RED, WHITE][can_break], can_break
+    return colour
 
 
 def assemble_player(x, y, cursor, colour, c_hidden):

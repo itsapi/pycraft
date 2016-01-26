@@ -236,9 +236,9 @@ blocks = {
             'style': None
         },
         'solid': True,
-        'breakable': False,
+        'breakable': True,
         'placeable': True,
-        'hierarchy': 10,
+        'hierarchy': 85,
         'recipe': {
             '|': 2,
             ':': 1,
