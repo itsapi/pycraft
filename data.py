@@ -12,6 +12,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 0
     },
     '-': {
@@ -24,6 +25,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 20
     },
     'v': {
@@ -36,6 +38,7 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 0,
         'placed_on': '-v'
     },
@@ -49,6 +52,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10
     },
     '@': {
@@ -61,6 +65,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 5
     },
     '#': {
@@ -73,6 +78,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 50
     },
     'x': {
@@ -85,6 +91,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 55
     },
     '+': {
@@ -97,6 +104,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 60
     },
     ':': {
@@ -109,6 +117,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 65
     },
     '"': {
@@ -121,6 +130,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 70
     },
     'o': {
@@ -133,6 +143,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 75
     },
     '.': {
@@ -145,6 +156,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 80
     },
     '_': {
@@ -157,6 +169,7 @@ blocks = {
         },
         'solid': True,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 100
     },
     '/': {
@@ -169,6 +182,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 10,
         'recipe': {
             '|': 1
@@ -185,6 +199,7 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 1,
@@ -204,6 +219,7 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 3
@@ -221,6 +237,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     '^': {
@@ -233,6 +250,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     'X': {
@@ -245,6 +263,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1010
     },
     '1': {
@@ -257,6 +276,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 50,
         'recipe': {
             '/': 2,
@@ -273,6 +293,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 60,
         'recipe': {
             '/': 2,
@@ -289,6 +310,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 75,
         'recipe': {
             '/': 2,
@@ -305,6 +327,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 80,
         'recipe': {
             '/': 2,

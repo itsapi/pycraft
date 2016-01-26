@@ -89,7 +89,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
 
         # If pressing k and block is air and can press
         if (block == ' ' and len(inv) and
-                blocks[inv_block]['breakable'] and
+                blocks[inv_block]['placeable'] and
                 can_place(map_, block_x, block_y, inv_block, blocks)):
 
             # Place block in world from selected inv slot
