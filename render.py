@@ -3,11 +3,12 @@ from math import cos, sin
 from colours import *
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
 from data import world_gen, blocks
-from terrain import circle
+from terrain import in_circle
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
+lit = lambda x, y, p: in_circle(x, y, p['x'], p['y'], p['radius'])
 
 
 def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
@@ -136,7 +137,7 @@ def sky(x, y, time, sun, lights):
             return WHITE
     else:
         # Sky pixel
-        if day or any(map(lambda l: circle(x, y, l), lights)):
+        if day or any(map(lambda l: lit(x, y, l), lights)):
             return CYAN
         else:
             return BLUE

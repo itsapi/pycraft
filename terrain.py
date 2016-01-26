@@ -9,8 +9,9 @@ MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2
 
 
 # Checks if a coord is within a points radius.
-circle = lambda x, y, p: ( ( ((x-p['x']) ** 2) /  p['radius']    ** 2) +
-                           ( ((y-p['y']) ** 2) / (p['radius']/2) ** 2) ) < 1
+def in_circle(test_x, test_y, x, y, r):
+    return ( ( ((test_x - x) ** 2) /  r    ** 2) +
+             ( ((test_y - y) ** 2) / (r/2) ** 2) ) < 1
 
 
 def move_map(map_, edges):
