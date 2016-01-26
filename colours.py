@@ -30,6 +30,10 @@ def rgb(r, g, b):
     return 16 + int(r*5)*36 + int(g*5)*6 + int(b*5)
 
 
+def rgb6(r, g, b):
+    return 16 + int(r)*36 + int(g)*6 + int(b)
+
+
 def grey(value):
     return 232 + int(value*23)
 

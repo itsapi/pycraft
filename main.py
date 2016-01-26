@@ -40,7 +40,7 @@ def game(blocks, meta, map_, save):
     MPS = 15 # Movement
     SUN_TICK = radians(1/32)
 
-    old_sun = None
+    old_bk_objects = None
     old_edges = None
     redraw = False
     last_frame = []
@@ -94,9 +94,9 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            sun = render.sun(meta['tick'], width)
-            if not sun == old_sun:
-                old_sun = sun
+            bk_objects = render.bk_objects(meta['tick'], width)
+            if not bk_objects == old_bk_objects:
+                old_bk_objects = bk_objects
                 redraw = True
 
             # Draw view
@@ -113,13 +113,13 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                lights = render.get_lights(extended_view, edges[0], blocks, bk_objects)
 
                 out, last_frame = render.render_map(
                     view,
                     objects,
                     blocks,
-                    sun,
+                    bk_objects,
                     lights,
                     meta['tick'],
                     last_frame

@@ -191,7 +191,8 @@ blocks = {
             'x': 1
         },
         'crafts': 4,
-        'light': 7,
+        'light_radius': 7,
+        'light_colour': (.2,.8,.8),
         'placed_on_solid': True
     },
     '=': {
@@ -322,6 +323,15 @@ world_gen = {
     'max_biome_size': 50,
     'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'tall_grass_rate': .25,
+
+    'day_colour': (0,.4,1),
+    'night_colour': (0,0,.2),
+    'sun_light_radius': 25,
+    'sun_colour': (.8,.6,0),
+    'moon_colour': (1,1,1),
+    'sun_light_colour': (0,1,1),
+    'moon_light_colour': (.6,.6,.8),
+
     'ores': {
         'coal': {
             'char': 'x',
