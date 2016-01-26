@@ -134,7 +134,7 @@ def bk_objects(time, width):
     }
 
     if FANCY_LIGHTING:
-        obj['light_colour'] = world_gen['sun_light_colour'] if day else world_gen['moon_light_colour'],
+        obj['light_colour'] = world_gen['sun_light_colour'] if day else world_gen['moon_light_colour']
         obj['light_radius'] = world_gen['sun_light_radius']
 
     objects.append(obj)
@@ -169,17 +169,16 @@ def sky(x, y, time, bk_objects, lights):
         # Get brightest light
         light = max(light_levels, key=lambda l: l[2], default=sky_colour)
 
-        pixel_colour = hsv_to_rgb(light)
+        pixel_colour = rgb(*hsv_to_rgb(light))
 
     else:
 
         if shade > .5 or any(map(lambda l: lit(x, y, l) < 1, lights)):
-            pixel_colour = CYAN#world_gen['day_colour']
+            pixel_colour = CYAN
         else:
-            pixel_colour = BLUE#world_gen['night_colour']
+            pixel_colour = BLUE
 
     return pixel_colour
-    # return rgb(*pixel_colour)
 
 
 def lerp(a, s, b):
