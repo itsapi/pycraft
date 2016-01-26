@@ -54,7 +54,7 @@ def render_map(map_, objects, blocks, bk_objects, lights, tick, last_frame):
                     # Changed
                     diff += POS_STR(x, y, pixel_out)
             except IndexError:
-                # Doesn't exsit
+                # Doesn't exist
                 diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
