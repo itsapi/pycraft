@@ -38,7 +38,7 @@ def game(blocks, meta, map_, save):
     TPS = 10 # Ticks
     IPS = 20 # Input
     MPS = 15 # Movement
-    SUN_TICK = radians(1)
+    SUN_TICK = radians(1/32)
 
     old_bk_objects = None
     old_edges = None
