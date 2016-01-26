@@ -8,16 +8,6 @@ from data import world_gen
 MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
 
 
-# Checks if a coord is within a points radius.
-def in_circle(test_x, test_y, x, y, r):
-    return circle_dist(test_x, test_y, x, y, r) < 1
-
-
-def circle_dist(test_x, test_y, x, y, r):
-    return ( ( ((test_x - x) ** 2) /  r    ** 2) +
-             ( ((test_y - y) ** 2) / (r/2) ** 2) )
-
-
 def move_map(map_, edges):
     # Create subset of slices from map_ between edges
     slices = {}

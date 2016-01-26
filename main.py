@@ -286,7 +286,7 @@ def process_events(events, map_, blocks):
             blast_strength = 85
             for tx in range(ex - radius*2, ex + radius*2):
                 for ty in range(ey - radius, ey + radius):
-                    if (terrain.in_circle(tx, ty, ex, ey, radius) and
+                    if (render.in_circle(tx, ty, ex, ey, radius) and
                             tx in map_ and ty >= 0 and ty < len(map_[tx]) and
                             player.can_strength_break(map_[tx][ty], blast_strength, blocks)):
 

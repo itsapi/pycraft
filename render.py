@@ -3,15 +3,25 @@ from math import cos, sin, sqrt, modf
 from colours import *
 from console import *
 from data import world_gen, blocks
-from terrain import circle_dist
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
+
+
+FANCY_LIGHTING = 1
+
+
+def in_circle(test_x, test_y, x, y, r):
+    return circle_dist(test_x, test_y, x, y, r) < 1
+
+
+def circle_dist(test_x, test_y, x, y, r):
+    return ( ( ((test_x - x) ** 2) /  r    ** 2) +
+             ( ((test_y - y) ** 2) / (r/2) ** 2) )
+
+
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
-
-
-FANCY_LIGHTING = 0
 
 
 def render_map(map_, objects, blocks, bk_objects, lights, tick, last_frame):
