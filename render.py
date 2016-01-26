@@ -8,6 +8,8 @@ from data import world_gen, blocks
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
+FANCY_LIGHTING = True
+
 
 def render_map(map_, objects, blocks, bk_objects, lights, tick, last_frame):
     """
@@ -113,6 +115,8 @@ def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, lights, tick):
 def bk_objects(time, width):
     """ Returns objects for rendering to the background """
 
+    objects = []
+
     sun_r = width / 2
     day = cos(time) > 0
 
@@ -121,15 +125,21 @@ def bk_objects(time, width):
     x = int(sun_r * i * sin(time) + sun_r + 1)
     y = int(sun_r * i * cos(time) + sun_y)
 
-    return [{
+    obj = {
         'x': x,
         'y': y,
         'width': 2,
         'height': 1,
-        'colour': world_gen['sun_colour'] if day else world_gen['moon_colour'],
-        'light_colour': world_gen['sun_light_colour'] if day else world_gen['moon_light_colour'],
-        'light_radius': world_gen['sun_light_radius']
-    }]
+        'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
+    }
+
+    if FANCY_LIGHTING:
+        obj['light_colour'] = world_gen['sun_light_colour'] if day else world_gen['moon_light_colour'],
+        obj['light_radius'] = world_gen['sun_light_radius']
+
+    objects.append(obj)
+
+    return objects
 
 
 # Distance from l['center'] in terms of l['radius']
@@ -144,20 +154,32 @@ def sky(x, y, time, bk_objects, lights):
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
             return rgb(*obj['colour'])
 
-    # Sky pixel
     shade = (cos(time) + 1) / 2
-    sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
 
-    # Get all lights which effect this pixel
-    pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+    if FANCY_LIGHTING:
+        # Sky pixel
+        sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
 
-    # Calculate light level for each light source
-    lights = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
+        # Get all lights which effect this pixel
+        pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
 
-    # Get brightest light
-    light = max(lights, key=lambda l: l[2], default=sky_colour)
+        # Calculate light level for each light source
+        light_levels = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
 
-    return rgb(*hsv_to_rgb(light))
+        # Get brightest light
+        light = max(light_levels, key=lambda l: l[2], default=sky_colour)
+
+        pixel_colour = hsv_to_rgb(light)
+
+    else:
+
+        if shade > .5 or any(map(lambda l: lit(x, y, l) < 1, lights)):
+            pixel_colour = CYAN#world_gen['day_colour']
+        else:
+            pixel_colour = BLUE#world_gen['night_colour']
+
+    return pixel_colour
+    # return rgb(*pixel_colour)
 
 
 def lerp(a, s, b):
