@@ -13,7 +13,7 @@ def move_map(map_, edges):
     # Create subset of slices from map_ between edges
     slices = {}
     for pos in range(*edges):
-        slices[pos] = map_[str(pos)]
+        slices[pos] = map_[pos]
     return slices
 
 
@@ -207,7 +207,7 @@ def gen_slice(pos, meta, blocks):
 def detect_edges(map_, edges):
     slices = []
     for pos in range(*edges):
-        if not str(pos) in map_:
+        if not pos in map_:
             slices.append(pos)
 
     return slices
