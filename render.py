@@ -142,7 +142,7 @@ def sky(x, y, time, bk_objects, lights):
 
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
-            return rgb6(*obj['colour'])
+            return rgb(*obj['colour'])
 
     # Sky pixel
     shade = (cos(time) + 1) / 2
@@ -157,7 +157,7 @@ def sky(x, y, time, bk_objects, lights):
     # Get brightest light
     light = max(lights, key=lambda l: l[2], default=sky_colour)
 
-    return rgb6(*hsv_to_rgb(light))
+    return rgb(*hsv_to_rgb(light))
 
 
 def lerp(a, s, b):
@@ -250,7 +250,7 @@ def get_lights(_map, start_x, blocks, bk_objects):
                 'radius': blocks[pixel[1]]['light'],
                 'x': x-start_x,
                 'y': pixel[0],
-                'colour': (0, 3, 4)
+                'colour': (0, .6, .8)
             },
             slice_lights
         ))
