@@ -9,7 +9,7 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 
-def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
+def render_map(map_, objects, blocks, bk_objects, lights, tick, last_frame):
     """
         Prints out a frame of the game.
 
@@ -46,7 +46,7 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
+            pixel_out = calc_pixel(x, y, pixel, objects, blocks, bk_objects, lights, tick)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -73,7 +73,7 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
+def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, lights, tick):
 
     # Add any objects
     object_, obj_colour = obj_pixel(x, y, objects, blocks)
@@ -92,7 +92,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
         bg = blocks[pixel_b]['colours']['bg']
         if bg is None:
             # ...bg is sky
-            bg = sky(x, y, tick, sun, lights)
+            bg = sky(x, y, tick, bk_objects, lights)
 
         # if there is no object, use the fg colour
         fg = obj_colour
