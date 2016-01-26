@@ -124,14 +124,20 @@ def move_sel(inp):
 
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
-    block = blocks[ map_[ x + cursor_x[cursor] ][ y + cursor_y[cursor] ] ]
+    x, y = x + cursor_x[cursor], y + cursor_y[cursor]
 
-    try:
-        strength = blocks[inv[inv_sel]['block']]['strength']
-    except (IndexError, KeyError):
-        strength = 20
+    if y in map_[x]:
+        block = blocks[map_[x][y]]
 
-    can_break = block['breakable'] and strength >= block['hierarchy']
+        try:
+            strength = blocks[inv[inv_sel]['block']]['strength']
+        except (IndexError, KeyError):
+            strength = 20
+
+        can_break = block['breakable'] and strength >= block['hierarchy']
+    else:
+        can_break = False
+
     return [RED, WHITE][can_break], can_break
 
 
