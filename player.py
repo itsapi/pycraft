@@ -9,7 +9,7 @@ cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
-DEFAULT_TOOL_STRENGTH = 20
+HAND_STRENGTH = 20
 
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
@@ -89,7 +89,6 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     slices = {}
 
     if inp in 'k' and block_y >= 0:
-        tool_strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_TOOL_STRENGTH)
 
         # If pressing k and block is air and can press
         if (block == ' ' and len(inv) and
@@ -109,7 +108,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
                 })
 
         # If pressing k and block is not air and breakable
-        elif can_break(block, tool_strength, blocks):
+        elif can_inv_tool_break(block, inv, inv_sel, blocks):
 
             # Destroy block
             block = map_[block_x][block_y]
@@ -133,16 +132,26 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
-def can_break(block_target, strength, blocks):
+def can_strength_break(block_target, strength, blocks):
     return blocks[block_target]['breakable'] and strength >= blocks[block_target]['hierarchy']
+
+
+def can_inv_tool_break(block_target, inv, inv_sel, blocks):
+    try:
+        tool = inv[inv_sel]['block']
+    except IndexError:
+        strength = HAND_STRENGTH
+    else:
+        strength = blocks[tool].get('strength', HAND_STRENGTH)
+
+    return can_strength_break(block_target, strength, blocks)
 
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     x, y = x + cursor_x[cursor], y + cursor_y[cursor]
-    strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_TOOL_STRENGTH)
 
     if (x in map_ and y >= 0 and y < len(map_[x]) and
-            can_break(map_[x][y], strength, blocks)):
+            can_inv_tool_break(map_[x][y], inv, inv_sel, blocks)):
         colour = WHITE
     else:
         colour = RED

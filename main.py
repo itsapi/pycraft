@@ -288,7 +288,7 @@ def process_events(events, map_, blocks):
                 for ty in range(ey - radius, ey + radius):
                     if (terrain.in_circle(tx, ty, ex, ey, radius) and
                             tx in map_ and ty >= 0 and ty < len(map_[tx]) and
-                            player.can_break(map_[tx][ty], blast_strength, blocks)):
+                            player.can_strength_break(map_[tx][ty], blast_strength, blocks)):
 
                         new_slices.setdefault(tx, map_[tx])
                         new_slices[tx][ty] = ' '
