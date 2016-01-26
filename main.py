@@ -168,28 +168,9 @@ def game(blocks, meta, map_, save):
                     y += 1
                     redraw = True
 
-                # Boom
-                for event in events:
-                    if event['time_remaining'] <= 0:
-                        ex, ey = event['pos']
-
-                        new_new_slices = {}
-
-                        radius = 5
-                        for tx in range(ex - radius*2, ex + radius*2):
-                            for ty in range(ey - radius, ey + radius):
-                                if (terrain.in_circle(tx, ty, ex, ey, radius) and
-                                        tx in map_ and ty >= 0 and ty < len(map_[x])):
-
-                                    new_new_slices.setdefault(tx, map_[tx])
-                                    new_new_slices[tx][ty] = ' '
-
-                        map_.update(new_new_slices)
-                        new_slices.update(new_new_slices)
-
-                        events.remove(event)
-                    else:
-                        event['time_remaining'] -= 1
+                new_new_slices = process_events(events, map_)
+                new_slices.update(new_new_slices)
+                map_.update(new_new_slices)
 
             # If no block below, kill player
             try:
@@ -294,6 +275,30 @@ def game(blocks, meta, map_, save):
                 last_tick = time()
             else:
                 dt = 0
+
+
+def process_events(events, map_):
+    new_slices = {}
+
+    # Boom
+    for event in events:
+        if event['time_remaining'] <= 0:
+            ex, ey = event['pos']
+
+            radius = 5
+            for tx in range(ex - radius*2, ex + radius*2):
+                for ty in range(ey - radius, ey + radius):
+                    if (terrain.in_circle(tx, ty, ex, ey, radius) and
+                            tx in map_ and ty >= 0 and ty < len(map_[tx])):
+
+                        new_slices.setdefault(tx, map_[tx])
+                        new_slices[tx][ty] = ' '
+
+            events.remove(event)
+        else:
+            event['time_remaining'] -= 1
+
+    return new_slices
 
 
 if __name__ == '__main__':
