@@ -82,6 +82,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
     block = map_[block_x][block_y]
     inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
+    events = []
 
     slices = {}
 
@@ -98,6 +99,12 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
             inv, inv_sel = rem_inv(inv, inv_sel)
             dinv = True
 
+            if inv_block == '?':
+                events.append({
+                    'pos': (block_x, block_y),
+                    'time_remaining': 10
+                })
+
         # If pressing k and block is not air and breakable
         elif blocks[block]['breakable'] and can_break:
 
@@ -108,7 +115,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, meta, blocks):
             inv = add_inv(inv, block)
             dinv = True
 
-    return slices, inv, inv_sel, dinv
+    return slices, inv, inv_sel, events, dinv
 
 
 def respawn(meta):

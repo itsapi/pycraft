@@ -3,6 +3,7 @@ from math import cos, sin
 from colours import *
 from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
 from data import world_gen, blocks
+from terrain import circle
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
@@ -122,11 +123,6 @@ def sun(time, width):
     return x, y
 
 
-# Checks if a point is within a lights range.
-lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
-                        ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
-
-
 def sky(x, y, time, sun, lights):
     """ Returns the sky colour. """
 
@@ -140,7 +136,7 @@ def sky(x, y, time, sun, lights):
             return WHITE
     else:
         # Sky pixel
-        if day or any(map(lambda l: lit(x, y, l), lights)):
+        if day or any(map(lambda l: circle(x, y, l), lights)):
             return CYAN
         else:
             return BLUE

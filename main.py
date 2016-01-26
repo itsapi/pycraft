@@ -58,6 +58,7 @@ def game(blocks, meta, map_, save):
     c_hidden = True
     new_slices = {}
     alive = True
+    events = []
 
     crafting_list, crafting_sel = player.get_crafting(
         meta['inv'],
@@ -157,8 +158,8 @@ def game(blocks, meta, map_, save):
                 alive = True
                 x, y = player.respawn(meta)
 
-            # Player falls when no solid block below it
             if dt:
+                # Player falls when no solid block below it
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
@@ -166,6 +167,29 @@ def game(blocks, meta, map_, save):
                     # Fall
                     y += 1
                     redraw = True
+
+                # Boom
+                for event in events:
+                    if event['time_remaining'] <= 0:
+                        ex, ey = event['pos']
+
+                        new_new_slices = {}
+
+                        radius = 5
+                        # TODO: Redo this quick hack
+                        for tx in range(ex - radius, ex + radius):
+                            for ty in range(ey - radius//2, ey + radius//2):
+                                if terrain.circle(tx, ty, {'x': ex, 'y': ey, 'radius': radius}):
+
+                                    new_new_slices.setdefault(tx, map_[tx])
+                                    new_new_slices[tx][ty] = ' '
+
+                        map_.update(new_new_slices)
+                        new_slices.update(new_new_slices)
+
+                        events.remove(event)
+                    else:
+                        event['time_remaining'] -= 1
 
             # If no block below, kill player
             try:
@@ -189,13 +213,16 @@ def game(blocks, meta, map_, save):
 
                     last_move = time()
 
-                new_slices, meta['inv'], inv_sel, dinv = \
+                new_new_slices, meta['inv'], inv_sel, new_events, dinv = \
                     player.cursor_func(
                         str(inp), map_, x, y, cursor,
                         can_break, inv_sel, meta, blocks
                     )
 
-                map_.update(new_slices)
+                map_.update(new_new_slices)
+                new_slices.update(new_new_slices)
+
+                events += new_events
 
                 dcraft, dcraftC, dcraftN = False, False, False
                 if dinv: crafting = False

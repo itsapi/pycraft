@@ -227,6 +227,24 @@ blocks = {
         'placed_on': '=',
         'placed_on_solid': True
     },
+    '?': {
+        'char': '?',
+        'name': 'TNT',
+        'colours': {
+            'fg': RED,
+            'bg': None,
+            'style': None
+        },
+        'solid': True,
+        'breakable': False,
+        'placeable': True,
+        'hierarchy': 10,
+        'recipe': {
+            '|': 2,
+            ':': 1,
+            'x': 6
+        }
+    },
     '*': {
         'char': '*',
         'name': 'Player head',
