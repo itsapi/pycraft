@@ -9,7 +9,7 @@ cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
-DEFAULT_STRENGH = 20
+DEFAULT_TOOL_STRENGTH = 20
 
 
 def get_pos_delta(char, map_, x, y, blocks, jump):
@@ -89,7 +89,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, meta, blocks):
     slices = {}
 
     if inp in 'k' and block_y >= 0:
-        tool_strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_STRENGH)
+        tool_strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_TOOL_STRENGTH)
 
         # If pressing k and block is air and can press
         if (block == ' ' and len(inv) and
@@ -139,7 +139,7 @@ def can_break(block_target, strength, blocks):
 
 def cursor_colour(x, y, cursor, map_, blocks, inv, inv_sel):
     x, y = x + cursor_x[cursor], y + cursor_y[cursor]
-    strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_STRENGH)
+    strength = blocks[inv[inv_sel]['block']].get('strength', DEFAULT_TOOL_STRENGTH)
 
     if (x in map_ and y >= 0 and y < len(map_[x]) and
             can_break(map_[x][y], strength, blocks)):
