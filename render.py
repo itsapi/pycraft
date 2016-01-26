@@ -179,25 +179,27 @@ def rgb_to_hsv(colour):
 
     if not max_c == 0:
         s = delta / max_c;
+
+        if delta == 0:
+            h = 0
+        elif r == max_c:
+            # Between yellow & magenta
+            h = (g - b) / delta
+        elif g == max_c:
+            # Between cyan & yellow
+            h = 2 + (b - r) / delta
+        else:
+            # Between magenta & cyan
+            h = 4 + (r - g) / delta
+
+        h *= 60
+
+        if h < 0:
+            h += 360
+
     else:
         s = 0;
         h = -1;
-        return
-
-    if r == max_c:
-        # Between yellow & magenta
-        h = (g - b) / delta
-    elif g == max_c:
-        # Between cyan & yellow
-        h = 2 + (b - r) / delta
-    else:
-        # Between magenta & cyan
-        h = 4 + (r - g) / delta
-
-    h *= 60
-
-    if h < 0:
-        h += 360
 
     return h, s, v
 
@@ -232,25 +234,27 @@ def hsv_to_rgb(colour):
 
 
 def get_lights(_map, start_x, blocks, bk_objects):
+    # Give background objects light
     lights = list(map(lambda obj: {
         'radius': obj['light_radius'],
         'x': obj['x'],
         'y': obj['y'],
         'colour': obj['light_colour']
-    }, bk_objects))
+    }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
 
+    # Give blocks light
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
-        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light'),
+        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light_radius'),
             zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
 
         # Convert light pixels to light objects
         lights.extend(map(
             lambda pixel: {
-                'radius': blocks[pixel[1]]['light'],
+                'radius': blocks[pixel[1]]['light_radius'],
                 'x': x-start_x,
                 'y': pixel[0],
-                'colour': (0, .6, .8)
+                'colour': blocks[pixel[1]].get('light_colour', (1,1,1))
             },
             slice_lights
         ))
