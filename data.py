@@ -69,12 +69,12 @@ blocks = {
         'hierarchy': 5
     },
     '#': {
-        'char': '~',
+        'char': ' ',
         'name': 'Stone',
         'colours': {
             'fg': None,
             'bg': grey(.15),
-            'style': CLEAR
+            'style': None
         },
         'solid': True,
         'breakable': True,
