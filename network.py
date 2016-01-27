@@ -42,9 +42,9 @@ def receive(sock):
         log('Socket closing')
         sock.close()
 
-    log('Received:', repr(''.join(data)))
+    log('Received:', repr(data))
     try:
-        return json.loads(''.join(data))
+        return json.loads(data)
     except ValueError as e:
         log('JSON Error:', e)
 
