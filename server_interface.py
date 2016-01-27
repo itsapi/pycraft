@@ -4,7 +4,6 @@ from time import time
 
 from server import Server, log_event_send, log_event_receive
 from console import log
-from network import SocketError
 
 import saves, terrain, network
 
@@ -86,10 +85,7 @@ class RemoteInterface:
 
     def _listener(self):
         while True:
-            try:
-                data = network.receive(self._sock)
-            except SocketError:
-                break
+            data = network.receive(self._sock)
 
             if data is None:
                 continue

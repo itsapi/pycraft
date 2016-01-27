@@ -11,10 +11,6 @@ from console import log
 SendLock = threading.Lock()
 
 
-class SocketError(Exception):
-    pass
-
-
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
@@ -31,7 +27,6 @@ def send(sock, data):
             data = bytes(json.dumps(data), 'ascii')
             header = struct.pack('I', len(data))
             sock.sendall(header + data)
-
         except OSError:
             log('Socket closing')
             sock.close()
@@ -62,10 +57,7 @@ def requestHandlerFactory(data_handler):
 
         def handle(self):
             while True:
-                try:
-                    data = receive(self.request)
-                except SocketError:
-                    break
+                data = receive(self.request)
 
                 if data:
                     response = self.data_handler(self.request, data)
