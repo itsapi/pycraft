@@ -137,7 +137,7 @@ class Server:
         log('Server stopped')
 
         self.serving = False
-        self._update_clients({'event': 'logout', 'args': ['Server Closed']})
+        self._update_clients({'event': 'logout', 'args': ['Server Closed']}, exclude=self.local_player)
         self.current_players = {}
 
         self._stop_server()
