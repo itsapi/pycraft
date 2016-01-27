@@ -63,7 +63,7 @@ class Server:
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
              'logout': lambda: self.event_logout(sock),
-             'login': lambda data: self.event_login(data, sock),
+             'login': lambda name: self.event_login(name, sock),
              'unload_slices': self.event_unload_slices
              }[data['event']](*data.get('args', []))
         )
