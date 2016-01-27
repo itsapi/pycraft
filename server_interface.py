@@ -7,7 +7,6 @@ from console import log
 
 import saves, terrain, network
 
-
 chunk_size = terrain.world_gen['chunk_size']
 
 SUN_TICK = radians(1/32)

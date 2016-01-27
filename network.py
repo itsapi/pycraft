@@ -34,19 +34,40 @@ def send(sock, data):
 
 def receive(sock):
     data = None
+    error = False
 
     try:
-        length = struct.unpack('I', sock.recv(4))[0]
-        data = str(sock.recv(length), 'ascii')
+        d = sock.recv(4)
     except OSError:
+        error = True
+    else:
+        if not d:
+            error = True
+
+    if not error:
+        length = struct.unpack('I', d)[0]
+
+        try:
+            d = sock.recv(length)
+        except OSError:
+            error = True
+        else:
+            if not d:
+                error = True
+
+        if not error:
+            data = str(d, 'ascii')
+
+    if error:
         log('Socket closing')
         sock.close()
 
-    log('Received:', repr(data))
-    try:
-        return json.loads(data)
-    except ValueError as e:
-        log('JSON Error:', e)
+    else:
+        log('Received:', repr(data))
+        try:
+            return json.loads(data)
+        except ValueError as e:
+            log('JSON Error:', e)
 
 
 def requestHandlerFactory(data_handler):
@@ -64,6 +85,8 @@ def requestHandlerFactory(data_handler):
 
                     if response:
                         send(self.request, response)
+                else:
+                    break
 
             log('Handler Exiting')
 
