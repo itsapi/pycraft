@@ -1,7 +1,7 @@
 import sys
 import json
 
-from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
+from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT
 from colours import *
 
