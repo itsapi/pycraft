@@ -158,7 +158,7 @@ def bk_objects(time, width):
             light_colour = world_gen['moon_light_colour']
 
         obj['light_colour'] = light_colour
-        obj['light_radius'] = world_gen['sun_light_radius']
+        obj['light_radius'] = world_gen['sun_light_radius'] * abs(cos(time))
     else:
 
         if day:
