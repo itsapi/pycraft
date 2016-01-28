@@ -3,7 +3,7 @@ from math import radians
 from random import random
 
 from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
-from nbinput import NonBlockingInput
+from nbinput import NonBlockingInput, UP, DOWN, RIGHT, LEFT
 import saves, ui, terrain, player, render
 
 
@@ -181,8 +181,8 @@ def game(blocks, meta, map_, save):
                 alive = False
 
             # Receive input if a key is pressed
-            char = str(nbi.char()).lower()
-            inp = char if char in 'wadkjliuo-=' else None
+            char = str(nbi.char())
+            inp = char if char in 'wadkjliuo-='+UP+LEFT+RIGHT else None
 
             # Input Frame
             if time() >= (1/IPS) + last_inp and alive and inp:
