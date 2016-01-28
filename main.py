@@ -96,7 +96,7 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            bk_objects = render.bk_objects(meta['tick'], width)
+            bk_objects, sky_colour = render.bk_objects(meta['tick'], width)
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 redraw = True
@@ -122,6 +122,7 @@ def game(blocks, meta, map_, save):
                     objects,
                     blocks,
                     bk_objects,
+                    sky_colour,
                     lights,
                     meta['tick'],
                     last_frame
