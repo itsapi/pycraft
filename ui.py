@@ -1,7 +1,7 @@
 import sys
 import json
 
-from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT, input_line
+from nbinput import BlockingInput, input_line
 from console import CLS, REDRAW, WIDTH, HEIGHT
 from colours import *
 
@@ -26,7 +26,7 @@ def menu(name, options):
     selection = 0
     char = None
     with BlockingInput() as bi:
-        while not str(char) in ' \n':
+        while not str(char) in [' ', 'enter']:
 
             # Print menu
             out = ''
@@ -41,12 +41,12 @@ def menu(name, options):
             # Wait for useful input
             while True:
                 char = str(bi.char())
-                if char in [' ', '\n']:
+                if char in [' ', 'enter']:
                     break
-                if char in ['W', 'w', UP]:
+                if char in ['W', 'w', 'up']:
                     selection -= 1
                     break
-                if char in ['S', 's', DOWN]:
+                if char in ['S', 's', 'down']:
                     selection += 1
                     break
             selection %= len(options)
@@ -168,5 +168,5 @@ def error(message):
 
 def wait_for_input():
     with BlockingInput() as bi:
-        while not str(bi.char()) in ' \n':
+        while not str(bi.char()) in [' ', 'enter']:
             pass

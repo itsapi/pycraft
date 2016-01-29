@@ -6,7 +6,24 @@ import time
 from fcntl import fcntl, F_GETFL, F_SETFL
 
 
-UP, DOWN, RIGHT, LEFT = '\x1b[A', '\x1b[B', '\x1b[C', '\x1b[D'
+keys = {
+    '\x1b[A': 'up',
+    '\x1b[B': 'down',
+    '\x1b[C': 'right',
+    '\x1b[D': 'left',
+    '\x1b': 'esc',
+    '\n': 'enter',
+    '\x1b[5~': 'pageup',
+    '\x1b[6~': 'pagedown',
+    '\x1b[1~': 'home',
+    '\x1bOH': 'home',
+    '\x1b[2~': 'insert',
+    '\x1b[3~': 'delete',
+    '\x1b[4~': 'end',
+    '\x1bOF': 'end',
+}
+
+
 stdin_blocking_state = True
 
 
@@ -42,6 +59,8 @@ class NonBlockingInput:
         if buff == '':
             buff = None
 
+        buff = keys.get(buff, buff)
+
         return buff
 
 
@@ -57,6 +76,8 @@ class BlockingInput(NonBlockingInput):
         while c != '':
             buff += c
             c = sys.stdin.read(1)
+
+        buff = keys.get(buff, buff)
 
         return buff
 
@@ -75,13 +96,20 @@ def input_line(prompt):
 
 
 def main():
-    with BlockingInput() as bi:
-        while True:
-            c = bi.char()
-            if c == chr(27):
-                break
-            if c:
-                print(c)
+    try:
+        with BlockingInput() as bi:
+            while True:
+                inp = bi.char()
+
+                # if inp:
+                print(repr(inp))
+
+                if inp in ['esc']:
+                    break
+
+                time.sleep(.001)
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == '__main__':
