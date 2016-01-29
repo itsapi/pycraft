@@ -1,7 +1,7 @@
 import sys
 import json
 
-from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
+from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT, input_line
 from console import CLS, REDRAW, WIDTH, HEIGHT
 from colours import *
 
@@ -111,13 +111,13 @@ def new():
 
     print(REDRAW + title('New save'), end='')
     meta = {}
-    meta['name'] = input(colour_str(' Save name', style=BOLD)
+    meta['name'] = input_line(colour_str(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ')
     if not meta['name']:
         print(CLS)
         return None
 
-    meta['seed'] = input(colour_str(' Map seed', style=BOLD)
+    meta['seed'] = input_line(colour_str(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ')
     save = saves.new_save(meta)
 
