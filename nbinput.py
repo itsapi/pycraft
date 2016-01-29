@@ -1,172 +1,66 @@
-"""
-Most of this code came from this page:
-http://code.activestate.com/recipes/134892/#c5
-"""
-
 import sys
-import select
+import tty
+import termios
+import os
+import time
+from fcntl import fcntl, F_GETFL, F_SETFL
 
 
-UP, DOWN, RIGHT, LEFT = 'A', 'B', 'C', 'D'
+UP, DOWN, RIGHT, LEFT = '\x1b[A', '\x1b[B', '\x1b[C', '\x1b[D'
+
+
+def make_nonblocking(fd):
+    return fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | os.O_NONBLOCK)
 
 
 class NonBlockingInput:
-    """
-    Gets a single character from standard input. Does not echo to the
-        screen.
-    """
-    def __init__(self):
-        try:
-            self.impl = _nbiGetchWindows()
-        except ImportError:
-            try:
-                self.impl = _nbiGetchMacCarbon()
-            except (AttributeError, ImportError):
-                self.impl = _nbiGetchUnix()
-
-    def char(self):
-        try:
-            return self.impl.char().replace('\r\n', '\n').replace('\r', '\n')
-        except:
-            return None
 
     def __enter__(self):
-        self.impl.enter()
+        make_nonblocking(sys.stdin)
+        self.old_settings = termios.tcgetattr(sys.stdin)
+        tty.setcbreak(sys.stdin.fileno())
         return self
 
     def __exit__(self, type_, value, traceback):
-        self.impl.exit(type_, value, traceback)
-
-    def escape_code(self):
-        first, char = self.char(), self.char()
-        if first == '[' and self.char() == chr(27):
-            return char
-        return first
-
-
-class _nbiGetchUnix:
-    def __init__(self):
-        # Import termios now or else you'll get the Unix version on the Mac.
-        import tty
-        import termios
-        self.tty = tty
-        self.termios = termios
-
-    def enter(self):
-        self.old_settings = self.termios.tcgetattr(sys.stdin)
-        self.tty.setcbreak(sys.stdin.fileno())
-
-    def exit(self, type_, value, traceback):
-        self.termios.tcsetattr(sys.stdin,
-            self.termios.TCSADRAIN, self.old_settings)
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old_settings)
 
     def char(self):
-        if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-            return sys.stdin.read(1)
-        return None
+        buff = ''
+        c = sys.stdin.read(1)
+        while c != '':
+            buff += c
+            c = sys.stdin.read(1)
 
+        if buff == '':
+            buff = None
 
-class _nbiGetchWindows:
-    def __init__(self):
-        import msvcrt
-        self.msvcrt = msvcrt
-
-    def enter(self):
-        pass
-
-    def exit(self, type_, value, traceback):
-        pass
-
-    def char(self):
-        if self.msvcrt.kbhit():
-            try:
-                return str(self.msvcrt.getch(), encoding='UTF-8')
-            except:
-                pass
-        return None
-
-
-class _nbiGetchMacCarbon:
-    """
-    A function which returns the current ASCII key that is down;
-    if no ASCII key is down, the null string is returned.  The
-    page http://www.mactech.com/macintosh-c/chap02-1.html was
-    very helpful in figuring out how to do this.
-    """
-    def __init__(self):
-        # See if teminal has this (in Unix, it doesn't)
-        import Carbon
-        self.Carbon = Carbon
-        self.Carbon.Evt
-
-    def enter(self):
-        pass
-
-    def exit(self, type_, value, traceback):
-        pass
-
-    def char(self):
-        if self.Carbon.Evt.EventAvail(0x0008)[0] == 0:  # 0x0008 is the keyDownMask
-            return ''
-        else:
-            # The event contains the following info:
-            # (what,msg,when,where,mod)=Carbon.Evt.GetNextEvent(0x0008)[1]
-            #
-            # The message (msg) contains the ASCII char which is
-            # extracted with the 0x000000FF charCodeMask; this
-            # number is converted to an ASCII character with chr() and
-            # returned.
-
-            _, msg, _, _, _ = self.Carbon.Evt.GetNextEvent(0x0008)[1]
-            return chr(msg & 0x000000FF)
+        return buff
 
 
 class BlockingInput(NonBlockingInput):
-    """
-    Gets a single character from standard input. Does not echo to the
-        screen.
-    """
-    def __init__(self):
-        try:
-            self.impl = _biGetchWindows()
-        except ImportError:
-            try:
-                self.impl = _biGetchMacCarbon()
-            except (AttributeError, ImportError):
-                self.impl = _biGetchUnix()
 
-    def escape_code(self):
-        first = self.char()
-        if first == chr(27) and self.char() == '[':
-            return self.char()
-        return first
-
-
-class _biGetchUnix(_nbiGetchUnix):
     def char(self):
-        return sys.stdin.read(1)
+        c = ''
+        while c == '':
+            c = sys.stdin.read(1)
+            time.sleep(.01)
 
+        buff = ''
+        while c != '':
+            buff += c
+            c = sys.stdin.read(1)
 
-class _biGetchWindows(_nbiGetchWindows):
-    def char(self):
-        try:
-            return str(self.msvcrt.getch(), encoding='UTF-8')
-        except:
-            return None
-
-
-class _biGetchMacCarbon(_nbiGetchMacCarbon):
-    pass
+        return buff
 
 
 def main():
-    import time
     with BlockingInput() as bi:
         while True:
-            c = bi.escape_code()
+            c = bi.char()
             if c == chr(27):
                 break
-            print(c)
+            if c:
+                print(c)
 
 
 if __name__ == '__main__':

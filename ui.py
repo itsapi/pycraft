@@ -40,13 +40,13 @@ def menu(name, options):
 
             # Wait for useful input
             while True:
-                char = str(bi.escape_code())
-                if char in ' \n':
+                char = str(bi.char())
+                if char in [' ', '\n']:
                     break
-                if char in 'Ww'+UP:
+                if char in ['W', 'w', UP]:
                     selection -= 1
                     break
-                if char in 'Ss'+DOWN:
+                if char in ['S', 's', DOWN]:
                     selection += 1
                     break
             selection %= len(options)

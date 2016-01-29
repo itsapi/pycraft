@@ -182,7 +182,7 @@ def game(blocks, meta, map_, save):
 
             # Receive input if a key is pressed
             char = str(nbi.char())
-            inp = char if char in 'wadkjliuo-='+UP+LEFT+RIGHT else None
+            inp = char if char in list('wadkjliuo-=') + [UP, LEFT, RIGHT] else None
 
             # Input Frame
             if time() >= (1/IPS) + last_inp and alive and inp:
