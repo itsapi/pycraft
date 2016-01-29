@@ -163,19 +163,24 @@ def gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta):
         if features[x].get('tree') is None:
 
             biome_data = world_gen['biomes'][slices_biome[x][0]]
-            tree_chance = biome_data['trees']
+            boime_tree_chance = biome_data['trees']
 
             random.seed(str(meta['seed']) + str(x) + 'tree')
+            type_ = random.randint(0, len(world_gen['trees'])-1)
+            tree_data = world_gen['trees'][type_]
+
+            tree_chance = boime_tree_chance * tree_data['chance']
+
             if random.random() <= tree_chance:
 
                 attrs = {}
-                attrs['type'] = random.randint(0, len(world_gen['trees'])-1)
+                attrs['type'] = type_
 
                 # Centre tree slice (contains trunk)
                 # TODO: This calculation could be done on start-up, and stored
                 #         with each tree type.
-                tree = world_gen['trees'][attrs['type']]
-                center_leaves = tree[int(len(tree) / 2)]
+                leaves = tree_data['leaves']
+                center_leaves = leaves[int(len(leaves) / 2)]
                 attrs['trunk_depth'] = next(i for i, leaf in enumerate(center_leaves[::-1]) if leaf)
 
                 # Get space above ground
@@ -258,7 +263,7 @@ def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
             chunk[x][trunk_y] = spawn_hierarchy(('|', chunk[x][trunk_y]))
 
     # Add leaves
-    leaves = world_gen['trees'][tree_feature['type']]
+    leaves = world_gen['trees'][tree_feature['type']]['leaves']
     half_leaves = int(len(leaves) / 2)
 
     for leaf_dx, leaf_slice in enumerate(leaves):
