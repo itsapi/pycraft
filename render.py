@@ -187,7 +187,10 @@ def sky(x, y, time, bk_objects, sky_colour, lights):
         light_levels = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
 
         # Get brightest light
-        light = max(light_levels, key=lambda l: l[2], default=sky_colour)
+        try:
+            light = max(light_levels, key=lambda l: l[2])
+        except ValueError:
+            light = sky_colour
 
         pixel_colour = rgb(*hsv_to_rgb(light))
 
