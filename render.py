@@ -9,7 +9,7 @@ import data
 world_gen = data.world_gen
 
 sun_y = world_gen['height'] - world_gen['ground_height']
-max_light = max(map(lambda b: b.get('light', 0), data.blocks.values()))
+max_light = max(map(lambda b: b.get('light_radius', 0), data.blocks.values()))
 
 
 FANCY_LIGHTING = 1
