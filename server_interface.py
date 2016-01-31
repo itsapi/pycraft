@@ -290,7 +290,8 @@ class LocalInterface:
         self._send('set_blocks', [blocks])
 
     def logout(self):
-        self._send('logout')
+        if self.serving:
+            self.kill_server()
         self._event_logout()
 
     def init_server(self):
