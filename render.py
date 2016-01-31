@@ -192,15 +192,15 @@ def sky(x, y, bk_objects, sky_colour, lights):
         pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
 
         # Calculate light level for each light source
-        light_levels = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
+        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour)) for l in pixel_lights]
 
         # Get brightest light
-        try:
-            light = max(light_levels, key=lambda l: l[2])
-        except ValueError:
-            light = sky_colour
+        if light_levels:
+            light = max(map(lambda l: round_to_palette(*l), light_levels), key=lightness)
+        else:
+            light = hsv_to_rgb(sky_colour)
 
-        pixel_colour = rgb(*hsv_to_rgb(light))
+        pixel_colour = rgb(*light)
 
     else:
 
