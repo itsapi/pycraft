@@ -188,7 +188,7 @@ def sky(x, y, bk_objects, sky_colour, lights):
 
     if FANCY_LIGHTING:
 
-        # Get all lights which effect this pixel
+        # Get all lights which affect this pixel
         pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
 
         # Calculate light level for each light source
@@ -223,14 +223,14 @@ def lerp_n(a, s, b):
 def rgb_to_hsv(colour):
     r, g, b = colour
 
-    min_c = min(*colour);
-    max_c = max(*colour);
-    v = max_c;
+    min_c = min(*colour)
+    max_c = max(*colour)
+    v = max_c
 
-    delta = max_c - min_c;
+    delta = max_c - min_c
 
     if not max_c == 0:
-        s = delta / max_c;
+        s = delta / max_c
 
         if delta == 0:
             h = 0
@@ -250,8 +250,8 @@ def rgb_to_hsv(colour):
             h += 360
 
     else:
-        s = 0;
-        h = -1;
+        s = 0
+        h = -1
 
     return h, s, v
 
@@ -266,7 +266,7 @@ def hsv_to_rgb(colour):
     # Sector 0 to 5
     h /= 60
 
-    i = int(h);
+    i = int(h)
 
     # Factorial part of h
     f = h - i
