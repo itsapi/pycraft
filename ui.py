@@ -1,6 +1,6 @@
-from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
+from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
-from colors import *
+from colours import *
 
 import saves
 from data import help_data
@@ -18,7 +18,7 @@ def menu(name, options, selection=0):
         - options: a tuple of option name and option function
     """
 
-    STAR = colorStr('*', YELLOW)
+    STAR = colour_str('*', YELLOW)
     options = [x for x in options if x is not None]
 
     print_map = {}
@@ -45,7 +45,7 @@ def menu(name, options, selection=0):
                 if option == ():
                     pass
                 elif offset + i == print_map.get(selection):
-                    out += STAR + colorStr(option[0], style=BOLD) + STAR
+                    out += STAR + colour_str(option[0], style=BOLD) + STAR
                 else:
                     out += ' ' + option[0] + ' '
                 out += '\n'
@@ -53,7 +53,7 @@ def menu(name, options, selection=0):
 
             # Wait for useful input
             while True:
-                char = str(escape_code(bi))
+                char = str(bi.escape_code())
                 if char in ' \n':
                     break
                 if char in 'Ww'+UP:
@@ -111,7 +111,7 @@ def lambda_gen(func, var):
 def title(name):
     """ Returns a padded coloured string containing the title. """
     return ' {title}\n\n'.format(
-        title = colorStr('{name}\n {_}'.format(
+        title = colour_str('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
         ), style=BOLD)
@@ -158,7 +158,7 @@ def rename_save():
 
     print(REDRAW + title('Rename save'), end='')
     meta = saves.get_meta(save)
-    meta['name'] = input(colorStr(' Save name', style=BOLD)
+    meta['name'] = input(colour_str(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR + CLS, end='')
 
@@ -171,14 +171,14 @@ def add_save():
 
     print(REDRAW + title('New save'), end='')
     meta = {}
-    meta['name'] = input(colorStr(' Save name', style=BOLD)
+    meta['name'] = input(colour_str(' Save name', style=BOLD)
                          + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not meta['name']:
         print(CLS, end='')
         return None
 
-    meta['seed'] = input(colorStr(' Map seed', style=BOLD)
+    meta['seed'] = input(colour_str(' Map seed', style=BOLD)
                          + ' (leave blank to randomise): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     save = saves.new_save(meta)
@@ -222,13 +222,13 @@ def add_server(meta):
 
     print(REDRAW + title('New server'), end='')
 
-    ip = input(colorStr(' Server IP', style=BOLD)
+    ip = input(colour_str(' Server IP', style=BOLD)
                + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not ip:
         print(CLS, end='')
         return None
-    port = input(colorStr(' Server port', style=BOLD)
+    port = input(colour_str(' Server port', style=BOLD)
                  + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not port:
@@ -297,7 +297,7 @@ def name(meta):
 
 
 def error(message):
-    print(CLS + REDRAW + '\n' + colorStr(message, fg=RED) + '\n\nBack...\n')
+    print(CLS + REDRAW + '\n' + colour_str(message, fg=RED) + '\n\nBack...\n')
 
     wait_for_input()
 

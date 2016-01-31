@@ -1,13 +1,15 @@
-import terrain
-from colors import *
+from colours import *
+from render import blocks
+from terrain import is_solid, world_gen
 
-blocks = terrain.blocks
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
 
 INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
+
+HAND_STRENGTH = 20
 
 
 def get_pos_delta(char, map_, x, y, jump):
@@ -27,11 +29,11 @@ def get_pos_delta(char, map_, x, y, jump):
     # Calculate change in x pos for left and right movement
     for test_char, dir_, next_slice in (('a', -1, left_slice), ('d', 1, right_slice)):
         if ( char in test_char
-             and not terrain.is_solid( next_slice[head_y] )):
+             and not is_solid( next_slice[head_y] )):
 
-            if terrain.is_solid( next_slice[feet_y] ):
-                if ( not terrain.is_solid( next_slice[above_y] )
-                     and not terrain.is_solid( player_slice[above_y] )):
+            if is_solid( next_slice[feet_y] ):
+                if ( not is_solid( next_slice[above_y] )
+                     and not is_solid( player_slice[above_y] )):
 
                     dy = -1
                     dx = dir_
@@ -40,8 +42,8 @@ def get_pos_delta(char, map_, x, y, jump):
 
     # Jumps if up pressed, block below, no block above
     if ( char in 'w' and y > 1
-         and not terrain.is_solid( player_slice[above_y] )
-         and ( terrain.is_solid( player_slice[below_y] )
+         and not is_solid( player_slice[above_y] )
+         and ( is_solid( player_slice[below_y] )
                or player_slice[feet_y] == '=' )):
 
         dy = -1
@@ -73,20 +75,21 @@ def can_place(map_, block_x, block_y, inv_block):
     return can_place
 
 
-def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
+def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
     block_x = x + cursor_x[cursor]
     block_y = y + cursor_y[cursor]
     block = map_[block_x][block_y]
     inv_block = inv[inv_sel]['block'] if len(inv) else None
     dinv = False
+    events = []
 
     slices = {}
 
-    if inp in 'k' and block_y >= 0 and block_y < terrain.world_gen['height']:
+    if inp in 'k' and block_y >= 0 and block_y < world_gen['height']:
 
         # If pressing k and block is air and can place
         if (block == ' ' and len(inv) and
-                blocks[inv_block]['breakable'] and
+                blocks[inv_block]['placeable'] and
                 can_place(map_, block_x, block_y, inv_block)):
 
             # Place block in world from selected inv slot
@@ -95,8 +98,14 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
             inv, inv_sel = rem_inv(inv, inv_sel)
             dinv = True
 
+            if inv_block == '?':
+                events.append({
+                    'pos': (block_x, block_y),
+                    'time_remaining': 10
+                })
+
         # If pressing k and block is not air and breakable
-        elif blocks[block]['breakable'] and can_break:
+        elif can_inv_tool_break(block, inv, inv_sel):
 
             # Destroy block
             block = map_[block_x][block_y]
@@ -105,7 +114,7 @@ def cursor_func(inp, map_, x, y, cursor, can_break, inv_sel, inv):
             inv = add_inv(inv, block)
             dinv = True
 
-    return slices, inv, inv_sel, dinv
+    return slices, inv, inv_sel, events, dinv
 
 
 def respawn(spawn):
@@ -120,21 +129,31 @@ def move_sel(inp):
     return {'u': -1, 'o': 1}.get(inp, 0)
 
 
-def cursor_colour(x, y, cursor, map_, inv, inv_sel):
-    c_x, c_y = x + cursor_x[cursor], y + cursor_y[cursor]
+def can_strength_break(block_target, strength):
+    return blocks[block_target]['breakable'] and strength >= blocks[block_target]['hierarchy']
 
-    if c_y < 0 or c_y >= terrain.world_gen['height']:
-        return WHITE, False
 
-    block = blocks[ map_[ c_x ][ c_y ] ]
-
+def can_inv_tool_break(block_target, inv, inv_sel):
     try:
-        strength = blocks[inv[inv_sel]['block']]['strength']
-    except (IndexError, KeyError):
-        strength = 20
+        tool = inv[inv_sel]['block']
+    except IndexError:
+        strength = HAND_STRENGTH
+    else:
+        strength = blocks[tool].get('strength', HAND_STRENGTH)
 
-    can_break = block['breakable'] and strength >= block['hierarchy']
-    return [RED, WHITE][can_break], can_break
+    return can_strength_break(block_target, strength)
+
+
+def cursor_colour(x, y, cursor, map_, inv, inv_sel):
+    x, y = x + cursor_x[cursor], y + cursor_y[cursor]
+
+    if (x in map_ and y >= 0 and y < len(map_[x]) and
+            can_inv_tool_break(map_[x][y], inv, inv_sel)):
+        colour = WHITE
+    else:
+        colour = RED
+
+    return colour
 
 
 def assemble_players(players, x, y, offset, edges):

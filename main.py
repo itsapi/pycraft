@@ -2,6 +2,7 @@ import cProfile
 
 from time import time, sleep
 from math import radians
+from random import random
 
 import console as c
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
@@ -67,7 +68,7 @@ def game(server):
     IPS = 20  # Input
     MPS = 15  # Movement
 
-    old_sun = None
+    old_bk_objects = None
     old_edges = None
     last_frame = []
     last_out = time()
@@ -83,6 +84,7 @@ def game(server):
     c_hidden = True
     new_blocks = {}
     alive = True
+    events = []
 
     crafting_list, crafting_sel = player.get_crafting(
         server.inv,
@@ -114,9 +116,9 @@ def game(server):
                 server.view_change = False
 
             # Sun has moved
-            sun = render.sun(server.time, width)
-            if not sun == old_sun:
-                old_sun = sun
+            bk_objects, sky_colour = render.bk_objects(server.time, width)
+            if not bk_objects == old_bk_objects:
+                old_bk_objects = bk_objects
                 server.redraw = True
 
             # Draw view
@@ -125,7 +127,7 @@ def game(server):
                 server.redraw = False
                 last_out = time()
 
-                cursor_colour, can_break = player.cursor_colour(
+                cursor_colour = player.cursor_colour(
                     x, y, cursor, server.map_, server.inv, inv_sel
                 )
 
@@ -138,14 +140,14 @@ def game(server):
                         int(width / 2), y, cursor, cursor_colour
                     ))
 
-                lights = render.get_lights(extended_view, edges[0])
+                lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 out, last_frame = render.render_map(
                     view,
                     objects,
-                    sun,
+                    bk_objects,
+                    sky_colour,
                     lights,
-                    server.time,
                     last_frame
                 )
 
@@ -181,8 +183,8 @@ def game(server):
                 alive = True
                 x, y = player.respawn(server.get_meta('spawn'))
 
-            # Player falls when no solid block below it
             if dt and server.chunk_loaded(x):
+                # Player falls when no solid block below it
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
@@ -191,6 +193,11 @@ def game(server):
                     y += 1
                     server.pos = x, y
                     server.redraw = True
+
+                new_blocks = process_events(events, server.map_)
+
+                if new_blocks:
+                    server.set_blocks(new_blocks)
 
             # If no block below, kill player
             try:
@@ -214,10 +221,9 @@ def game(server):
 
                     last_move = time()
 
-                new_blocks, inv, inv_sel, dinv = \
+                new_blocks, inv, inv_sel, new_events, dinv = \
                     player.cursor_func(
-                        str(inp), server.map_, x, y, cursor,
-                        can_break, inv_sel, server.inv
+                        str(inp), server.map_, x, y, cursor, inv_sel, server.inv
                     )
 
                 if dinv:
@@ -225,6 +231,8 @@ def game(server):
 
                 if new_blocks:
                     server.set_blocks(new_blocks)
+
+                events += new_events
 
                 dcraft, dcraftC, dcraftN = False, False, False
                 if dinv: crafting = False
@@ -291,6 +299,37 @@ def game(server):
                     server.logout()
 
             dt = server.dt()
+
+
+def process_events(events, map_):
+    new_blocks = {}
+
+    for event in events:
+        if event['time_remaining'] <= 0:
+            ex, ey = event['pos']
+
+            # Boom
+            radius = 5
+            blast_strength = 85
+            for tx in range(ex - radius*2, ex + radius*2):
+                new_blocks[tx] = {}
+
+                for ty in range(ey - radius, ey + radius):
+
+                    if (render.in_circle(tx, ty, ex, ey, radius) and tx in map_ and ty >= 0 and ty < len(map_[tx]) and
+                            player.can_strength_break(map_[tx][ty], blast_strength)):
+
+                        if not render.in_circle(tx, ty, ex, ey, radius - 1):
+                            if random() < .5:
+                                new_blocks[tx][ty] = ' '
+                        else:
+                            new_blocks[tx][ty] = ' '
+
+            events.remove(event)
+        else:
+            event['time_remaining'] -= 1
+
+    return new_blocks
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import random
 from collections import OrderedDict
 from math import ceil
 
-import render
+from render import blocks
 from data import world_gen
 from console import log, DEBUG
 
@@ -18,8 +18,6 @@ EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
 
 MAX_HILL_RAD = world_gen['max_hill'] * world_gen['min_grad']
-
-blocks = render.blocks
 
 
 def move_map(map_, edges):
@@ -185,7 +183,8 @@ def gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
                 # Get space above ground
                 air_height = world_gen['height'] - ground_heights[x]
-                attrs['height'] = random.randint(2, air_height - len(center_leaves) + attrs['trunk_depth'])
+                tree_height = air_height - len(center_leaves) + attrs['trunk_depth']
+                attrs['height'] = random.randint(2, max(tree_height, 2))
 
                 features[x]['tree'] = attrs
 
