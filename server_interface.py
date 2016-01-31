@@ -87,7 +87,7 @@ class RemoteInterface:
             data = network.receive(self._sock)
 
             if data is None:
-                continue
+                break
 
             log_event_receive(data['event'], data['args'], label='RemoteInterface')
 
