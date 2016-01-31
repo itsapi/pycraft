@@ -165,7 +165,6 @@ class Game:
         self._map = {}
         self._meta = saves.load_meta(save)
         self._last_tick = time()
-        self.time = 0
 
     def get_chunks(self, chunk_list):
         new_slices = {}
@@ -223,3 +222,11 @@ class Game:
     # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
     def unload_slices(self):
         pass
+
+    @property
+    def time(self):
+        return self._meta['tick']
+
+    @time.setter
+    def time(self, time):
+        self._meta['tick'] = time
