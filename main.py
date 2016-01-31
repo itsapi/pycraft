@@ -251,7 +251,6 @@ def game(server):
 
                     dcraft = dcraftC or dcraftN
 
-
                 # Update crafting list
                 if dinv or dcraft:
                     crafting_list, crafting_sel = \
