@@ -49,7 +49,7 @@ class RemoteInterface:
         self._send('login', [self._name])
 
         # Server doesn't respond
-        if not self.finished_login.wait(10):
+        if not self.finished_login.wait(3):
             self.error = 'No response from server on login'
             log(self.error)
 
