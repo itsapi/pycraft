@@ -6,6 +6,7 @@ import json
 import os
 
 from console import log
+import time
 
 
 SendLock = threading.Lock()
@@ -25,6 +26,7 @@ def send(sock, data):
     with SendLock:
         try:
             data = bytes(json.dumps(data), 'ascii')
+            log('sending data length', len(data))
             header = struct.pack('I', len(data))
             sock.sendall(header + data)
         except OSError:
@@ -35,6 +37,7 @@ def send(sock, data):
 def receive(sock):
     data = None
     error = False
+    bufsize = 1024
 
     try:
         d = sock.recv(4)
@@ -46,24 +49,30 @@ def receive(sock):
 
     if not error:
         length = struct.unpack('I', d)[0]
+        log('data length', length)
+        d = bytes()
 
         try:
-            d = sock.recv(length)
+            for i in range(length // bufsize):
+                d += sock.recv(bufsize)
+                time.sleep(0.001)
+            d += sock.recv(length % bufsize)
         except OSError:
             error = True
         else:
-            if not d:
+            if not len(d):
                 error = True
 
         if not error:
             data = str(d, 'ascii')
+            log('real length', len(d))
 
     if error:
         log('Socket closing')
         sock.close()
 
     else:
-        log('Received:', repr(data))
+        log('Received:', repr(data), trunc=False)
         try:
             return json.loads(data)
         except ValueError as e:
