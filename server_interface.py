@@ -2,15 +2,12 @@ from threading import Thread, Event
 from math import radians, floor, ceil
 from time import time
 
-from server import Server, log_event_send, log_event_receive
+from server import Server, log_event_send, log_event_receive, TPS, SUN_TICK
 from console import log
 
 import saves, terrain, network
 
 chunk_size = terrain.world_gen['chunk_size']
-
-SUN_TICK = radians(1/32)
-TPS = 10  # Ticks
 
 
 class RemoteInterface:
