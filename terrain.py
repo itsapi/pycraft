@@ -27,16 +27,15 @@ def apply_gravity(map_, blocks):
     connected_to_ground = explore_map(map_, blocks, start_pos, [])
 
     redraw = False
-    new_map = deepcopy(map_)
     for x, slice_ in map_.items():
         for y in range(len(slice_)-3,-1,-1):
             block = slice_[y]
             if (is_solid(blocks, block) and (x, y) not in connected_to_ground):
                 redraw = True
-                new_map[x][y] = ' '
-                new_map[x][y+1] = block
+                map_[x][y] = ' '
+                map_[x][y+1] = block
 
-    return new_map, redraw
+    return map_, redraw
 
 
 def explore_map(map_, blocks, start_pos, found):
