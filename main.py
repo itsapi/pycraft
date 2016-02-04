@@ -80,10 +80,6 @@ def game(blocks, meta, map_, save):
                 new_slices[pos] = terrain.gen_slice(pos, meta, blocks)
                 map_[pos] = new_slices[pos]
 
-            map_, redraw_ = terrain.apply_gravity(map_, blocks)
-            if redraw_:
-                redraw = True
-
             # Save new terrain to file
             if new_slices:
                 saves.save_map(save, new_slices)
@@ -108,6 +104,8 @@ def game(blocks, meta, map_, save):
                 df = 1
                 redraw = False
                 last_out = time()
+
+                view, redraw = terrain.apply_gravity(view, blocks)
 
                 cursor_colour, can_break = player.cursor_colour(
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
