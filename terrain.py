@@ -43,7 +43,10 @@ def explore_map(map_, blocks, start_pos, found):
     except (IndexError, KeyError):
         current_block = None
 
-    if current_block is not None and is_solid(blocks, current_block) and start_pos not in found:
+    edge_slice = start_pos[0] in (min(map_.keys()), max(map_.keys()))
+    if (current_block is not None and start_pos not in found and
+            (is_solid(blocks, current_block) or edge_slice)):
+
         found.append(start_pos)
 
         found = explore_map(map_, blocks, (start_pos[0]    ,   start_pos[1] - 1), found)  # Above
