@@ -97,42 +97,31 @@ def obj_pixel(x, y, objects):
 
 def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights):
 
-    # Add any objects
-    object_, obj_colour = obj_pixel(x, y, objects)
-
-    # Add sky behind blocks without objects
-    if object_:
-        pixel_b = pixel_f
-        pixel_f = object_
+    # If the front block has a bg
+    if blocks[pixel_f]['colours']['bg'] is not None:
+        bg = blocks[pixel_f]['colours']['bg']
     else:
-        pixel_b = ' '
+        bg = sky(x, y, bk_objects, sky_colour, lights)
 
-    # If the front block has a transparent bg
-    if blocks[pixel_f]['colours']['bg'] is None:
+    # Get any object
+    object_char, obj_colour = obj_pixel(x, y, objects)
 
-        # ...and the back block has a transparent bg
-        bg = blocks[pixel_b]['colours']['bg']
-        if bg is None:
-            # ...bg is sky
-            bg = sky(x, y, bk_objects, sky_colour, lights)
-
-        # if there is no object, use the fg colour
+    if object_char:
+        char = object_char
         fg = obj_colour
-        if fg is None:
-            fg = blocks[pixel_f]['colours']['fg']
+    else:
+        char = blocks[pixel_f]['char']
+        fg = blocks[pixel_f]['colours']['fg']
 
-        fg_colour = rgb(*fg) if fg is not None else None
-        bg_colour = rgb(*bg) if bg is not None else None
+    fg_colour = rgb(*fg) if fg is not None else None
+    bg_colour = rgb(*bg) if bg is not None else None
 
-        return colour_str(
-            blocks[pixel_f]['char'],
-            bg = bg_colour,
-            fg = fg_colour,
-            style = blocks[pixel_f]['colours']['style']
-        )
-
-    else: # The block was coloured on startup
-        return blocks[pixel_f]['char']
+    return colour_str(
+        char,
+        bg = bg_colour,
+        fg = fg_colour,
+        style = blocks[pixel_f]['colours']['style']
+    )
 
 
 def bk_objects(time, width):
@@ -420,21 +409,6 @@ def gen_blocks():
 
         # Get supported version of block char
         blocks[key]['char'] = supported_chars(*block['char'])
-
-        # If bg is transparent, it must be coloured at runtime.
-        if blocks[key]['colours']['bg'] is not None:
-
-            fg = block['colours']['fg']
-            bg = block['colours']['bg']
-            if fg is not None: fg = rgb(*fg)
-            if bg is not None: bg = rgb(*bg)
-
-            blocks[key]['char'] = colour_str(
-                blocks[key]['char'],
-                fg,
-                bg,
-                block['colours']['style']
-            )
 
     return blocks
 
