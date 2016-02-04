@@ -20,11 +20,11 @@ def move_map(map_, edges):
 def apply_gravity(map_, blocks):
     start_pos = (list(map_.keys())[len(map_)//2],
                  world_gen['height'] - 1)
-    connected_to_ground = explore_map(map_, blocks, start_pos)
     all_solid = [b for s in [filter(lambda b: is_solid(blocks, b), map_[s]) for s in map_] for b in s]
 
     # print(connected_to_ground)
     # print('{}/{} - {}'.format(len(connected_to_ground), len(all_solid), len(all_solid) - len(connected_to_ground)))
+    connected_to_ground = explore_map(map_, blocks, start_pos, [])
 
     redraw = False
     new_map = deepcopy(map_)
@@ -39,7 +39,7 @@ def apply_gravity(map_, blocks):
     return new_map, redraw
 
 
-def explore_map(map_, blocks, start_pos, found=[]):
+def explore_map(map_, blocks, start_pos, found):
     if start_pos[1] < 0:
         return found
 
