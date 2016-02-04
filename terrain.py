@@ -105,7 +105,7 @@ def add_tree(slice_, pos, meta, blocks):
             center_leaves = tree[int(len(tree)/2)]
             trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
                                if leaf)
-            tree_height = random.randint(2, air_height
+            tree_height = random.randint(1, air_height
                           - len(center_leaves) + trunk_depth)
 
             # Find leaves of current tree

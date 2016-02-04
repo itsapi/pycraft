@@ -12,6 +12,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 0
     },
     '-': {
@@ -24,6 +25,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 20
     },
     'v': {
@@ -36,6 +38,7 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 0,
         'placed_on': '-v'
     },
@@ -49,6 +52,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10
     },
     '@': {
@@ -61,6 +65,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 5
     },
     '#': {
@@ -73,6 +78,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 50
     },
     'x': {
@@ -85,6 +91,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 55
     },
     '+': {
@@ -97,6 +104,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 60
     },
     ':': {
@@ -109,6 +117,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 65
     },
     '"': {
@@ -121,6 +130,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 70
     },
     'o': {
@@ -133,6 +143,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 75
     },
     '.': {
@@ -145,6 +156,7 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 80
     },
     '_': {
@@ -157,6 +169,7 @@ blocks = {
         },
         'solid': True,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 100
     },
     '/': {
@@ -169,6 +182,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 10,
         'recipe': {
             '|': 1
@@ -185,13 +199,15 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 1,
             'x': 1
         },
         'crafts': 4,
-        'light': 7,
+        'light_radius': 7,
+        'light_colour': (.2,.8,.8),
         'placed_on_solid': True
     },
     '=': {
@@ -204,12 +220,31 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 3
         },
         'placed_on': '=',
         'placed_on_solid': True
+    },
+    '?': {
+        'char': '?',
+        'name': 'TNT',
+        'colours': {
+            'fg': RED,
+            'bg': None,
+            'style': None
+        },
+        'solid': True,
+        'breakable': True,
+        'placeable': True,
+        'hierarchy': 85,
+        'recipe': {
+            '|': 2,
+            ':': 1,
+            'x': 6
+        }
     },
     '*': {
         'char': '*',
@@ -221,6 +256,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     '^': {
@@ -233,6 +269,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     'X': {
@@ -245,6 +282,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1010
     },
     '1': {
@@ -257,6 +295,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 50,
         'recipe': {
             '/': 2,
@@ -273,6 +312,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 60,
         'recipe': {
             '/': 2,
@@ -289,6 +329,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 75,
         'recipe': {
             '/': 2,
@@ -305,6 +346,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 80,
         'recipe': {
             '/': 2,
@@ -322,6 +364,15 @@ world_gen = {
     'max_biome_size': 50,
     'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'tall_grass_rate': .25,
+
+    'day_colour': (0,.4,1),
+    'night_colour': (0,0,.2),
+    'sun_light_radius': 25,
+    'sun_colour': (.8,.6,0),
+    'moon_colour': (1,1,1),
+    'sun_light_colour': (0,1,1),
+    'moon_light_colour': (.6,.6,.8),
+
     'ores': {
         'coal': {
             'char': 'x',
@@ -392,7 +443,29 @@ world_gen = {
          (0, 1, 1, 1, 1, 0),
          (1, 1, 0, 0, 0, 0),
          (0, 1, 1, 0, 1, 1),
-         (0, 0, 1, 1, 0, 1))
+         (0, 0, 1, 1, 0, 1)),
+        ((0,0,1,1,0,1,1,0),
+         (0,1,1,1,1,1,1,1),
+         (1,1,1,1,1,1,1,1),
+         (1,1,1,1,1,0,0,0),
+         (1,1,1,1,1,1,1,1),
+         (0,1,1,1,1,1,1,1),
+         (0,0,1,0,1,1,1,0)),
+        ((0,0,0,0,0,0,1,1,0,0),
+         (0,0,0,0,0,1,0,1,0,1),
+         (0,0,0,0,1,1,1,1,1,1),
+         (0,0,0,1,1,1,1,1,1,0),
+         (0,0,0,1,1,1,1,1,1,1),
+         (0,1,1,1,1,1,1,1,1,0),
+         (0,0,1,1,1,0,1,1,1,0),
+         (0,0,1,1,1,1,1,0,1,0),
+         (0,0,1,1,1,1,1,1,1,0),
+         (0,0,1,1,1,1,1,1,1,1),
+         (0,0,1,1,1,1,1,1,0,0),
+         (0,0,0,0,1,1,1,1,1,1),
+         (0,0,0,0,1,1,1,1,1,0),
+         (0,0,0,0,0,1,0,1,1,0),
+         (0,0,0,0,0,0,0,0,1,0))
     )
 }
 

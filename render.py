@@ -1,7 +1,7 @@
-from math import cos, sin
+from math import cos, sin, sqrt, modf
 
 from colours import *
-from console import CLS, CLS_END, CLS_END_LN, REDRAW, POS_STR, supported_chars
+from console import *
 from data import world_gen, blocks
 
 
@@ -9,7 +9,22 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light', 0), blocks.values()))
 
 
-def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
+FANCY_LIGHTING = 1
+
+
+def in_circle(test_x, test_y, x, y, r):
+    return circle_dist(test_x, test_y, x, y, r) < 1
+
+
+def circle_dist(test_x, test_y, x, y, r):
+    return ( ( ((test_x - x) ** 2) /  r    ** 2) +
+             ( ((test_y - y) ** 2) / (r/2) ** 2) )
+
+
+lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
+
+
+def render_map(map_, objects, blocks, bk_objects, sky_colour, lights, tick, last_frame):
     """
         Prints out a frame of the game.
 
@@ -46,7 +61,7 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, blocks, sun, lights, tick)
+            pixel_out = calc_pixel(x, y, pixel, objects, blocks, bk_objects, sky_colour, lights, tick)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -54,7 +69,7 @@ def render_map(map_, objects, blocks, sun, lights, tick, last_frame):
                     # Changed
                     diff += POS_STR(x, y, pixel_out)
             except IndexError:
-                # Doesn't exsit
+                # Doesn't exist
                 diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
@@ -73,7 +88,7 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
+def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick):
 
     # Add any objects
     object_, obj_colour = obj_pixel(x, y, objects, blocks)
@@ -92,7 +107,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
         bg = blocks[pixel_b]['colours']['bg']
         if bg is None:
             # ...bg is sky
-            bg = sky(x, y, tick, sun, lights)
+            bg = sky(x, y, tick, bk_objects, sky_colour, lights)
 
         # if there is no object, use the fg colour
         fg = obj_colour
@@ -109,57 +124,181 @@ def calc_pixel(x, y, pixel_f, objects, blocks, sun, lights, tick):
     else: # The block was coloured on startup
         return blocks[pixel_f]['char']
 
-def sun(time, width):
-    """ Returns position of sun """
+
+def bk_objects(time, width):
+    """ Returns objects for rendering to the background """
+
+    objects = []
 
     sun_r = width / 2
+    day = cos(time) > 0
 
     # Set i to +1 for night and -1 for day
-    i = -2 * (cos(time) > 0) + 1
+    i = -2 * day + 1
     x = int(sun_r * i * sin(time) + sun_r + 1)
     y = int(sun_r * i * cos(time) + sun_y)
 
-    return x, y
+    # Sun/moon
+    obj = {
+        'x': x,
+        'y': y,
+        'width': 2,
+        'height': 1,
+        'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
+    }
+
+    if FANCY_LIGHTING:
+        shade = (cos(time) + 1) / 2
+
+        sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
+
+        if day:
+            light_colour = world_gen['sun_light_colour']
+        else:
+            light_colour = world_gen['moon_light_colour']
+
+        obj['light_colour'] = light_colour
+        obj['light_radius'] = world_gen['sun_light_radius'] * abs(cos(time))
+    else:
+
+        if day:
+            sky_colour = CYAN
+        else:
+            sky_colour = BLUE
+
+    objects.append(obj)
+
+    return objects, sky_colour
 
 
-# Checks if a point is within a lights range.
-lit = lambda x, y, l: ( ( ((x-l['x']) ** 2) /  l['radius']    ** 2) +
-                        ( ((y-l['y']) ** 2) / (l['radius']/2) ** 2) ) < 1
-
-
-def sky(x, y, time, sun, lights):
+def sky(x, y, time, bk_objects, sky_colour, lights):
     """ Returns the sky colour. """
 
-    day = cos(time) > 0
+    for obj in bk_objects:
+        if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
+            return rgb(*obj['colour'])
 
-    if sun[0] in [x, x+1] and sun[1] == y:
-        # Sun pixel
-        if day:
-            return YELLOW
-        else:
-            return WHITE
+    if FANCY_LIGHTING:
+
+        # Get all lights which effect this pixel
+        pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+
+        # Calculate light level for each light source
+        light_levels = map(lambda l: lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour), pixel_lights)
+
+        # Get brightest light
+        try:
+            light = max(light_levels, key=lambda l: l[2])
+        except ValueError:
+            light = sky_colour
+
+        pixel_colour = rgb(*hsv_to_rgb(light))
+
     else:
-        # Sky pixel
-        if day or any(map(lambda l: lit(x, y, l), lights)):
-            return CYAN
+
+        if any(map(lambda l: lit(x, y, l) < 1, lights)):
+            pixel_colour = CYAN
         else:
-            return BLUE
+            pixel_colour = sky_colour
+
+    return pixel_colour
 
 
-def get_lights(_map, start_x, blocks):
-    lights = []
+def lerp(a, s, b):
+  return a * (1 - s) + (b * s)
 
+
+def lerp_n(a, s, b):
+    return tuple(lerp(a[i], s, b[i]) for i in range(min(len(a), len(b))))
+
+
+def rgb_to_hsv(colour):
+    r, g, b = colour
+
+    min_c = min(*colour);
+    max_c = max(*colour);
+    v = max_c;
+
+    delta = max_c - min_c;
+
+    if not max_c == 0:
+        s = delta / max_c;
+
+        if delta == 0:
+            h = 0
+        elif r == max_c:
+            # Between yellow & magenta
+            h = (g - b) / delta
+        elif g == max_c:
+            # Between cyan & yellow
+            h = 2 + (b - r) / delta
+        else:
+            # Between magenta & cyan
+            h = 4 + (r - g) / delta
+
+        h *= 60
+
+        if h < 0:
+            h += 360
+
+    else:
+        s = 0;
+        h = -1;
+
+    return h, s, v
+
+
+def hsv_to_rgb(colour):
+    h, s, v = colour
+
+    if s == 0:
+        # Grey
+        return (v, v, v)
+
+    # Sector 0 to 5
+    h /= 60
+
+    i = int(h);
+
+    # Factorial part of h
+    f = h - i
+
+    p = v * (1 - s)
+    q = v * (1 - s * f)
+    t = v * (1 - s * (1 - f))
+
+    return {
+        0: (v, t, p),
+        1: (q, v, p),
+        2: (p, v, t),
+        3: (p, q, v),
+        4: (t, p, v),
+        5: (v, p, q)
+    }[i]
+
+
+def get_lights(_map, start_x, blocks, bk_objects):
+    # Give background objects light
+    lights = list(map(lambda obj: {
+        'radius': obj['light_radius'],
+        'x': obj['x'],
+        'y': obj['y'],
+        'colour': obj['light_colour']
+    }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
+
+    # Give blocks light
     for x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
-        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light'),
+        slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light_radius'),
             zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
 
         # Convert light pixels to light objects
         lights.extend(map(
             lambda pixel: {
-                'radius': blocks[pixel[1]]['light'],
+                'radius': blocks[pixel[1]]['light_radius'],
                 'x': x-start_x,
-                'y': pixel[0]
+                'y': pixel[0],
+                'colour': blocks[pixel[1]].get('light_colour', (1,1,1))
             },
             slice_lights
         ))
