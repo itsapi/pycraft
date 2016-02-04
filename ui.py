@@ -297,7 +297,7 @@ def name(meta):
 
 
 def error(message):
-    print(CLS + REDRAW + '\n' + colour_str(message, fg=RED) + '\n\nBack...\n')
+    print(CLS + REDRAW + '\n' + colour_str(message, fg=TERM_RED) + '\n\nBack...\n')
 
     wait_for_input()
 
