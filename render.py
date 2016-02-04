@@ -367,7 +367,7 @@ def render_grid(title, selected, grid, max_height, sel=None):
         if colour['bg'] is None:
             block_char = colour_str(
                 block_char,
-                fg=colour['fg'],
+                fg=rgb(*colour['fg']),
                 bg=None,
                 style=colour['style']
             )
@@ -378,7 +378,7 @@ def render_grid(title, selected, grid, max_height, sel=None):
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=block_char,
-            n=colour_str(num, bg=RED) if selected and i == sel else num,
+            n=colour_str(num, bg=rgb(*RED)) if selected and i == sel else num,
             v=v,
             trail=trailing
         ))
