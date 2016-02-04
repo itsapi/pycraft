@@ -121,10 +121,13 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights):
         if fg is None:
             fg = blocks[pixel_f]['colours']['fg']
 
+        fg_colour = rgb(*fg) if fg is not None else None
+        bg_colour = rgb(*bg) if bg is not None else None
+
         return colour_str(
             blocks[pixel_f]['char'],
-            bg = bg,
-            fg = fg,
+            bg = bg_colour,
+            fg = fg_colour,
             style = blocks[pixel_f]['colours']['style']
         )
 
@@ -179,13 +182,7 @@ def bk_objects(time, width):
     return objects, sky_colour
 
 
-def sky(x, y, bk_objects, sky_colour, lights):
-    """ Returns the sky colour. """
-
-    for obj in bk_objects:
-        if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
-            return rgb(*obj['colour'])
-
+def get_light_colour(x, y, lights, sky_colour):
     if FANCY_LIGHTING:
 
         # Get all lights which affect this pixel
@@ -200,7 +197,7 @@ def sky(x, y, bk_objects, sky_colour, lights):
         else:
             light = hsv_to_rgb(sky_colour)
 
-        pixel_colour = rgb(*light)
+        pixel_colour = light
 
     else:
 
@@ -210,6 +207,19 @@ def sky(x, y, bk_objects, sky_colour, lights):
             pixel_colour = sky_colour
 
     return pixel_colour
+
+
+def sky(x, y, bk_objects, sky_colour, lights):
+    """ Returns the sky colour. """
+
+    for obj in bk_objects:
+        if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
+            return obj['colour']
+
+    if FANCY_LIGHTING:
+        return get_light_colour(x, y, lights, sky_colour)
+    else:
+        return get_light_colour(x, y, lights)
 
 
 def lerp(a, s, b):
@@ -413,10 +423,16 @@ def gen_blocks():
 
         # If bg is transparent, it must be coloured at runtime.
         if blocks[key]['colours']['bg'] is not None:
+
+            fg = block['colours']['fg']
+            bg = block['colours']['bg']
+            if fg is not None: fg = rgb(*fg)
+            if bg is not None: bg = rgb(*bg)
+
             blocks[key]['char'] = colour_str(
                 blocks[key]['char'],
-                block['colours']['fg'],
-                block['colours']['bg'],
+                fg,
+                bg,
                 block['colours']['style']
             )
 

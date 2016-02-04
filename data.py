@@ -19,8 +19,8 @@ blocks = {
         'char': '░ᚇ~',
         'name': 'Grass',
         'colours': {
-            'fg': rgb(.1, .8, .1),
-            'bg': rgb(0, .4, 0),
+            'fg': (.1, .8, .1),
+            'bg': (0, .4, 0),
             'style': None
         },
         'solid': True,
@@ -32,7 +32,7 @@ blocks = {
         'char': 'v',
         'name': 'Tall Grass',
         'colours': {
-            'fg': rgb(.1, .8, .1),
+            'fg': (.1, .8, .1),
             'bg': None,
             'style': None
         },
@@ -46,8 +46,8 @@ blocks = {
         'char': '#',
         'name': 'Wood',
         'colours': {
-            'fg': rgb(.45, .26, .12),
-            'bg': rgb(0.3, 0.25, 0.15),
+            'fg': (.45, .26, .12),
+            'bg': (0.3, 0.25, 0.15),
             'style': None
         },
         'solid': True,
@@ -59,8 +59,8 @@ blocks = {
         'char': '@',
         'name': 'Leaves',
         'colours': {
-            'fg': GREEN,
-            'bg': rgb(0.15, 0.37, 0.09),
+            'fg': (0, .5, 0),
+            'bg': (0.15, 0.37, 0.09),
             'style': DARK
         },
         'solid': True,
@@ -73,7 +73,7 @@ blocks = {
         'name': 'Stone',
         'colours': {
             'fg': None,
-            'bg': grey(.15),
+            'bg': (.15, .15, .15),
             'style': None
         },
         'solid': True,
@@ -85,8 +85,8 @@ blocks = {
         'char': 'x',
         'name': 'Coal',
         'colours': {
-            'fg': rgb(0, 0, 0),
-            'bg': grey(.15),
+            'fg': (0, 0, 0),
+            'bg': (.15, .15, .15),
             'style': BOLD
         },
         'solid': True,
@@ -98,8 +98,8 @@ blocks = {
         'char': '+',
         'name': 'Iron',
         'colours': {
-            'fg': rgb(0.8, 0.19, 0.15),
-            'bg': grey(.15),
+            'fg': (0.8, 0.19, 0.15),
+            'bg': (.15, .15, .15),
             'style': BOLD
         },
         'solid': True,
@@ -111,8 +111,8 @@ blocks = {
         'char': ':',
         'name': 'Redstone',
         'colours': {
-            'fg': rgb(0.88, 0.06, 0.0),
-            'bg': grey(.15),
+            'fg': (0.88, 0.06, 0.0),
+            'bg': (.15, .15, .15),
             'style': DARK
         },
         'solid': True,
@@ -124,8 +124,8 @@ blocks = {
         'char': '"',
         'name': 'Gold',
         'colours': {
-            'fg': rgb(.8, .4, 0),
-            'bg': grey(.15),
+            'fg': (.8, .4, 0),
+            'bg': (.15, .15, .15),
             'style': BOLD
         },
         'solid': True,
@@ -137,8 +137,8 @@ blocks = {
         'char': 'o',
         'name': 'Diamond',
         'colours': {
-            'fg': rgb(0.0, 0.41, 0.64),
-            'bg': grey(.15),
+            'fg': (0.0, 0.41, 0.64),
+            'bg': (.15, .15, .15),
             'style': BOLD
         },
         'solid': True,
@@ -150,8 +150,8 @@ blocks = {
         'char': 'o',
         'name': 'Emerald',
         'colours': {
-            'fg': rgb(0.02, 0.88, 0.25),
-            'bg': grey(.15),
+            'fg': (0.02, 0.88, 0.25),
+            'bg': (.15, .15, .15),
             'style': BOLD
         },
         'solid': True,
@@ -163,8 +163,8 @@ blocks = {
         'char': '#',
         'name': 'Bedrock',
         'colours': {
-            'fg': grey(.3),
-            'bg': grey(.15),
+            'fg': DARK_GRAY,
+            'bg': (.15, .15, .15),
             'style': None
         },
         'solid': True,
@@ -176,7 +176,7 @@ blocks = {
         'char': '/',
         'name': 'Sticks',
         'colours': {
-            'fg': rgb(0.3, 0.25, 0.15),
+            'fg': (0.3, 0.25, 0.15),
             'bg': None,
             'style': None
         },
@@ -214,7 +214,7 @@ blocks = {
         'char': '=',
         'name': 'Ladder',
         'colours': {
-            'fg': rgb(0.3, 0.27, 0.19),
+            'fg': (0.3, 0.27, 0.19),
             'bg': None,
             'style': None
         },
@@ -289,7 +289,7 @@ blocks = {
         'char': '⚒T',
         'name': 'Wooden Pickaxe',
         'colours': {
-            'fg': rgb(0.3, 0.25, 0.15),
+            'fg': (0.3, 0.25, 0.15),
             'bg': None,
             'style': DARK
         },
@@ -306,7 +306,7 @@ blocks = {
         'char': '⚒T',
         'name': 'Stone Pickaxe',
         'colours': {
-            'fg': DARK_GRAY,
+            'fg': (.15, .15, .15),
             'bg': None,
             'style': None
         },
@@ -323,7 +323,7 @@ blocks = {
         'char': '⚒T',
         'name': 'Iron Pickaxe',
         'colours': {
-            'fg': rgb(0.8, 0.19, 0.15),
+            'fg': (0.8, 0.19, 0.15),
             'bg': None,
             'style': BOLD
         },
@@ -340,7 +340,7 @@ blocks = {
         'char': '⚒T',
         'name': 'Diamond Pickaxe',
         'colours': {
-            'fg': rgb(0.0, 0.41, 0.64),
+            'fg': (0.0, 0.41, 0.64),
             'bg': None,
             'style': BOLD
         },

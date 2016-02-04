@@ -18,7 +18,7 @@ def menu(name, options, selection=0):
         - options: a tuple of option name and option function
     """
 
-    STAR = colour_str('*', YELLOW)
+    STAR = colour_str('*', TERM_YELLOW)
     options = [x for x in options if x is not None]
 
     print_map = {}
