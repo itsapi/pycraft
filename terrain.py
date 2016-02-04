@@ -48,11 +48,9 @@ def explore_map(map_, blocks, start_pos, found):
             (is_solid(blocks, current_block) or edge_slice)):
 
         found.append(start_pos)
-
-        found = explore_map(map_, blocks, (start_pos[0]    ,   start_pos[1] - 1), found)  # Above
-        found = explore_map(map_, blocks, (start_pos[0] + 1,   start_pos[1]    ), found)  # Right
-        found = explore_map(map_, blocks, (start_pos[0]    ,   start_pos[1] + 1), found)  # Below
-        found = explore_map(map_, blocks, (start_pos[0] - 1,   start_pos[1]    ), found)  # Left
+        for diff in ((x, y) for x in range(3) for y in range(3)):
+            pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
+            found = explore_map(map_, blocks, pos, found)
 
     return found
 
