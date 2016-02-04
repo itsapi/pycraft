@@ -1,6 +1,5 @@
 import random
 from math import ceil
-from copy import deepcopy
 
 from data import world_gen
 
@@ -20,15 +19,12 @@ def move_map(map_, edges):
 def apply_gravity(map_, blocks):
     start_pos = (list(map_.keys())[len(map_)//2],
                  world_gen['height'] - 1)
-    all_solid = [b for s in [filter(lambda b: is_solid(blocks, b), map_[s]) for s in map_] for b in s]
 
-    # print(connected_to_ground)
-    # print('{}/{} - {}'.format(len(connected_to_ground), len(all_solid), len(all_solid) - len(connected_to_ground)))
     connected_to_ground = explore_map(map_, blocks, start_pos, [])
 
     redraw = False
     for x, slice_ in map_.items():
-        for y in range(len(slice_)-3,-1,-1):
+        for y in range(len(slice_)-3, -1, -1):
             block = slice_[y]
             if (is_solid(blocks, block) and (x, y) not in connected_to_ground):
                 redraw = True
@@ -46,8 +42,6 @@ def explore_map(map_, blocks, start_pos, found):
         current_block = map_[start_pos[0]][start_pos[1]]
     except (IndexError, KeyError):
         current_block = None
-
-    # print(start_pos, current_block)
 
     if current_block is not None and is_solid(blocks, current_block) and start_pos not in found:
         found.append(start_pos)
