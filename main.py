@@ -40,10 +40,11 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
+                features = meta.get('features', {})
                 if profile:
-                    cProfile.runctx('game(server_obj)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, features)', globals(), locals(), filename='game.profile')
                 else:
-                    game(server_obj)
+                    game(server_obj, features)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -52,7 +53,7 @@ def main():
         print(SHOW_CUR + CLS)
 
 
-def game(server):
+def game(server, features):
     x, y = server.pos
     dx = 0
     dy = 0
