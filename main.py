@@ -117,7 +117,7 @@ def game(server, features):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width)
+            bk_objects, sky_colour = render.bk_objects(server.time, width, features.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -149,7 +149,8 @@ def game(server, features):
                     bk_objects,
                     sky_colour,
                     lights,
-                    last_frame
+                    last_frame,
+                    features.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(

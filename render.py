@@ -12,9 +12,6 @@ sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light_radius', 0), data.blocks.values()))
 
 
-FANCY_LIGHTING = 1
-
-
 def in_circle(test_x, test_y, x, y, r):
     return circle_dist(test_x, test_y, x, y, r) < 1
 
@@ -27,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame):
+def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
@@ -64,7 +61,7 @@ def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame):
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, bk_objects, sky_colour, lights)
+            pixel_out = calc_pixel(x, y, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
             if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
                 pixel_out = colour_str('*', bg=RED, fg=YELLOW)
@@ -95,13 +92,13 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights):
+def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
         bg = blocks[pixel_f]['colours']['bg']
     else:
-        bg = sky(x, y, bk_objects, sky_colour, lights)
+        bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
 
     # Get any object
     object_char, obj_colour = obj_pixel(x, y, objects)
@@ -124,7 +121,7 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights):
     )
 
 
-def bk_objects(time, width):
+def bk_objects(time, width, fancy_lights):
     """ Returns objects for rendering to the background """
 
     objects = []
@@ -147,7 +144,7 @@ def bk_objects(time, width):
         'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
     }
 
-    if FANCY_LIGHTING:
+    if fancy_lights:
         shade = (cos(time) + 1) / 2
 
         sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
@@ -171,8 +168,8 @@ def bk_objects(time, width):
     return objects, sky_colour
 
 
-def get_light_colour(x, y, lights, sky_colour):
-    if FANCY_LIGHTING:
+def get_light_colour(x, y, lights, sky_colour, fancy_lights):
+    if fancy_lights:
 
         # Get all lights which affect this pixel
         pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
@@ -198,17 +195,14 @@ def get_light_colour(x, y, lights, sky_colour):
     return pixel_colour
 
 
-def sky(x, y, bk_objects, sky_colour, lights):
+def sky(x, y, bk_objects, sky_colour, lights, fancy_lights):
     """ Returns the sky colour. """
 
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
             return obj['colour']
 
-    if FANCY_LIGHTING:
-        return get_light_colour(x, y, lights, sky_colour)
-    else:
-        return get_light_colour(x, y, lights)
+    return get_light_colour(x, y, lights, sky_colour, fancy_lights)
 
 
 def lerp(a, s, b):
