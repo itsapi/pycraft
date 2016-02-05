@@ -5,6 +5,7 @@ from math import radians
 from random import random
 
 import console as c
+from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface
@@ -18,12 +19,14 @@ def main():
     # Menu loop
     try:
         meta = saves.get_global_meta()
+        features = meta.get('features', {})
 
         profile = c.getenv_b('PYCRAFT_PROFILE')
 
         name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
+        init_colours(features.get('colours', True))
         saves.check_map_dir()
 
         while True:
@@ -40,7 +43,6 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
-                features = meta.get('features', {})
                 if profile:
                     cProfile.runctx('game(server_obj, features)', globals(), locals(), filename='game.profile')
                 else:
