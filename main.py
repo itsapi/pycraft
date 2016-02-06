@@ -3,6 +3,7 @@ from math import radians
 from random import random
 
 from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
+from colours import init_colours
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render
 
@@ -11,18 +12,22 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
+    meta = saves.get_global_meta()
+    features = meta.get('features', {})
+
+    init_colours(features.get('colours', True))
     blocks = render.gen_blocks()
 
     # Menu loop
     try:
         while True:
-            game(blocks, *ui.main())
+            game(blocks, features, *ui.main())
 
     finally:
         print(SHOW_CUR + CLS)
 
 
-def game(blocks, meta, map_, save):
+def game(blocks, features, meta, map_, save):
     x = meta['player_x']
     y = meta['player_y']
     dx = 0
@@ -96,7 +101,7 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(meta['tick'], width)
+            bk_objects, sky_colour = render.bk_objects(meta['tick'], width, features.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 redraw = True
@@ -127,7 +132,8 @@ def game(blocks, meta, map_, save):
                     sky_colour,
                     lights,
                     meta['tick'],
-                    last_frame
+                    last_frame,
+                    features.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(
