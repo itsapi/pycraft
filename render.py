@@ -3,6 +3,7 @@ from math import cos, sin, sqrt, modf
 from colours import *
 from console import *
 from data import world_gen, blocks
+from terrain import is_solid
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
@@ -45,10 +46,10 @@ def render_map(map_, objects, blocks, bk_objects, sky_colour, lights, tick, last
     #         [2, '##  ']]
 
     # Separates the pos and data
-    map_ = tuple(zip(*map_))[1]
+    map_ = list(zip(*map_))[1]
 
     # Orientates the data
-    map_ = zip(*map_)
+    map_ = list(zip(*map_))
 
     diff = ''
     this_frame = []
@@ -58,7 +59,7 @@ def render_map(map_, objects, blocks, bk_objects, sky_colour, lights, tick, last
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
+            pixel_out = calc_pixel(x, y, map_, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
             this_frame[-1].append(pixel_out)
 
             try:
@@ -85,7 +86,7 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
+def calc_pixel(x, y, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
 
     # Add any objects
     object_, obj_colour = obj_pixel(x, y, objects, blocks)
@@ -112,7 +113,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, t
             fg = blocks[pixel_f]['colours']['fg']
 
         return colour_str(
-            blocks[pixel_f]['char'],
+            get_char(x, y, map_, pixel_f, blocks),
             bg = bg,
             fg = fg,
             style = blocks[pixel_f]['colours']['style']
@@ -120,6 +121,30 @@ def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, t
 
     else: # The block was coloured on startup
         return blocks[pixel_f]['char']
+
+
+def get_block(x, y, map_):
+    try:
+        return map_[y][x]
+    except (KeyError, IndexError):
+        return None
+
+
+def get_char(x, y, map_, pixel, blocks):
+    left = get_block(x-1, y, map_)
+    right = get_block(x+1, y, map_)
+    below = get_block(x, y+1, map_)
+
+    if below is not None and is_solid(blocks, below):
+        return blocks[pixel]['char']
+
+    if left is not None and is_solid(blocks, left):
+        return blocks[pixel].get('char_left', blocks[pixel]['char'])
+
+    if right is not None and is_solid(blocks, right):
+        return blocks[pixel].get('char_right', blocks[pixel]['char'])
+
+    return blocks[pixel]['char']
 
 
 def bk_objects(time, width, fancy_lights):
