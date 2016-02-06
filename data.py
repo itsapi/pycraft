@@ -12,6 +12,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 0
     },
     '-': {
@@ -24,18 +25,20 @@ blocks = {
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 20
     },
     'v': {
         'char': 'v',
         'name': 'Tall Grass',
         'colours': {
-            'fg': GREEN,
+            'fg': rgb(.1, .8, .1),
             'bg': None,
-            'style': DARK
+            'style': None
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 0,
         'placed_on': '-v'
     },
@@ -43,12 +46,13 @@ blocks = {
         'char': '#',
         'name': 'Wood',
         'colours': {
-            'fg': LIGHT_GRAY,
-            'bg': MAGENTA,
+            'fg': rgb(.45, .26, .12),
+            'bg': rgb(0.3, 0.25, 0.15),
             'style': None
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10
     },
     '@': {
@@ -56,119 +60,129 @@ blocks = {
         'name': 'Leaves',
         'colours': {
             'fg': GREEN,
-            'bg': GREEN,
+            'bg': rgb(0.15, 0.37, 0.09),
             'style': DARK
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 5
     },
     '#': {
-        'char': '~',
+        'char': ' ',
         'name': 'Stone',
         'colours': {
             'fg': None,
             'bg': grey(.15),
-            'style': CLEAR
+            'style': None
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 50
     },
     'x': {
         'char': 'x',
         'name': 'Coal',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0, 0, 0),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 55
     },
     '+': {
         'char': '+',
         'name': 'Iron',
         'colours': {
-            'fg': LIGHT_RED,
+            'fg': rgb(0.8, 0.19, 0.15),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 60
     },
     ':': {
         'char': ':',
         'name': 'Redstone',
         'colours': {
-            'fg': RED,
+            'fg': rgb(0.88, 0.06, 0.0),
             'bg': grey(.15),
             'style': DARK
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 65
     },
     '"': {
         'char': '"',
         'name': 'Gold',
         'colours': {
-            'fg': YELLOW,
+            'fg': rgb(.8, .4, 0),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 70
     },
     'o': {
         'char': 'o',
         'name': 'Diamond',
         'colours': {
-            'fg': LIGHT_BLUE,
+            'fg': rgb(0.0, 0.41, 0.64),
             'bg': grey(.15),
-            'style': None
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 75
     },
     '.': {
         'char': 'o',
         'name': 'Emerald',
         'colours': {
-            'fg': GREEN,
+            'fg': rgb(0.02, 0.88, 0.25),
             'bg': grey(.15),
-            'style': DARK
+            'style': BOLD
         },
         'solid': True,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 80
     },
     '_': {
         'char': '#',
         'name': 'Bedrock',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': grey(.3),
             'bg': grey(.15),
             'style': None
         },
         'solid': True,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 100
     },
     '/': {
         'char': '/',
         'name': 'Sticks',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0.3, 0.25, 0.15),
             'bg': None,
             'style': None
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 10,
         'recipe': {
             '|': 1
@@ -185,32 +199,53 @@ blocks = {
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 1,
             'x': 1
         },
         'crafts': 4,
-        'light': 7,
-        'placed_on_solid': True,
+        'light_radius': 7,
+        'light_colour': (.2,.8,.8),
+        'placed_on_solid': True
         'placed_on_wall': True
     },
     '=': {
         'char': '=',
         'name': 'Ladder',
         'colours': {
-            'fg': LIGHT_GRAY,
+            'fg': rgb(0.3, 0.27, 0.19),
             'bg': None,
             'style': None
         },
         'solid': False,
         'breakable': True,
+        'placeable': True,
         'hierarchy': 10,
         'recipe': {
             '/': 3
         },
         'placed_on': '=',
         'placed_on_solid': True
+    },
+    '?': {
+        'char': '?',
+        'name': 'TNT',
+        'colours': {
+            'fg': RED,
+            'bg': None,
+            'style': None
+        },
+        'solid': True,
+        'breakable': True,
+        'placeable': True,
+        'hierarchy': 85,
+        'recipe': {
+            '|': 2,
+            ':': 1,
+            'x': 6
+        }
     },
     '*': {
         'char': '*',
@@ -222,6 +257,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     '^': {
@@ -234,6 +270,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1000
     },
     'X': {
@@ -246,18 +283,20 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'hierarchy': 1010
     },
     '1': {
         'char': '⚒T',
         'name': 'Wooden Pickaxe',
         'colours': {
-            'fg': MAGENTA,
+            'fg': rgb(0.3, 0.25, 0.15),
             'bg': None,
             'style': DARK
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 50,
         'recipe': {
             '/': 2,
@@ -274,6 +313,7 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 60,
         'recipe': {
             '/': 2,
@@ -284,12 +324,13 @@ blocks = {
         'char': '⚒T',
         'name': 'Iron Pickaxe',
         'colours': {
-            'fg': RED,
+            'fg': rgb(0.8, 0.19, 0.15),
             'bg': None,
-            'style': DARK
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 75,
         'recipe': {
             '/': 2,
@@ -300,12 +341,13 @@ blocks = {
         'char': '⚒T',
         'name': 'Diamond Pickaxe',
         'colours': {
-            'fg': CYAN,
+            'fg': rgb(0.0, 0.41, 0.64),
             'bg': None,
-            'style': DARK
+            'style': BOLD
         },
         'solid': False,
         'breakable': False,
+        'placeable': False,
         'strength': 80,
         'recipe': {
             '/': 2,
@@ -323,6 +365,15 @@ world_gen = {
     'max_biome_size': 50,
     'biome_tree_weights': [0]*2 + [.05]*2 + [.2],
     'tall_grass_rate': .25,
+
+    'day_colour': (0,.4,1),
+    'night_colour': (0,0,.2),
+    'sun_light_radius': 25,
+    'sun_colour': (.8,.6,0),
+    'moon_colour': (1,1,1),
+    'sun_light_colour': (0,1,1),
+    'moon_light_colour': (.6,.6,.8),
+
     'ores': {
         'coal': {
             'char': 'x',
@@ -393,7 +444,29 @@ world_gen = {
          (0, 1, 1, 1, 1, 0),
          (1, 1, 0, 0, 0, 0),
          (0, 1, 1, 0, 1, 1),
-         (0, 0, 1, 1, 0, 1))
+         (0, 0, 1, 1, 0, 1)),
+        ((0,0,1,1,0,1,1,0),
+         (0,1,1,1,1,1,1,1),
+         (1,1,1,1,1,1,1,1),
+         (1,1,1,1,1,0,0,0),
+         (1,1,1,1,1,1,1,1),
+         (0,1,1,1,1,1,1,1),
+         (0,0,1,0,1,1,1,0)),
+        ((0,0,0,0,0,0,1,1,0,0),
+         (0,0,0,0,0,1,0,1,0,1),
+         (0,0,0,0,1,1,1,1,1,1),
+         (0,0,0,1,1,1,1,1,1,0),
+         (0,0,0,1,1,1,1,1,1,1),
+         (0,1,1,1,1,1,1,1,1,0),
+         (0,0,1,1,1,0,1,1,1,0),
+         (0,0,1,1,1,1,1,0,1,0),
+         (0,0,1,1,1,1,1,1,1,0),
+         (0,0,1,1,1,1,1,1,1,1),
+         (0,0,1,1,1,1,1,1,0,0),
+         (0,0,0,0,1,1,1,1,1,1),
+         (0,0,0,0,1,1,1,1,1,0),
+         (0,0,0,0,0,1,0,1,1,0),
+         (0,0,0,0,0,0,0,0,1,0))
     )
 }
 

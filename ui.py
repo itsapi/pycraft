@@ -1,7 +1,7 @@
 import sys
 import json
 
-from nbinput import BlockingInput, escape_code, UP, DOWN, RIGHT, LEFT
+from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT
 from colours import *
 
@@ -40,7 +40,7 @@ def menu(name, options):
 
             # Wait for useful input
             while True:
-                char = str(escape_code(bi))
+                char = str(bi.escape_code())
                 if char in ' \n':
                     break
                 if char in 'Ww'+UP:

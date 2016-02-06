@@ -176,3 +176,18 @@ def save_map(save, slices):
 def list_saves():
     return [(save, get_meta(save)) for save in os.listdir(SAVES_DIR)
         if os.path.isdir(save_path(save))]
+
+
+def get_global_meta():
+    try:
+        with open('meta.json') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    return data
+
+
+def save_global_meta(meta):
+    with open('meta.json', 'w') as f:
+        json.dump(meta, f)

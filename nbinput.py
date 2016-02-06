@@ -37,6 +37,12 @@ class NonBlockingInput:
     def __exit__(self, type_, value, traceback):
         self.impl.exit(type_, value, traceback)
 
+    def escape_code(self):
+        first, char = self.char(), self.char()
+        if first == '[' and self.char() == chr(27):
+            return char
+        return first
+
 
 class _nbiGetchUnix:
     def __init__(self):
@@ -129,6 +135,12 @@ class BlockingInput(NonBlockingInput):
             except (AttributeError, ImportError):
                 self.impl = _biGetchUnix()
 
+    def escape_code(self):
+        first = self.char()
+        if first == chr(27) and self.char() == '[':
+            return self.char()
+        return first
+
 
 class _biGetchUnix(_nbiGetchUnix):
     def char(self):
@@ -147,19 +159,14 @@ class _biGetchMacCarbon(_nbiGetchMacCarbon):
     pass
 
 
-def escape_code(bi):
-    # Blocking only
-    first = bi.char()
-    if first == chr(27) and bi.char() == '[':
-        return bi.char()
-    return first
-
-
 def main():
     import time
     with BlockingInput() as bi:
         while True:
-            print(ord(escape_code(bi)))
+            c = bi.escape_code()
+            if c == chr(27):
+                break
+            print(c)
 
 
 if __name__ == '__main__':

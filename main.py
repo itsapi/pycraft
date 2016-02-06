@@ -1,7 +1,9 @@
 from time import time
 from math import radians
+from random import random
 
 from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
+from colours import init_colours
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render
 
@@ -10,18 +12,22 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
+    meta = saves.get_global_meta()
+    features = meta.get('features', {})
+
+    init_colours(features.get('colours', True))
     blocks = render.gen_blocks()
 
     # Menu loop
     try:
         while True:
-            game(blocks, *ui.main())
+            game(blocks, features, *ui.main())
 
     finally:
         print(SHOW_CUR + CLS)
 
 
-def game(blocks, meta, map_, save):
+def game(blocks, features, meta, map_, save):
     x = meta['player_x']
     y = meta['player_y']
     dx = 0
@@ -40,7 +46,7 @@ def game(blocks, meta, map_, save):
     MPS = 15 # Movement
     SUN_TICK = radians(1/32)
 
-    old_sun = None
+    old_bk_objects = None
     old_edges = None
     redraw = False
     last_frame = []
@@ -58,6 +64,7 @@ def game(blocks, meta, map_, save):
     c_hidden = True
     new_slices = {}
     alive = True
+    events = []
 
     crafting_list, crafting_sel = player.get_crafting(
         meta['inv'],
@@ -94,9 +101,9 @@ def game(blocks, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            sun = render.sun(meta['tick'], width)
-            if not sun == old_sun:
-                old_sun = sun
+            bk_objects, sky_colour = render.bk_objects(meta['tick'], width, features.get('fancy_lights', True))
+            if not bk_objects == old_bk_objects:
+                old_bk_objects = bk_objects
                 redraw = True
 
             # Draw view
@@ -105,7 +112,7 @@ def game(blocks, meta, map_, save):
                 redraw = False
                 last_out = time()
 
-                cursor_colour, can_break = player.cursor_colour(
+                cursor_colour = player.cursor_colour(
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
                 )
 
@@ -113,16 +120,18 @@ def game(blocks, meta, map_, save):
                     int(width / 2), y, cursor, cursor_colour, c_hidden
                 )
 
-                lights = render.get_lights(extended_view, edges[0], blocks)
+                lights = render.get_lights(extended_view, edges[0], blocks, bk_objects)
 
                 out, last_frame = render.render_map(
                     view,
                     objects,
                     blocks,
-                    sun,
+                    bk_objects,
+                    sky_colour,
                     lights,
                     meta['tick'],
-                    last_frame
+                    last_frame,
+                    features.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(
@@ -157,8 +166,8 @@ def game(blocks, meta, map_, save):
                 alive = True
                 x, y = player.respawn(meta)
 
-            # Player falls when no solid block below it
             if dt:
+                # Player falls when no solid block below it
                 if jump > 0:
                     # Countdown till fall
                     jump -= 1
@@ -166,6 +175,10 @@ def game(blocks, meta, map_, save):
                     # Fall
                     y += 1
                     redraw = True
+
+                new_new_slices = process_events(events, map_, blocks)
+                new_slices.update(new_new_slices)
+                map_.update(new_new_slices)
 
             # If no block below, kill player
             try:
@@ -189,13 +202,13 @@ def game(blocks, meta, map_, save):
 
                     last_move = time()
 
-                new_slices, meta['inv'], inv_sel, dinv = \
-                    player.cursor_func(
-                        str(inp), map_, x, y, cursor,
-                        can_break, inv_sel, meta, blocks
-                    )
+                new_new_slices, meta['inv'], inv_sel, new_events, dinv = \
+                    player.cursor_func(str(inp), map_, x, y, cursor, inv_sel, meta, blocks)
 
-                map_.update(new_slices)
+                map_.update(new_new_slices)
+                new_slices.update(new_new_slices)
+
+                events += new_events
 
                 dcraft, dcraftC, dcraftN = False, False, False
                 if dinv: crafting = False
@@ -267,6 +280,38 @@ def game(blocks, meta, map_, save):
                 last_tick = time()
             else:
                 dt = 0
+
+
+def process_events(events, map_, blocks):
+    new_slices = {}
+
+    for event in events:
+        if event['time_remaining'] <= 0:
+            ex, ey = event['pos']
+
+            # Boom
+            radius = 5
+            blast_strength = 85
+            for tx in range(ex - radius*2, ex + radius*2):
+                for ty in range(ey - radius, ey + radius):
+
+                    if (render.in_circle(tx, ty, ex, ey, radius) and tx in map_ and ty >= 0 and ty < len(map_[tx]) and
+                            player.can_strength_break(map_[tx][ty], blast_strength, blocks)):
+
+                        new_slices.setdefault(tx, map_[tx])
+
+                        if not render.in_circle(tx, ty, ex, ey, radius - 1):
+                            if random() < .5:
+                                new_slices[tx][ty] = ' '
+                        else:
+                            new_slices[tx][ty] = ' '
+
+
+            events.remove(event)
+        else:
+            event['time_remaining'] -= 1
+
+    return new_slices
 
 
 if __name__ == '__main__':
