@@ -112,7 +112,8 @@ def game(blocks, features, meta, map_, save):
                 redraw = False
                 last_out = time()
 
-                view, redraw = terrain.apply_gravity(view, blocks)
+                if features.get('gravity', True):
+                    view, redraw = terrain.apply_gravity(view, blocks)
 
                 cursor_colour = player.cursor_colour(
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
