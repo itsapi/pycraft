@@ -3,6 +3,7 @@ from math import radians
 from random import random
 
 from console import DEBUG, CLS, SHOW_CUR, HIDE_CUR, in_game_debug
+from colours import init_colours
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render
 
@@ -14,6 +15,8 @@ def main():
 
     meta = saves.get_global_meta()
     features = meta.get('features', {})
+
+    init_colours(features.get('colours', True))
 
     blocks = render.gen_blocks()
 

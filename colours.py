@@ -17,13 +17,20 @@ _has_colours = _has_colours(sys.stdout)
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
+def init_colours(colours):
+    global _has_colours
+    _has_colours &= colours
+
 def colour_str(text, fg=None, bg=None, style=None):
-    code = ''
+    code, end = '', ''
+
     if _has_colours:
         if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
         if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
         if style is not None: code += '\x1b[{}m'.format(style)
-    return code + text + '\x1b[0m'
+        end = '\x1b[0m'
+
+    return code + text + end
 
 
 def rgb(r, g, b):
