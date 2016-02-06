@@ -340,20 +340,16 @@ def render_grid(title, selected, grid, max_height, sel=None):
     for c, slot in enumerate(grid[offset:offset+max_height]):
         i = c + offset
 
-        if slot is not None:
-            block_char = blocks[slot['block']]['char']
-            num = slot['num']
-        else:
-            block_char, num = ' ', ''
+        block_char = blocks[slot['block']]['char']
+        num = slot['num']
 
         colour = blocks[slot['block']]['colours']
-        if colour['bg'] is None:
-            block_char = colour_str(
-                block_char,
-                fg=rgb(*colour['fg']),
-                bg=None,
-                style=colour['style']
-            )
+        block_char = colour_str(
+            block_char,
+            fg=rgb(*colour['fg']) if colour['fg'] is not None else None,
+            bg=rgb(*colour['bg']) if colour['bg'] is not None else None,
+            style=colour['style']
+        )
 
         # Have to do the padding before colour because the colour
         #   messes with the char count. (The block will always be 1 char wide.)
