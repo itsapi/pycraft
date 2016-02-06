@@ -187,8 +187,8 @@ def game(blocks, features, meta, map_, save):
                 alive = False
 
             # Receive input if a key is pressed
-            char = str(nbi.char()).lower()
-            inp = char if char in 'wadkjliuo-=' else None
+            char = str(nbi.char())
+            inp = char if char in list('wadkjliuo-=') + ['up', 'left', 'right'] else None
 
             # Input Frame
             if time() >= (1/IPS) + last_inp and alive and inp:
@@ -260,12 +260,12 @@ def game(blocks, features, meta, map_, save):
                 crafting = not crafting and len(crafting_list)
 
             # Hard pause
-            if DEBUG and char in '\n':
+            if DEBUG and char in ['enter']:
                 input()
                 char = '0'
 
             # Pause game
-            if char in ' \n':
+            if char in [' ', 'enter']:
                 meta['player_x'], meta['player_y'] = x, y
                 saves.save_meta(save, meta)
                 redraw = True
