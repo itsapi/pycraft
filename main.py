@@ -11,18 +11,22 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
+
+    meta = saves.get_global_meta()
+    features = meta.get('features', {})
+
     blocks = render.gen_blocks()
 
     # Menu loop
     try:
         while True:
-            game(blocks, *ui.main())
+            game(blocks, features, *ui.main())
 
     finally:
         print(SHOW_CUR + CLS)
 
 
-def game(blocks, meta, map_, save):
+def game(blocks, features, meta, map_, save):
     x = meta['player_x']
     y = meta['player_y']
     dx = 0
