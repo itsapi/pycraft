@@ -12,12 +12,10 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
-
     meta = saves.get_global_meta()
     features = meta.get('features', {})
 
     init_colours(features.get('colours', True))
-
     blocks = render.gen_blocks()
 
     # Menu loop
@@ -103,7 +101,7 @@ def game(blocks, features, meta, map_, save):
                 redraw = True
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(meta['tick'], width)
+            bk_objects, sky_colour = render.bk_objects(meta['tick'], width, features.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 redraw = True
@@ -132,7 +130,8 @@ def game(blocks, features, meta, map_, save):
                     sky_colour,
                     lights,
                     meta['tick'],
-                    last_frame
+                    last_frame,
+                    features.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(
