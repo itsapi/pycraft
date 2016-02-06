@@ -191,6 +191,8 @@ blocks = {
     },
     'i': {
         'char': '¡i',
+        'char_left': '/',
+        'char_right': '\\',
         'name': 'Torch',
         'colours': {
             'fg': YELLOW,
