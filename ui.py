@@ -104,7 +104,7 @@ def main(meta):
 
 
 def lambda_gen(func, *args, **kwargs):
-    """ Creates a lambda for to call a function. """
+    """ Creates a lambda to call a function. """
     return lambda: func(*args, **kwargs)
 
 
