@@ -12,7 +12,7 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
-    meta = saves.get_global_meta()
+    meta = saves.load_global_meta()
     features = meta.get('features', {})
 
     init_colours(features.get('colours', True))

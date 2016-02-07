@@ -117,8 +117,11 @@ def new():
         print(CLS)
         return None
 
-    meta['seed'] = input(colour_str(' Map seed', style=BOLD)
-                         + ' (leave blank to randomise): ')
+    seed = input(colour_str(' Map seed', style=BOLD)
+                 + ' (leave blank to randomise): ')
+    if seed:
+        meta['seed'] = seed
+
     save = saves.new_save(meta)
 
     if save is None:
