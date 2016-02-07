@@ -168,31 +168,29 @@ def bk_objects(time, width, fancy_lights):
     return objects, sky_colour
 
 
-def get_light_colour(x, y, lights, sky_colour, fancy_lights):
+def get_light_colour(x, y, lights, colour_behind, fancy_lights):
     if fancy_lights:
 
         # Get all lights which affect this pixel
         pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
 
         # Calculate light level for each light source
-        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l[0]), l[1], sky_colour)) for l in pixel_lights]
+        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l[0]), l[1], colour_behind)) for l in pixel_lights]
 
         # Get brightest light
         if light_levels:
             light = max(map(lambda l: round_to_palette(*l), light_levels), key=lightness)
         else:
-            light = hsv_to_rgb(sky_colour)
-
-        pixel_colour = light
+            light = hsv_to_rgb(colour_behind)
 
     else:
 
         if any(map(lambda l: lit(x, y, l) < 1, lights)):
-            pixel_colour = CYAN
+            light = CYAN
         else:
-            pixel_colour = sky_colour
+            light = colour_behind
 
-    return pixel_colour
+    return light
 
 
 def sky(x, y, bk_objects, sky_colour, lights, fancy_lights):
@@ -394,9 +392,7 @@ def render_grids(grids, x, max_height):
 def gen_blocks():
     blocks = data.blocks
 
-    # Convert the characters to their coloured form
     for key, block in blocks.items():
-
         # Get supported version of block char
         blocks[key]['char'] = supported_chars(*block['char'])
 
