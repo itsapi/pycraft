@@ -178,9 +178,13 @@ def add_save():
         print(CLS, end='')
         return None
 
-    meta['seed'] = input(colour_str(' Map seed', style=BOLD)
-                         + ' (leave blank to randomise): ' + SHOW_CUR)
+    seed = input(colour_str(' Map seed', style=BOLD)
+                 + ' (leave blank to randomise): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
+
+    if seed:
+        meta['seed'] = seed
+
     save = saves.new_save(meta)
 
     if save is None:

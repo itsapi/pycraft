@@ -10,7 +10,7 @@ from console import log
 
 default_meta = {
     'name': 'Untitled',
-    'seed': '',
+    'seed': lambda: hash(random.random()),
     'spawn': 0,
     'tick': 0,
     'players': {}
@@ -20,6 +20,13 @@ default_player = {
     'player_x': int(os.getenv('PYCRAFT_START_X') or 0),
     'player_y': 1,
     'inv': []
+}
+
+default_global_meta = {
+    'settings': {
+        'colours': True,
+        'fancy_lights': True
+    }
 }
 
 SAVES_DIR = 'saves'
@@ -66,43 +73,6 @@ def load_player(name, meta):
         meta['players'][name] = {}
         meta['players'][name].update(default_player)
     return meta
-
-
-def load_meta(save):
-    try:
-        meta = check_meta(get_meta(save))
-    except FileNotFoundError:
-        meta = default_meta
-
-    save_meta(save, meta)
-    return meta
-
-
-def get_meta(save):
-    with open(meta_path(save)) as f:
-        data = json.load(f)
-
-    return data
-
-
-def check_meta(meta):
-    # Create meta items if needed
-    for key, default in default_meta.items():
-        try:
-            meta[key]
-        except KeyError:
-            meta[key] = default
-
-    if not meta['seed']:
-        meta['seed'] = hash(random.random())
-
-    return meta
-
-
-def save_meta(save, meta):
-    # Save meta file
-    with open(meta_path(save), 'w') as f:
-        json.dump(meta, f)
 
 
 def chunk_file_name(save, chunk_n):
@@ -192,21 +162,6 @@ def list_saves():
             if os.path.isdir(save_path(save))]
 
 
-def get_global_meta():
-    try:
-        with open('meta.json') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {}
-
-    return data
-
-
-def save_global_meta(meta):
-    with open('meta.json', 'w') as f:
-        json.dump(meta, f)
-
-
 def add_server(meta, server):
     meta['servers'] = meta.get('servers', [])
     meta['servers'].append(server)
@@ -216,3 +171,56 @@ def add_server(meta, server):
 def delete_server(meta, server):
     meta['servers'].remove(server)
     save_global_meta(meta)
+
+
+def check_meta(meta):
+    return set_defaults(meta, default_meta)
+
+
+def save_global_meta(meta):
+    save_json('meta.json', meta)
+
+
+def save_meta(save, meta):
+    # Save meta file
+    save_json(meta_path(save), meta)
+
+
+def get_global_meta():
+    return load_meta('meta.json', default_global_meta)
+
+
+def get_meta(save):
+    return load_meta(meta_path(save), default_meta)
+
+
+def save_json(path, meta):
+    with open(path, 'w') as f:
+        json.dump(meta, f)
+
+
+def load_meta(path, default):
+    try:
+        with open(path) as f:
+            meta = json.load(f)
+    except FileNotFoundError:
+        meta = default
+    else:
+        set_defaults(meta, default)
+
+    save_json(path, meta)
+    return meta
+
+
+def set_defaults(options, defaults):
+    for key, default in defaults.items():
+        if key not in options:
+            if callable(default):
+                options[key] = default()
+            else:
+                options[key] = default
+
+        if isinstance(default, dict):
+            options[key] = set_defaults(options[key], default)
+
+    return options

@@ -19,14 +19,14 @@ def main():
     # Menu loop
     try:
         meta = saves.get_global_meta()
-        features = meta.get('features', {})
+        settings = meta.get('settings', {})
 
         profile = c.getenv_b('PYCRAFT_PROFILE')
 
         name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
-        init_colours(features.get('colours', True))
+        init_colours(settings.get('colours', True))
         saves.check_map_dir()
 
         while True:
@@ -44,9 +44,9 @@ def main():
 
             if not server_obj.error:
                 if profile:
-                    cProfile.runctx('game(server_obj, features)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
                 else:
-                    game(server_obj, features)
+                    game(server_obj, settings)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -55,7 +55,7 @@ def main():
         print(SHOW_CUR + CLS)
 
 
-def game(server, features):
+def game(server, settings):
     x, y = server.pos
     dx = 0
     dy = 0
@@ -119,7 +119,7 @@ def game(server, features):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width, features.get('fancy_lights', True))
+            bk_objects, sky_colour = render.bk_objects(server.time, width, settings.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -152,7 +152,7 @@ def game(server, features):
                     sky_colour,
                     lights,
                     last_frame,
-                    features.get('fancy_lights', True)
+                    settings.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(

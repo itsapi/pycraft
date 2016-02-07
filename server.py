@@ -163,7 +163,7 @@ class Game:
     def __init__(self, save):
         self._save = save
         self._map = {}
-        self._meta = saves.load_meta(save)
+        self._meta = saves.get_meta(save)
         self._last_tick = time()
 
     def get_chunks(self, chunk_list):

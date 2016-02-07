@@ -174,16 +174,21 @@ def gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 attrs = {}
                 attrs['type'] = type_
 
+                leaves = tree_data['leaves']
+
                 # Centre tree slice (contains trunk)
                 # TODO: This calculation could be done on start-up, and stored
                 #         with each tree type.
-                leaves = tree_data['leaves']
                 center_leaves = leaves[int(len(leaves) / 2)]
-                attrs['trunk_depth'] = next(i for i, leaf in enumerate(center_leaves[::-1]) if leaf)
+                if 1 in center_leaves:
+                    attrs['trunk_depth'] = center_leaves[::-1].index(1)
+                else:
+                    attrs['trunk_depth'] = len(center_leaves)
+
 
                 # Get space above ground
                 air_height = world_gen['height'] - ground_heights[x]
-                tree_height = air_height - len(center_leaves) + attrs['trunk_depth']
+                tree_height = air_height - (len(center_leaves) - attrs['trunk_depth'])
                 attrs['height'] = random.randint(2, max(tree_height, 2))
 
                 features[x]['tree'] = attrs
