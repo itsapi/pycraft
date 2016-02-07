@@ -103,9 +103,9 @@ def main(meta):
     ))
 
 
-def lambda_gen(func, var):
-    """ Creates a lambda for to call a function with a parameter. """
-    return lambda: func(var)
+def lambda_gen(func, *args, **kwargs):
+    """ Creates a lambda for to call a function. """
+    return lambda: func(*args, **kwargs)
 
 
 def title(name):
