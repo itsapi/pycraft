@@ -64,28 +64,31 @@ def add_tree(slice_, pos, meta, blocks):
 
             # Centre tree slice (contains trunk)
             center_leaves = tree[int(len(tree)/2)]
-            trunk_depth = next(i for i, leaf in enumerate(center_leaves[::-1])
-                               if leaf)
-            tree_height = random.randint(1, air_height
-                          - len(center_leaves) + trunk_depth)
+            if 1 in center_leaves:
+                trunk_depth = center_leaves[::-1].index(1)
+            else:
+                trunk_depth = len(center_leaves)
 
-            # Find leaves of current tree
-            for i, leaf_slice in enumerate(tree):
-                leaf_pos = x + (i - int(len(tree) / 2))
-                if leaf_pos == pos:
-                    leaf_height = air_height - tree_height - (len(leaf_slice) - trunk_depth)
+            if len(center_leaves) - trunk_depth < air_height:
+                tree_height = random.randint(1, air_height - (len(center_leaves) - trunk_depth))
 
-                    # Add leaves to slice
-                    for j, leaf in enumerate(leaf_slice):
-                        if leaf:
-                            sy = leaf_height + j
-                            slice_[sy] = spawn_hierarchy(blocks, ('@', slice_[sy]))
+                # Find leaves of current tree
+                for i, leaf_slice in enumerate(tree):
+                    leaf_pos = x + (i - int(len(tree) / 2))
+                    if leaf_pos == pos:
+                        leaf_height = air_height - tree_height - (len(leaf_slice) - trunk_depth)
 
-            if x == pos:
-                # Add trunk to slice
-                for i in range(air_height - tree_height,
-                               air_height):
-                    slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
+                        # Add leaves to slice
+                        for j, leaf in enumerate(leaf_slice):
+                            if leaf:
+                                sy = leaf_height + j
+                                slice_[sy] = spawn_hierarchy(blocks, ('@', slice_[sy]))
+
+                if x == pos:
+                    # Add trunk to slice
+                    for i in range(air_height - tree_height,
+                                   air_height):
+                        slice_[i] = spawn_hierarchy(blocks, ('|', slice_[i]))
 
     return slice_
 
