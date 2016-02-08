@@ -10,6 +10,7 @@ from console import log
 
 default_meta = {
     'name': 'Untitled',
+    'format': 1,
     'seed': lambda: hash(random.random()),
     'spawn': 0,
     'tick': 0,
@@ -206,6 +207,8 @@ def load_meta(path, default):
     except FileNotFoundError:
         meta = default
     else:
+        if not default.get('format') == meta.get('format'):
+            meta['error'] = True
         set_defaults(meta, default)
 
     save_json(path, meta)
