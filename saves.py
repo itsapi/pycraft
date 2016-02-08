@@ -16,17 +16,17 @@ default_meta = {
     'players': {}
 }
 
+default_global_meta = {}
+
+default_settings = {
+    'colours': True,
+    'fancy_lights': True
+}
+
 default_player = {
     'player_x': int(os.getenv('PYCRAFT_START_X') or 0),
     'player_y': 1,
     'inv': []
-}
-
-default_global_meta = {
-    'settings': {
-        'colours': True,
-        'fancy_lights': True
-    }
 }
 
 SAVES_DIR = 'saves'
@@ -181,13 +181,20 @@ def save_global_meta(meta):
     save_json('meta.json', meta)
 
 
+def save_settings(meta):
+    save_json('settings.json', meta)
+
+
 def save_meta(save, meta):
-    # Save meta file
     save_json(meta_path(save), meta)
 
 
 def get_global_meta():
     return load_meta('meta.json', default_global_meta)
+
+
+def get_settings():
+    return load_meta('settings.json', default_settings)
 
 
 def get_meta(save):

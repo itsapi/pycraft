@@ -91,13 +91,14 @@ def loop_menu(title, generator):
     return data
 
 
-def main(meta):
+def main(meta, settings):
     """ Loops the main menu until the user loads a save. """
 
     print(CLS, end='')
     return loop_menu('Main menu', lambda: (
         [('Saves', load_save)] +
         [('Multiplayer', lambda: servers(meta))] +
+        [('Settings', lambda: edit_settings(settings))] +
         [('Help', help_)] +
         [('Exit', lambda: False)]
     ))
@@ -212,6 +213,46 @@ def servers(meta):
     )
 
 
+def title_case(s):
+    for t in '-_':
+        s = ' '.join(s.split(t))
+    return s.title()
+
+
+def set_setting(settings, setting, value):
+    default_value = saves.default_settings.get(setting)
+
+    if isinstance(default_value, bool):
+        settings[setting] = not settings[setting]
+
+    else:
+        print(REDRAW + title('Edit Setting'), end='')
+
+        new = input(colour_str(' ' + title_case(setting), style=BOLD)
+                   + ' (leave blank to leave unchanged): ' + SHOW_CUR)
+        print(HIDE_CUR, end='')
+
+        if new:
+            if isinstance(default_value, int):
+                new = int(new)
+            elif isinstance(default_value, float):
+                new = float(new)
+
+            settings[setting] = new
+
+        print(CLS, end='')
+
+    saves.save_settings(settings)
+
+
+def edit_settings(settings):
+    return loop_menu('Settings', lambda: (
+        [('{}: {}'.format(title_case(setting), value),
+          lambda_gen(set_setting, settings, setting, value)) for setting, value in settings.items()] +
+        [back])
+    )
+
+
 def delete_server(meta):
     """ A menu for selecting a server to delete. """
     loop_menu('Delete Server', lambda: (
@@ -246,11 +287,12 @@ def add_server(meta):
             'port': port}
 
 
-def pause(server):
+def pause(server, settings):
     print(CLS, end='')
 
     return loop_menu('Paused', lambda: (
         ('Resume', lambda: False),
+        ('Settings', lambda: edit_settings(settings)),
         ('Help', help_),
         (None if server.serving is None else (
             ('Disable Multiplayer', server.kill_server)
