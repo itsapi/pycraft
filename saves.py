@@ -49,7 +49,7 @@ def new_save(meta):
     # Find unique dir name
     save = meta['name'].lower()
 
-    save = ''.join(c if c.isalpha() else '_' for c in save)
+    save = ''.join(c if c.isalnum() else '_' for c in save)
 
     while os.path.isdir(save_path(save)):
         save += '-'
