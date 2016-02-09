@@ -5,7 +5,6 @@ from math import radians
 from random import random
 
 import console as c
-from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface
@@ -26,7 +25,6 @@ def main():
         name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
-        init_colours(settings.get('colours', True))
         saves.check_map_dir()
 
         while True:
@@ -119,7 +117,7 @@ def game(server, settings):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width, settings.get('fancy_lights', True))
+            bk_objects, sky_colour = render.bk_objects(server.time, width, settings)
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -152,17 +150,17 @@ def game(server, settings):
                     sky_colour,
                     lights,
                     last_frame,
-                    settings.get('fancy_lights', True)
+                    settings
                 )
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
-                    height, crafting_sel
+                    height, settings, crafting_sel
                 )
 
                 inv_grid = render.render_grid(
                     player.INV_TITLE, not crafting, server.inv,
-                    height, inv_sel
+                    height, settings, inv_sel
                 )
 
                 label = (player.label(crafting_list, crafting_sel)

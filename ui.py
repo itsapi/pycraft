@@ -6,10 +6,10 @@ import saves
 from data import help_data
 
 
-back = ('Back...', lambda: False)
+back = ('Back...', lambda settings: False)
 
 
-def menu(name, options, selection=0):
+def menu(name, options, settings, selection=0):
     """
         Executes the users selection from the menu, and returns the result.
 
@@ -18,7 +18,7 @@ def menu(name, options, selection=0):
         - options: a tuple of option name and option function
     """
 
-    STAR = colour_str('*', TERM_YELLOW)
+    STAR = colour_str('*', settings, TERM_YELLOW)
     options = [x for x in options if x is not None]
 
     print_map = {}
@@ -45,11 +45,11 @@ def menu(name, options, selection=0):
                 if option == ():
                     pass
                 elif offset + i == print_map.get(selection):
-                    out += STAR + colour_str(option[0], style=BOLD) + STAR
+                    out += STAR + colour_str(option[0], settings, style=BOLD) + STAR
                 else:
                     out += ' ' + option[0] + ' '
                 out += '\n'
-            print(REDRAW + title(name) + out)
+            print(REDRAW + title(name, settings) + out)
 
             # Wait for useful input
             while True:
@@ -64,10 +64,10 @@ def menu(name, options, selection=0):
                     break
             print(CLS, end='')
     # Execute function of selection
-    return options[print_map[selection]][1](), selection
+    return options[print_map[selection]][1](settings), selection
 
 
-def loop_menu(title, generator):
+def loop_menu(title, generator, settings):
     """
         Parameters:
          - generator: Function which generates the `options` argument
@@ -82,7 +82,7 @@ def loop_menu(title, generator):
     data = None
     selection = 0
     while data is None:
-        data, selection = menu(title, generator(), selection)
+        data, selection = menu(title, generator(), settings, selection)
 
     if data is False:
         # Stop at next level
@@ -97,25 +97,25 @@ def main(meta, settings):
     print(CLS, end='')
     return loop_menu('Main menu', lambda: (
         [('Saves', load_save)] +
-        [('Multiplayer', lambda: servers(meta))] +
-        [('Settings', lambda: edit_settings(settings))] +
+        [('Multiplayer', lambda settings: servers(meta, settings))] +
+        [('Settings', edit_settings)] +
         [('Help', help_)] +
-        [('Exit', lambda: False)]
-    ))
+        [('Exit', lambda settings: False)]
+    ), settings)
 
 
 def lambda_gen(func, *args, **kwargs):
     """ Creates a lambda to call a function. """
-    return lambda: func(*args, **kwargs)
+    return lambda settings: func(settings, *args, **kwargs)
 
 
-def title(name):
+def title(name, settings):
     """ Returns a padded coloured string containing the title. """
     return ' {title}\n\n'.format(
         title = colour_str('{name}\n {_}'.format(
             name = name,
             _ = ('=' * len(name))
-        ), style=BOLD)
+        ), settings, style=BOLD)
     )
 
 
@@ -125,41 +125,44 @@ def saves_list(func):
             [() if saves_list else None])
 
 
-def load_save():
+def load_save(settings):
     """ A menu for selecting a save to load. """
 
     return loop_menu('Load save', lambda: (
-        saves_list(lambda s: {'local': True,
-                              'save': s}) +
+        saves_list(lambda settings, save: {'local': True,
+                                           'save': save}) +
         [('Add new save', add_save)] +
         [('Rename save', rename_save)] +
         [('Delete save', delete_save)] +
-        [back])
+        [back]),
+        settings
     )
 
 
-def delete_save():
+def delete_save(settings):
     """ A menu for selecting a save to delete. """
     loop_menu('Delete Save', lambda: (
         saves_list(saves.delete_save) +
-        [back])
+        [back]),
+        settings
     )
     return None
 
 
-def rename_save():
+def rename_save(settings):
     """ A menu for selecting a save to rename. """
     save = loop_menu('Rename Save', lambda: (
         saves_list(lambda s: s) +
-        [back])
+        [back]),
+        settings
     )
 
     if not save:
         return None
 
-    print(REDRAW + title('Rename save'), end='')
+    print(REDRAW + title('Rename save', settings), end='')
     meta = saves.get_meta(save)
-    meta['name'] = input(colour_str(' Save name', style=BOLD)
+    meta['name'] = input(colour_str(' Save name', settings, style=BOLD)
                          + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR + CLS, end='')
 
@@ -167,19 +170,19 @@ def rename_save():
         saves.save_meta(save, meta)
 
 
-def add_save():
+def add_save(settings):
     """ Lets the user enter a save name, then it creates and loads the save. """
 
-    print(REDRAW + title('New save'), end='')
+    print(REDRAW + title('New save', settings), end='')
     meta = {}
-    meta['name'] = input(colour_str(' Save name', style=BOLD)
+    meta['name'] = input(colour_str(' Save name', settings, style=BOLD)
                          + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not meta['name']:
         print(CLS, end='')
         return None
 
-    seed = input(colour_str(' Map seed', style=BOLD)
+    seed = input(colour_str(' Map seed', settings, style=BOLD)
                  + ' (leave blank to randomise): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
 
@@ -189,7 +192,7 @@ def add_save():
     save = saves.new_save(meta)
 
     if save is None:
-        error('Error creating save')
+        error('Error creating save', settings)
     else:
         return {'local': True, 'save': save}
 
@@ -200,16 +203,17 @@ def server_list(meta, func):
             [() if servers_list else None])
 
 
-def servers(meta):
+def servers(meta, settings):
     """ A menu for selecting a server to join. """
 
     return loop_menu('Join server', lambda: (
-        server_list(meta, lambda s: {'local': False,
-                                     'ip': s[0],
-                                     'port': s[1]}) +
-        [('Add new server', lambda: add_server(meta))] +
-        [('Delete server', lambda: delete_server(meta))] +
-        [back])
+        server_list(meta, lambda settings, server: {'local': False,
+                                                    'ip': server[0],
+                                                    'port': server[1]}) +
+        [('Add new server', lambda settings: add_server(meta, settings))] +
+        [('Delete server', lambda settings: delete_server(meta, settings))] +
+        [back]),
+        settings
     )
 
 
@@ -226,9 +230,9 @@ def set_setting(settings, setting, value):
         settings[setting] = not settings[setting]
 
     else:
-        print(REDRAW + title('Edit Setting'), end='')
+        print(REDRAW + title('Edit Setting', settings), end='')
 
-        new = input(colour_str(' ' + title_case(setting), style=BOLD)
+        new = input(colour_str(' ' + title_case(setting), settings, style=BOLD)
                    + ' (leave blank to leave unchanged): ' + SHOW_CUR)
         print(HIDE_CUR, end='')
 
@@ -248,32 +252,34 @@ def set_setting(settings, setting, value):
 def edit_settings(settings):
     return loop_menu('Settings', lambda: (
         [('{}: {}'.format(title_case(setting), value),
-          lambda_gen(set_setting, settings, setting, value)) for setting, value in settings.items()] +
-        [back])
+          lambda_gen(set_setting, setting, value)) for setting, value in settings.items()] +
+        [back]),
+        settings
     )
 
 
-def delete_server(meta):
+def delete_server(meta, settings):
     """ A menu for selecting a server to delete. """
     loop_menu('Delete Server', lambda: (
         server_list(meta, lambda s: saves.delete_server(meta, s)) +
-        [back])
+        [back]),
+        settings
     )
     return None
 
 
-def add_server(meta):
+def add_server(meta, settings):
     """ Get ip and port of server to connect to, then load world from server. """
 
-    print(REDRAW + title('New server'), end='')
+    print(REDRAW + title('New server', settings), end='')
 
-    ip = input(colour_str(' Server IP', style=BOLD)
+    ip = input(colour_str(' Server IP', settings, style=BOLD)
                + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not ip:
         print(CLS, end='')
         return None
-    port = input(colour_str(' Server port', style=BOLD)
+    port = input(colour_str(' Server port', settings, style=BOLD)
                  + ' (leave blank to cancel): ' + SHOW_CUR)
     print(HIDE_CUR, end='')
     if not port:
@@ -291,8 +297,8 @@ def pause(server, settings):
     print(CLS, end='')
 
     return loop_menu('Paused', lambda: (
-        ('Resume', lambda: False),
-        ('Settings', lambda: edit_settings(settings)),
+        ('Resume', lambda settings: False),
+        ('Settings', edit_settings),
         ('Help', help_),
         (None if server.serving is None else (
             ('Disable Multiplayer', server.kill_server)
@@ -300,14 +306,14 @@ def pause(server, settings):
             ('Enable Multiplayer', server.init_server))),
         (('  Port: {}'.format(server.port),) if server.serving else None),
 
-        ('Main Menu', lambda: 'exit')
-    ))
+        ('Main Menu', lambda settings: 'exit')
+    ), settings)
 
 
-def help_():
+def help_(settings):
     """ Displays the help stored in the help_data list. """
 
-    out = REDRAW + title('Help')
+    out = REDRAW + title('Help', settings)
 
     max_len = max(len(item[0]) for section in help_data.values() for item in section)
 
@@ -342,8 +348,8 @@ def name(meta):
     return name
 
 
-def error(message):
-    print(CLS + REDRAW + '\n' + colour_str(message, fg=TERM_RED) + '\n\nBack...\n')
+def error(message, settings):
+    print(CLS + REDRAW + '\n' + colour_str(message, settings, fg=TERM_RED) + '\n\nBack...\n')
 
     wait_for_input()
 

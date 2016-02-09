@@ -291,11 +291,11 @@ class LocalInterface:
             self.kill_server()
         self._event_logout()
 
-    def init_server(self):
+    def init_server(self, settings):
         self.serving = True
         self._server.local_interface_init_server()
 
-    def kill_server(self):
+    def kill_server(self, settings):
         self.serving = False
         self._server.local_interface_kill_server()
 
