@@ -37,29 +37,28 @@ def render_map(map_, edges, objects, blocks, bk_objects, sky_colour, lights, tic
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
         - tick: the game time.
-        - last_frame: 2D list of all blocks displayed in the last frame
+        - last_frame: dictionary of all blocks displayed in the last frame
         - fancy_lights: bool
     """
 
     diff = ''
-    this_frame = []
+    this_frame = {}
 
     for world_x, column in map_.items():
         if world_x in range(*edges):
 
             x = world_x - edges[0]
-            this_frame.append([])
 
             for y, pixel in enumerate(column):
 
                 pixel_out = calc_pixel(x, y, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
-                this_frame[-1].append(pixel_out)
+                this_frame[(x,y)] = pixel_out
 
                 try:
-                    if not last_frame[x][y] == pixel_out:
+                    if not last_frame[(x,y)] == pixel_out:
                         # Changed
                         diff += POS_STR(x, y, pixel_out)
-                except IndexError:
+                except KeyError:
                     # Doesn't exist
                     diff += POS_STR(x, y, pixel_out)
 

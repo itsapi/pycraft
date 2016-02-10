@@ -49,7 +49,7 @@ def game(blocks, settings, meta, map_, save):
     old_bk_objects = None
     old_edges = None
     redraw = False
-    last_frame = []
+    last_frame = {}
     last_out = time()
     last_tick = time()
     last_inp = time()
