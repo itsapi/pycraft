@@ -95,7 +95,6 @@ def game(blocks, settings, meta, map_, save):
 
             # Moving view
             if not edges == old_edges:
-                view = terrain.move_map(map_, edges)
                 extended_view = terrain.move_map(map_, extended_edges)
                 old_edges = edges
                 redraw = True
@@ -123,7 +122,8 @@ def game(blocks, settings, meta, map_, save):
                 lights = render.get_lights(extended_view, edges[0], blocks, bk_objects)
 
                 out, last_frame = render.render_map(
-                    view,
+                    map_,
+                    edges,
                     objects,
                     blocks,
                     bk_objects,
