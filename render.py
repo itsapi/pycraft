@@ -22,53 +22,47 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, objects, blocks, bk_objects, sky_colour, lights, tick, last_frame, fancy_lights):
+def render_map(map_, edges, objects, blocks, bk_objects, sky_colour, lights, tick, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
         Takes:
         - map_: a 2D list of blocks.
+        - edges: the range to display
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
         - blocks: the main dictionary describing the blocks in the game.
-        - sun: (x, y) position of the sun.
+        - bk_objects: list of objects to be displayed in the background:
+            {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_raduis': tuple[3]}
+        - sky_colour: the colour of the sky
         - lights: a list of light sources:
-            {'x': int, 'y': int, 'radius': int}
+            {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
         - tick: the game time.
+        - last_frame: 2D list of all blocks displayed in the last frame
+        - fancy_lights: bool
     """
-
-    # Sorts the dict as a list by pos
-    map_ = list(map_.items())
-    map_.sort(key=lambda item: int(item[0]))
-
-    # map_ = [[0, '##  '],
-    #         [1, '### '],
-    #         [2, '##  ']]
-
-    # Separates the pos and data
-    map_ = list(zip(*map_))[1]
-
-    # Orientates the data
-    map_ = list(zip(*map_))
 
     diff = ''
     this_frame = []
 
-    for y, row in enumerate(map_):
-        this_frame.append([])
+    for world_x, column in map_.items():
+        if world_x in range(*edges):
 
-        for x, pixel in enumerate(row):
+            x = world_x - edges[0]
+            this_frame.append([])
 
-            pixel_out = calc_pixel(x, y, map_, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
-            this_frame[-1].append(pixel_out)
+            for y, pixel in enumerate(column):
 
-            try:
-                if not last_frame[y][x] == pixel_out:
-                    # Changed
+                pixel_out = calc_pixel(x, y, world_x, map_, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
+                this_frame[-1].append(pixel_out)
+
+                try:
+                    if not last_frame[x][y] == pixel_out:
+                        # Changed
+                        diff += POS_STR(x, y, pixel_out)
+                except IndexError:
+                    # Doesn't exist
                     diff += POS_STR(x, y, pixel_out)
-            except IndexError:
-                # Doesn't exist
-                diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
 
@@ -86,7 +80,7 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
+def calc_pixel(x, y, world_x, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
 
     # Add any objects
     object_, obj_colour = obj_pixel(x, y, objects, blocks)
@@ -113,7 +107,7 @@ def calc_pixel(x, y, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lig
             fg = blocks[pixel_f]['colours']['fg']
 
         return colour_str(
-            get_char(x, y, map_, pixel_f, blocks),
+            get_char(world_x, y, map_, pixel_f, blocks),
             bg = bg,
             fg = fg,
             style = blocks[pixel_f]['colours']['style']
@@ -125,7 +119,7 @@ def calc_pixel(x, y, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lig
 
 def get_block(x, y, map_):
     try:
-        return map_[y][x]
+        return map_[x][y]
     except (KeyError, IndexError):
         return None
 
@@ -135,16 +129,17 @@ def get_char(x, y, map_, pixel, blocks):
     right = get_block(x+1, y, map_)
     below = get_block(x, y+1, map_)
 
-    if below is not None and is_solid(blocks, below):
-        return blocks[pixel]['char']
+    char = blocks[pixel]['char']
 
-    if left is not None and is_solid(blocks, left):
-        return blocks[pixel].get('char_left', blocks[pixel]['char'])
+    if below is None or not is_solid(blocks, below):
 
-    if right is not None and is_solid(blocks, right):
-        return blocks[pixel].get('char_right', blocks[pixel]['char'])
+        if left is not None and is_solid(blocks, left) and 'char_left' in blocks[pixel]:
+            char = blocks[pixel]['char_left']
 
-    return blocks[pixel]['char']
+        elif right is not None and is_solid(blocks, right) and 'char_right' in blocks[pixel]:
+            char = blocks[pixel]['char_right']
+
+    return char
 
 
 def bk_objects(time, width, fancy_lights):
