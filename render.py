@@ -24,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame, settings):
+def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
@@ -61,10 +61,10 @@ def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame, settin
 
         for x, pixel in enumerate(row):
 
-            pixel_out = calc_pixel(x, y, pixel, objects, bk_objects, sky_colour, lights, settings)
+            pixel_out = calc_pixel(x, y, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
             if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
-                pixel_out = colour_str('*', settings, bg=RED, fg=YELLOW)
+                pixel_out = colour_str('*', bg=RED, fg=YELLOW)
 
             this_frame[-1].append(pixel_out)
 
@@ -92,13 +92,13 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, settings):
+def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
         bg = blocks[pixel_f]['colours']['bg']
     else:
-        bg = sky(x, y, bk_objects, sky_colour, lights, settings)
+        bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
 
     # Get any object
     object_char, obj_colour = obj_pixel(x, y, objects)
@@ -115,14 +115,13 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, settings)
 
     return colour_str(
         char,
-        settings,
         bg = bg_colour,
         fg = fg_colour,
         style = blocks[pixel_f]['colours']['style']
     )
 
 
-def bk_objects(time, width, settings):
+def bk_objects(time, width, fancy_lights):
     """ Returns objects for rendering to the background """
 
     objects = []
@@ -145,7 +144,7 @@ def bk_objects(time, width, settings):
         'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
     }
 
-    if settings.get('fancy_lights'):
+    if fancy_lights:
         shade = (cos(time) + 1) / 2
 
         sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
@@ -169,8 +168,8 @@ def bk_objects(time, width, settings):
     return objects, sky_colour
 
 
-def get_light_colour(x, y, lights, colour_behind, settings):
-    if settings.get('fancy_lights'):
+def get_light_colour(x, y, lights, colour_behind, fancy_lights):
+    if fancy_lights:
 
         # Get all lights which affect this pixel
         pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
@@ -194,14 +193,14 @@ def get_light_colour(x, y, lights, colour_behind, settings):
     return light
 
 
-def sky(x, y, bk_objects, sky_colour, lights, settings):
+def sky(x, y, bk_objects, sky_colour, lights, fancy_lights):
     """ Returns the sky colour. """
 
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
             return obj['colour']
 
-    return get_light_colour(x, y, lights, sky_colour, settings)
+    return get_light_colour(x, y, lights, sky_colour, fancy_lights)
 
 
 def lerp(a, s, b):
@@ -306,7 +305,7 @@ def get_lights(_map, start_x, bk_objects):
     return lights
 
 
-def render_grid(title, selected, grid, max_height, settings, sel=None):
+def render_grid(title, selected, grid, max_height, sel=None):
     h, v, tl, t, tr, l, m, r, bl, b, br = \
         supported_chars('─│╭┬╮├┼┤╰┴╯', '─│┌┬┐├┼┤└┴┘', '-|+++++++++')
 
@@ -333,7 +332,7 @@ def render_grid(title, selected, grid, max_height, settings, sel=None):
     trailing = ' ' * (max_w - len(top))
 
     out = []
-    out.append(bold(title, settings, selected) + ' ' * (max_w - len(title)))
+    out.append(bold(title, selected) + ' ' * (max_w - len(title)))
     out.append(top + trailing)
 
     for c, slot in enumerate(grid[offset:offset+max_height]):
@@ -345,7 +344,6 @@ def render_grid(title, selected, grid, max_height, settings, sel=None):
         colour = blocks[slot['block']]['colours']
         block_char = colour_str(
             block_char,
-            settings,
             fg=rgb(*colour['fg']) if colour['fg'] is not None else None,
             bg=rgb(*colour['bg']) if colour['bg'] is not None else None,
             style=colour['style']
@@ -357,7 +355,7 @@ def render_grid(title, selected, grid, max_height, settings, sel=None):
 
         out.append('{v} {b} {v} {n} {v}{trail}'.format(
             b=block_char,
-            n=colour_str(num, settings, bg=rgb(*RED)) if selected and i == sel else num,
+            n=colour_str(num, bg=rgb(*RED)) if selected and i == sel else num,
             v=v,
             trail=trailing
         ))

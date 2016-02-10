@@ -47,23 +47,20 @@ _has_colours = _has_colours(sys.stdout)
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
-def colour_str(text, settings, fg=None, bg=None, style=None):
-    if _has_colours and settings.get('colours', True):
-        out = _colour_str(text, fg, bg, style)
-    else:
-        out = text
+def init_colours(colours):
+    global _has_colours
+    _has_colours &= colours
 
-    return out
+def colour_str(text, fg=None, bg=None, style=None):
+    code, end = '', ''
 
+    if _has_colours:
+        if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
+        if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
+        if style is not None: code += '\x1b[{}m'.format(style)
+        end = '\x1b[0m'
 
-def _colour_str(text, fg=None, bg=None, style=None):
-    code = ''
-
-    if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
-    if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
-    if style is not None: code += '\x1b[{}m'.format(style)
-
-    return code + text + '\x1b[0m'
+    return code + text + end
 
 
 def rgb(r, g, b):
@@ -88,8 +85,8 @@ def grey(value):
     return 232 + int(value*23)
 
 
-def bold(t, settings, yes=True):
-    return colour_str(t, settings, style=BOLD) if yes else t
+def bold(t, yes=True):
+    return colour_str(t, style=BOLD) if yes else t
 
 
 def uncolour_str(text):
