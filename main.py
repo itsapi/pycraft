@@ -269,7 +269,7 @@ def game(blocks, settings, meta, map_, save):
                 meta['player_x'], meta['player_y'] = x, y
                 saves.save_meta(save, meta)
                 redraw = True
-                last_frame = []
+                last_frame = {}
                 if ui.pause() == 'exit':
                     game = False
 
