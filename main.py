@@ -19,18 +19,18 @@ def main():
     # Menu loop
     try:
         meta = saves.get_global_meta()
-        settings = meta.get('settings', {})
+        settings = saves.get_settings()
 
         profile = c.getenv_b('PYCRAFT_PROFILE')
 
         name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
-        init_colours(settings.get('colours', True))
+        init_colours(settings)
         saves.check_map_dir()
 
         while True:
-            data = ui.main(meta)
+            data = ui.main(meta, settings)
 
             if data is None:
                 break
@@ -298,7 +298,7 @@ def game(server, settings):
                 server.pos = x, y
                 server.redraw = True
                 last_frame = []
-                if ui.pause(server) == 'exit':
+                if ui.pause(server, settings) == 'exit':
                     server.logout()
 
             dt = server.dt()
