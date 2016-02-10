@@ -16,14 +16,18 @@ def move_map(map_, edges):
     return slices
 
 
-def apply_gravity(map_, blocks):
-    start_pos = (list(map_.keys())[len(map_)//2],
+def apply_gravity(map_, edges, blocks):
+    start_pos = (sum(edges) / 2,
                  world_gen['height'] - 1)
 
-    connected_to_ground = explore_map(map_, blocks, start_pos, [])
+    # map_ = move_map(map_, edges)
+
+    connected_to_ground = explore_map(map_, edges, blocks, start_pos, [])
 
     redraw = False
     for x, slice_ in map_.items():
+        if x not in range(*edges):
+            continue
         for y in range(len(slice_)-3, -1, -1):
             block = slice_[y]
             if (is_solid(blocks, block) and (x, y) not in connected_to_ground):
@@ -34,7 +38,7 @@ def apply_gravity(map_, blocks):
     return map_, redraw
 
 
-def explore_map(map_, blocks, start_pos, found):
+def explore_map(map_, edges, blocks, start_pos, found):
     if start_pos[1] < 0:
         return found
 
@@ -43,14 +47,15 @@ def explore_map(map_, blocks, start_pos, found):
     except (IndexError, KeyError):
         current_block = None
 
-    edge_slice = start_pos[0] in (min(map_.keys()), max(map_.keys()))
-    if (current_block is not None and start_pos not in found and
-            (is_solid(blocks, current_block) or edge_slice)):
+    if (current_block is not None and
+        start_pos not in found and
+        start_pos[0] in range(*edges) and
+            (is_solid(blocks, current_block) or start_pos[0] in edges)):
 
         found.append(start_pos)
         for diff in ((x, y) for x in range(3) for y in range(3)):
             pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
-            found = explore_map(map_, blocks, pos, found)
+            found = explore_map(map_, edges, blocks, pos, found)
 
     return found
 

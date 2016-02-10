@@ -111,8 +111,8 @@ def game(blocks, settings, meta, map_, save):
                 redraw = False
                 last_out = time()
 
-                if features.get('gravity', True):
-                    view, redraw = terrain.apply_gravity(view, blocks)
+                if settings.get('gravity', False):
+                    map_, redraw = terrain.apply_gravity(map_, edges, blocks)
 
                 cursor_colour = player.cursor_colour(
                     x, y, cursor, map_, blocks, meta['inv'], inv_sel
@@ -272,7 +272,7 @@ def game(blocks, settings, meta, map_, save):
                 meta['player_x'], meta['player_y'] = x, y
                 saves.save_meta(save, meta)
                 redraw = True
-                last_frame = []
+                last_frame = {}
                 if ui.pause() == 'exit':
                     game = False
 
