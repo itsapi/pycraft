@@ -44,17 +44,19 @@ NORMAL, BOLD, DARK, ITALICS, UNDERLINE, \
     _, _, INVERT, CLEAR, STRIKETHROUGH = range(10)
 
 _has_colours = _has_colours(sys.stdout)
+_settings = {}
+
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
-def init_colours(colours):
-    global _has_colours
-    _has_colours &= colours
+def init_colours(settings):
+    global _settings
+    _settings = settings
 
 def colour_str(text, fg=None, bg=None, style=None):
     code, end = '', ''
 
-    if _has_colours:
+    if _has_colours and _settings.get('colours', True):
         if bg is not None: code += '\x1b[48;5;{}m'.format(bg)
         if fg is not None: code += '\x1b[38;5;{}m'.format(fg)
         if style is not None: code += '\x1b[{}m'.format(style)

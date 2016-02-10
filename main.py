@@ -26,7 +26,7 @@ def main():
         name = c.getenv('PYCRAFT_NAME') or meta.get('name') or ui.name(meta)
         port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
-        init_colours(settings.get('colours', True))
+        init_colours(settings)
         saves.check_map_dir()
 
         while True:
