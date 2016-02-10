@@ -9,12 +9,19 @@ from terrain import world_gen
 
 default_meta = {
     'name': 'Untitled',
-    'seed': '',
+    'seed': lambda: hash(random.random()),
     'spawn': 0,
     'player_x': 0,
     'player_y': 1,
     'inv': [],
     'tick': 0
+}
+
+default_global_meta = {
+    'settings': {
+        'colours': True,
+        'fancy_lights': True
+    }
 }
 
 SAVES_DIR = 'saves'
@@ -37,7 +44,7 @@ def new_save(meta):
     # Find unique dir name
     save = meta['name'].lower()
 
-    save = ''.join(c if c.isalpha() else '_' for c in save)
+    save = ''.join(c if c.isalnum() else '_' for c in save)
 
     while os.path.isdir(save_path(save)):
         save += '-'
@@ -57,10 +64,7 @@ def delete_save(save):
 
 
 def load_save(save):
-    try:
-        meta = check_meta(get_meta(save))
-    except FileNotFoundError:
-        meta = default_meta
+    meta = get_meta(save)
 
     try:
         map_ = check_map(get_map(save), meta)
@@ -68,16 +72,8 @@ def load_save(save):
         map_ = {}
 
     save_map(save, map_)
-    save_meta(save, meta)
 
     return meta, map_, save
-
-
-def get_meta(save):
-    with open(meta_path(save)) as f:
-        data = json.load(f)
-
-    return data
 
 
 def get_map(save):
@@ -93,20 +89,6 @@ def get_map(save):
         map_ += data
 
     return map_
-
-
-def check_meta(meta):
-    # Create meta items if needed
-    for key, default in default_meta.items():
-        try:
-            meta[key]
-        except KeyError:
-            meta[key] = default
-
-    if not meta['seed']:
-        meta['seed'] = hash(random.random())
-
-    return meta
 
 
 def check_map(data, meta):
@@ -142,12 +124,6 @@ def parse_slices(data):
     return slices
 
 
-def save_meta(save, meta):
-    # Save meta file
-    with open(meta_path(save), 'w') as f:
-        json.dump(meta, f)
-
-
 def save_map(save, slices):
     # Group slices by chunk
     chunks = {}
@@ -178,16 +154,50 @@ def list_saves():
         if os.path.isdir(save_path(save))]
 
 
-def get_global_meta():
-    try:
-        with open('meta.json') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {}
-
-    return data
+def check_meta(meta):
+    return set_defaults(meta, default_meta)
 
 
-def save_global_meta(meta):
-    with open('meta.json', 'w') as f:
+def save_meta(save, meta):
+    # Save meta file
+    save_json(meta_path(save), meta)
+
+
+def load_global_meta():
+    return load_meta('meta.json', default_global_meta)
+
+
+def get_meta(save):
+    return load_meta(meta_path(save), default_meta)
+
+
+def save_json(path, meta):
+    with open(path, 'w') as f:
         json.dump(meta, f)
+
+
+def load_meta(path, default):
+    try:
+        with open(path) as f:
+            meta = json.load(f)
+    except FileNotFoundError:
+        meta = default
+    else:
+        set_defaults(meta, default)
+
+    save_json(path, meta)
+    return meta
+
+
+def set_defaults(options, defaults):
+    for key, default in defaults.items():
+        if key not in options:
+            if callable(default):
+                options[key] = default()
+            else:
+                options[key] = default
+
+        if isinstance(default, dict):
+            options[key] = set_defaults(options[key], default)
+
+    return options

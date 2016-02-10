@@ -52,7 +52,13 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-*.sublime-*
-meta.json
 saves/
-.floo*
+
+meta.json
+
+*.sublime-project
+*.sublime-workspace
+*.caret
+
+.floo
+.flooignore

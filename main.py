@@ -12,22 +12,22 @@ def main():
     print(HIDE_CUR + CLS)
 
     saves.check_map_dir()
-    meta = saves.get_global_meta()
-    features = meta.get('features', {})
+    meta = saves.load_global_meta()
+    settings = meta.get('settings', {})
 
-    init_colours(features.get('colours', True))
+    init_colours(settings.get('colours', True))
     blocks = render.gen_blocks()
 
     # Menu loop
     try:
         while True:
-            game(blocks, features, *ui.main())
+            game(blocks, settings, *ui.main())
 
     finally:
         print(SHOW_CUR + CLS)
 
 
-def game(blocks, features, meta, map_, save):
+def game(blocks, settings, meta, map_, save):
     x = meta['player_x']
     y = meta['player_y']
     dx = 0
@@ -49,7 +49,7 @@ def game(blocks, features, meta, map_, save):
     old_bk_objects = None
     old_edges = None
     redraw = False
-    last_frame = []
+    last_frame = {}
     last_out = time()
     last_tick = time()
     last_inp = time()
@@ -95,13 +95,12 @@ def game(blocks, features, meta, map_, save):
 
             # Moving view
             if not edges == old_edges:
-                view = terrain.move_map(map_, edges)
                 extended_view = terrain.move_map(map_, extended_edges)
                 old_edges = edges
                 redraw = True
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(meta['tick'], width, features.get('fancy_lights', True))
+            bk_objects, sky_colour = render.bk_objects(meta['tick'], width, settings.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 redraw = True
@@ -126,7 +125,8 @@ def game(blocks, features, meta, map_, save):
                 lights = render.get_lights(extended_view, edges[0], blocks, bk_objects)
 
                 out, last_frame = render.render_map(
-                    view,
+                    map_,
+                    edges,
                     objects,
                     blocks,
                     bk_objects,
@@ -134,7 +134,7 @@ def game(blocks, features, meta, map_, save):
                     lights,
                     meta['tick'],
                     last_frame,
-                    features.get('fancy_lights', True)
+                    settings.get('fancy_lights', True)
                 )
 
                 crafting_grid = render.render_grid(

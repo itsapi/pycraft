@@ -191,6 +191,8 @@ blocks = {
     },
     'i': {
         'char': '¡i',
+        'char_left': '/',
+        'char_right': '\\',
         'name': 'Torch',
         'colours': {
             'fg': YELLOW,
@@ -208,7 +210,8 @@ blocks = {
         'crafts': 4,
         'light_radius': 7,
         'light_colour': (.2,.8,.8),
-        'placed_on_solid': True
+        'placed_on_solid': True,
+        'placed_on_wall': True
     },
     '=': {
         'char': '=',

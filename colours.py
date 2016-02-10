@@ -41,6 +41,14 @@ def rgb6(r, g, b):
     return 16 + int(r)*36 + int(g)*6 + int(b)
 
 
+def round_to_palette(*colour):
+    return tuple(int(c*5)/5 for c in colour)
+
+
+def lightness(colour):
+    return 0.2126 * colour[0] + 0.7152 * colour[1] + 0.0722 * colour[2];
+
+
 def grey(value):
     return 232 + int(value*23)
 
