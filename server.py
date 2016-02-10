@@ -35,7 +35,7 @@ class Server:
         self.local_player = player
 
         self.local_interface = local_interface
-        self.game = Game(save)
+        self.game = Game(save, local_interface)
         self.default_port = port
 
         self.serving = False
@@ -85,7 +85,7 @@ class Server:
             self._update_clients({'event': 'set_players', 'args': [{name: self.game.login(name)}]})
         else:
             log('Not Logging in: ' + name)
-            return {'event': 'error', 'args': [{'event': 'login', 'message': 'Username in use'}]}
+            return {'event': 'error', 'args': ['Username in use']}
 
     def event_logout(self, sock=None):
         # Re-add all players which aren't the sock
@@ -160,11 +160,14 @@ class Server:
 class Game:
     """ The game. """
 
-    def __init__(self, save):
+    def __init__(self, save, local_interface):
         self._save = save
         self._map = {}
         self._meta = saves.get_meta(save)
         self._last_tick = time()
+
+        if self._meta.get('error'):
+            local_interface.handle({'event': 'error', 'args': ['Invalid save format']})
 
     def get_chunks(self, chunk_list):
         new_slices = {}
