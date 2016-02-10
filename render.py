@@ -3,6 +3,7 @@ from math import cos, sin, sqrt, modf
 from colours import *
 from console import *
 from data import world_gen, blocks
+from terrain import is_solid
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
@@ -51,7 +52,7 @@ def render_map(map_, edges, objects, blocks, bk_objects, sky_colour, lights, tic
 
             for y, pixel in enumerate(column):
 
-                pixel_out = calc_pixel(x, y, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
+                pixel_out = calc_pixel(x, y, world_x, map_, pixel, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights)
                 this_frame[(x,y)] = pixel_out
 
                 try:
@@ -78,7 +79,7 @@ def obj_pixel(x, y, objects, blocks):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
+def calc_pixel(x, y, world_x, map_, pixel_f, objects, blocks, bk_objects, sky_colour, lights, tick, fancy_lights):
 
     # Add any objects
     object_, obj_colour = obj_pixel(x, y, objects, blocks)
@@ -105,7 +106,7 @@ def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, t
             fg = blocks[pixel_f]['colours']['fg']
 
         return colour_str(
-            blocks[pixel_f]['char'],
+            get_char(world_x, y, map_, pixel_f, blocks),
             bg = bg,
             fg = fg,
             style = blocks[pixel_f]['colours']['style']
@@ -113,6 +114,31 @@ def calc_pixel(x, y, pixel_f, objects, blocks, bk_objects, sky_colour, lights, t
 
     else: # The block was coloured on startup
         return blocks[pixel_f]['char']
+
+
+def get_block(x, y, map_):
+    try:
+        return map_[x][y]
+    except (KeyError, IndexError):
+        return None
+
+
+def get_char(x, y, map_, pixel, blocks):
+    left = get_block(x-1, y, map_)
+    right = get_block(x+1, y, map_)
+    below = get_block(x, y+1, map_)
+
+    char = blocks[pixel]['char']
+
+    if below is None or not is_solid(blocks, below):
+
+        if left is not None and is_solid(blocks, left) and 'char_left' in blocks[pixel]:
+            char = blocks[pixel]['char_left']
+
+        elif right is not None and is_solid(blocks, right) and 'char_right' in blocks[pixel]:
+            char = blocks[pixel]['char_right']
+
+    return char
 
 
 def bk_objects(time, width, fancy_lights):

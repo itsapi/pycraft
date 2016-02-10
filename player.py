@@ -54,25 +54,21 @@ def get_pos_delta(char, map_, x, y, blocks, jump):
     return dx, dy, jump
 
 
-def get_block_below(map_, block_x, block_y):
-    try:
-        return map_[block_x][block_y + 1]
-    except IndexError:
-        return None
-
-
 def can_place(map_, block_x, block_y, inv_block, blocks):
 
     placed_on = blocks[inv_block].get('placed_on')
     placed_on_solid = blocks[inv_block].get('placed_on_solid')
+    placed_on_wall = blocks[inv_block].get('placed_on_wall')
 
-    if placed_on is None and placed_on_solid is None:
+    if all(x is None for x in (placed_on, placed_on_solid, placed_on_wall)):
         can_place = True
     else:
+        block_below = map_[block_x][block_y+1]
+        wall_blocks = (map_[block_x-1][block_y], map_[block_x+1][block_y])
 
-        block_below = get_block_below(map_, block_x, block_y)
         can_place = (placed_on is not None and block_below in placed_on or
-                     placed_on_solid and blocks[block_below]['solid'])
+                     placed_on_solid and blocks[block_below]['solid'] or
+                     placed_on_wall and any(blocks[b]['solid'] for b in wall_blocks))
 
     return can_place
 
