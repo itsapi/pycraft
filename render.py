@@ -31,10 +31,14 @@ def render_map(map_, edges, objects, blocks, bk_objects, sky_colour, lights, tic
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
         - blocks: the main dictionary describing the blocks in the game.
-        - sun: (x, y) position of the sun.
+        - bk_objects: list of objects to be displayed in the background:
+            {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_raduis': tuple[3]}
+        - sky_colour: the colour of the sky
         - lights: a list of light sources:
-            {'x': int, 'y': int, 'radius': int}
+            {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
         - tick: the game time.
+        - last_frame: 2D list of all blocks displayed in the last frame
+        - fancy_lights: bool
     """
 
     diff = ''
