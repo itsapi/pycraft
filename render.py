@@ -1,10 +1,13 @@
-from math import cos, sin, sqrt, modf, radians
+from math import pi, cos, sin, sqrt, modf, radians
 
 from colours import *
 from console import *
+from server import TPS
 
 import data
 
+# 10 mins for full day, night cycle
+DAY_LENGTH = 10 * 60
 
 world_gen = data.world_gen
 
@@ -121,19 +124,22 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lig
     )
 
 
-def bk_objects(time, width, fancy_lights):
+def bk_objects(ticks, width, fancy_lights):
     """ Returns objects for rendering to the background """
 
     objects = []
 
-    sun_r = width / 2
-    time = radians(time/32)
-    day = cos(time) > 0
+    seconds = ticks / TPS
+    day_time = (seconds / DAY_LENGTH) % 1
+    day = day_time < .5
 
-    # Set i to +1 for night and -1 for day
-    i = -2 * day + 1
-    x = int(sun_r * i * sin(time) + sun_r + 1)
-    y = int(sun_r * i * cos(time) + sun_y)
+    day_angle = day_time * 2 * pi
+    sun_angle = day_angle % pi
+
+    sun_r = width / 2
+
+    x = int(sun_r * cos(sun_angle % pi) + width/2 + 1)
+    y = int(sun_y - sun_r * sin(sun_angle % pi))
 
     # Sun/moon
     obj = {
@@ -145,7 +151,7 @@ def bk_objects(time, width, fancy_lights):
     }
 
     if fancy_lights:
-        shade = (cos(time) + 1) / 2
+        shade = (sin(day_angle) + 1)/2
 
         sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
 
@@ -155,7 +161,7 @@ def bk_objects(time, width, fancy_lights):
             light_colour = world_gen['moon_light_colour']
 
         obj['light_colour'] = light_colour
-        obj['light_radius'] = world_gen['sun_light_radius'] * abs(cos(time))
+        obj['light_radius'] = world_gen['sun_light_radius'] * sin(sun_angle)
     else:
 
         if day:

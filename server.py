@@ -8,7 +8,6 @@ import terrain, saves, network
 from console import log
 
 
-SUN_TICK = radians(1/32)
 TPS = 10  # Ticks
 
 

@@ -2,7 +2,7 @@ from threading import Thread, Event
 from math import radians, floor, ceil
 from time import time
 
-from server import Server, log_event_send, log_event_receive, TPS, SUN_TICK
+from server import Server, log_event_send, log_event_receive, TPS
 from console import log
 
 import saves, terrain, network
