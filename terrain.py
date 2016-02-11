@@ -50,7 +50,7 @@ def explore_map(map_, edges, blocks, start_pos, found):
     if (current_block is not None and
         start_pos not in found and
         start_pos[0] in range(*edges) and
-            (is_solid(blocks, current_block) or start_pos[0] in edges)):
+            (is_solid(blocks, current_block) or start_pos[0] in (edges[0], edges[1]-1))):
 
         found.append(start_pos)
         for diff in ((x, y) for x in range(3) for y in range(3)):
