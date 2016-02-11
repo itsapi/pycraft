@@ -55,6 +55,7 @@ docs/_build/
 saves/
 
 meta.json
+settings.json
 
 *.sublime-project
 *.sublime-workspace
