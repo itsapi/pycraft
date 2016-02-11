@@ -184,6 +184,9 @@ class RemoteInterface:
 
         return self._dt
 
+    def respawn(self):
+        self._send('respawn', [self._name])
+
     @property
     def pos(self):
         return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
@@ -229,7 +232,6 @@ class LocalInterface:
         return self._server.handle(None, {'event': event, 'args': args})
 
     def handle(self, data):
-
         log_event_receive(data['event'], data['args'], label='LocalInterface')
 
         {'set_blocks': self._event_view_change,
@@ -302,6 +304,9 @@ class LocalInterface:
     def dt(self):
         dt, self.time = self._server.local_interface_dt()
         return dt
+
+    def respawn(self):
+        self._send('respawn', [self._name])
 
     @property
     def pos(self):

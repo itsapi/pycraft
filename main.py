@@ -98,6 +98,8 @@ def game(server, settings):
     # Game loop
     with NonBlockingInput() as nbi:
         while server.game:
+            x, y = server.pos
+
             sleep(1/1000)
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
@@ -185,7 +187,7 @@ def game(server, settings):
             # Respawn player if dead
             if not alive and df:
                 alive = True
-                x, y = player.respawn(server.get_meta('spawn'))
+                server.respawn()
 
             if dt and server.chunk_loaded(x):
                 # Player falls when no solid block below it

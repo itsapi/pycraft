@@ -29,7 +29,6 @@ def log_event_receive(*args, label=''):
 
 class Server:
     def __init__(self, player, save, port, local_interface):
-
         self.current_players = {}
         self.local_player = player
 
@@ -61,6 +60,7 @@ class Server:
              'get_players': self.event_get_players,
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
+             'respawn': self.event_respawn,
              'logout': lambda: self.event_logout(sock),
              'login': lambda name: self.event_login(name, sock),
              'unload_slices': self.event_unload_slices
@@ -81,7 +81,7 @@ class Server:
                 # local_player already contains the local_player name
                 self.current_players[name] = sock
 
-            self._update_clients({'event': 'set_players', 'args': [{name: self.game.login(name)}]})
+            self._update_clients({'event': 'set_players', 'args': [{name: self.game.get_player(name)}]})
         else:
             log('Not Logging in: ' + name)
             return {'event': 'error', 'args': [{'event': 'login', 'message': 'Username in use'}]}
@@ -118,12 +118,17 @@ class Server:
     def event_get_time(self):
         return {'event': 'set_time', 'args': [self.game.time]}
 
+    def event_respawn(self, name):
+        player = self.game.get_player(name)
+        player['player_x'], player['player_y'] = self.game.spawn
+        self._update_clients({'event': 'set_players', 'args': [{name: player}]})
+
     # Methods for local interface only:
 
     def local_interface_login(self):
         self._update_clients({
             'event': 'set_players',
-            'args': [{self.local_player: self.game.login(self.local_player)}]
+            'args': [{self.local_player: self.game.get_player(self.local_player)}]
         })
 
     def local_interface_init_server(self):
@@ -193,8 +198,7 @@ class Game:
         self._meta['players'][name].update(player)
         saves.save_meta(self._save, self._meta)
 
-    # NOTE: Should probably be renamed to get_player
-    def login(self, name):
+    def get_player(self, name):
         self._meta = saves.load_player(name, self._meta)
         return self._meta['players'][name]
 
@@ -221,6 +225,10 @@ class Game:
     # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
     def unload_slices(self):
         pass
+
+    @property
+    def spawn(self):
+        return self._meta['spawn'], 1
 
     @property
     def time(self):

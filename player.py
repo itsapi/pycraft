@@ -117,10 +117,6 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
     return slices, inv, inv_sel, events, dinv
 
 
-def respawn(spawn):
-    return spawn, 1
-
-
 def move_cursor(inp):
     return {'j': -1, 'l': 1}.get(inp, 0)
 
