@@ -39,9 +39,9 @@ def apply_gravity(map_, edges, blocks):
 
 
 def explore_map(map_, edges, blocks, start_pos, found):
-    if (start_pos[1] >= 0 and
+    if (start_pos[1] >= 0 and start_pos[1] < world_gen['height'] and
             start_pos not in found and
-            start_pos[0] in range(*edges)):
+            start_pos[0] in range(edges[0]-1, edges[1]+1)):
 
         try:
             current_block = map_[start_pos[0]][start_pos[1]]
@@ -49,7 +49,7 @@ def explore_map(map_, edges, blocks, start_pos, found):
             current_block = None
 
         if (current_block is not None and
-                (is_solid(blocks, current_block) or start_pos[0] in (edges[0], edges[1]-1))):
+                is_solid(blocks, current_block)) or start_pos[0] in (edges[0]-1, edges[1]):
 
             found.append(start_pos)
             for diff in ((x, y) for x in range(3) for y in range(3)):
