@@ -39,23 +39,22 @@ def apply_gravity(map_, edges, blocks):
 
 
 def explore_map(map_, edges, blocks, start_pos, found):
-    if start_pos[1] < 0:
-        return found
+    if (start_pos[1] >= 0 and
+            start_pos not in found and
+            start_pos[0] in range(*edges)):
 
-    try:
-        current_block = map_[start_pos[0]][start_pos[1]]
-    except (IndexError, KeyError):
-        current_block = None
+        try:
+            current_block = map_[start_pos[0]][start_pos[1]]
+        except (IndexError, KeyError):
+            current_block = None
 
-    if (current_block is not None and
-        start_pos not in found and
-        start_pos[0] in range(*edges) and
-            (is_solid(blocks, current_block) or start_pos[0] in (edges[0], edges[1]-1))):
+        if (current_block is not None and
+                (is_solid(blocks, current_block) or start_pos[0] in (edges[0], edges[1]-1))):
 
-        found.append(start_pos)
-        for diff in ((x, y) for x in range(3) for y in range(3)):
-            pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
-            found = explore_map(map_, edges, blocks, pos, found)
+            found.append(start_pos)
+            for diff in ((x, y) for x in range(3) for y in range(3)):
+                pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
+                found = explore_map(map_, edges, blocks, pos, found)
 
     return found
 
