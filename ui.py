@@ -326,7 +326,7 @@ def help_():
     return None
 
 
-def name(meta):
+def name(settings):
     print(REDRAW, end='')
 
     name = None
@@ -336,8 +336,8 @@ def name(meta):
 
     print(CLS, end='')
 
-    meta['name'] = name
-    saves.save_global_meta(meta)
+    settings['name'] = name
+    saves.save_settings(settings)
 
     return name
 

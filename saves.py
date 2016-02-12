@@ -19,6 +19,7 @@ default_meta = {
 default_global_meta = {}
 
 default_settings = {
+    'name': None,
     'colours': True,
     'fancy_lights': True
 }
