@@ -2,8 +2,7 @@ import random
 from collections import OrderedDict
 from math import ceil
 
-from render import blocks
-from data import world_gen
+from data import world_gen, blocks
 from console import log, DEBUG
 
 

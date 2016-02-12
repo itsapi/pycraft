@@ -73,7 +73,7 @@ def game(server, settings):
 
     old_bk_objects = None
     old_edges = None
-    last_frame = []
+    last_frame = {}
     last_out = time()
     last_inp = time()
     last_move = time()
@@ -114,7 +114,6 @@ def game(server, settings):
 
             # Moving view
             if not edges == old_edges or server.view_change:
-                view = terrain.move_map(server.map_, edges)
                 extended_view = terrain.move_map(server.map_, extended_edges)
                 old_edges = edges
                 server.redraw = True
@@ -148,7 +147,8 @@ def game(server, settings):
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 out, last_frame = render.render_map(
-                    view,
+                    server.map_,
+                    edges,
                     objects,
                     bk_objects,
                     sky_colour,
@@ -299,7 +299,7 @@ def game(server, settings):
             if char in ' \n':
                 server.pos = x, y
                 server.redraw = True
-                last_frame = []
+                last_frame = {}
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
 

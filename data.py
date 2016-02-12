@@ -1,4 +1,5 @@
 from colours import *
+from console import supported_chars
 
 
 blocks = {
@@ -191,6 +192,8 @@ blocks = {
     },
     'i': {
         'char': '¡i',
+        'char_left': '/',
+        'char_right': '\\',
         'name': 'Torch',
         'colours': {
             'fg': YELLOW,
@@ -208,7 +211,8 @@ blocks = {
         'crafts': 4,
         'light_radius': 7,
         'light_colour': (.2,.8,.8),
-        'placed_on_solid': True
+        'placed_on_solid': True,
+        'placed_on_wall': True
     },
     '=': {
         'char': '=',
@@ -538,3 +542,12 @@ help_data = {
         ['Pause', 'SPACE or RETURN']
     ]
 }
+
+
+def gen_blocks(blocks):
+    for key, block in blocks.items():
+        # Get supported version of block char
+        blocks[key]['char'] = supported_chars(*block['char'])
+
+
+gen_blocks(blocks)

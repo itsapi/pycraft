@@ -3,16 +3,16 @@ from math import pi, cos, sin, sqrt, modf, radians
 from colours import *
 from console import *
 from server import TPS
+from data import world_gen, blocks
+from terrain import is_solid
 
-import data
 
 # 10 mins for full day, night cycle
 DAY_LENGTH = 10 * 60
 
-world_gen = data.world_gen
 
 sun_y = world_gen['height'] - world_gen['ground_height']
-max_light = max(map(lambda b: b.get('light_radius', 0), data.blocks.values()))
+max_light = max(map(lambda b: b.get('light_radius', 0), blocks.values()))
 
 
 def in_circle(test_x, test_y, x, y, r):
@@ -27,57 +27,48 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
+def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
         Takes:
         - map_: a 2D list of blocks.
+        - edges: the range to display
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
         - blocks: the main dictionary describing the blocks in the game.
-        - sun: (x, y) position of the sun.
+        - bk_objects: list of objects to be displayed in the background:
+            {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_raduis': tuple[3]}
+        - sky_colour: the colour of the sky
         - lights: a list of light sources:
-            {'x': int, 'y': int, 'radius': int}
-        - time: the game time.
+            {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
+        - last_frame: dictionary of all blocks displayed in the last frame
+        - fancy_lights: bool
     """
 
-    # Sorts the dict as a list by pos
-    map_ = list(map_.items())
-    map_.sort(key=lambda item: int(item[0]))
-
-    # map_ = [[0, '##  '],
-    #         [1, '### '],
-    #         [2, '##  ']]
-
-    # Separates the pos and data
-    world_positions, map_ = tuple(zip(*map_))
-
-    # Orientates the data
-    map_ = zip(*map_)
-
     diff = ''
-    this_frame = []
+    this_frame = {}
 
-    for y, row in enumerate(map_):
-        this_frame.append([])
+    for world_x, column in map_.items():
+        if world_x in range(*edges):
 
-        for x, pixel in enumerate(row):
+            x = world_x - edges[0]
 
-            pixel_out = calc_pixel(x, y, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
+            for y, pixel in enumerate(column):
+                pixel_out = calc_pixel(x, y, world_x, map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
-            if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
-                pixel_out = colour_str('*', bg=RED, fg=YELLOW)
+                if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
+                    pixel_out = colour_str('*', bg=RED, fg=YELLOW)
 
-            this_frame[-1].append(pixel_out)
+                this_frame[(x,y)] = pixel_out
 
-            try:
-                if not last_frame[y][x] == pixel_out:
-                    # Changed
+                try:
+                    if not last_frame[(x,y)] == pixel_out:
+                        # Changed
+                        diff += POS_STR(x, y, pixel_out)
+                except KeyError:
+                    # Doesn't exist
                     diff += POS_STR(x, y, pixel_out)
-            except IndexError:
-                # Doesn't exist
-                diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
 
@@ -95,7 +86,7 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
+def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
@@ -110,7 +101,7 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lig
         char = object_char
         fg = obj_colour
     else:
-        char = blocks[pixel_f]['char']
+        char = get_char(world_x, y, map_, pixel_f)
         fg = blocks[pixel_f]['colours']['fg']
 
     fg_colour = rgb(*fg) if fg is not None else None
@@ -122,6 +113,31 @@ def calc_pixel(x, y, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lig
         fg = fg_colour,
         style = blocks[pixel_f]['colours']['style']
     )
+
+
+def get_block(x, y, map_):
+    try:
+        return map_[x][y]
+    except (KeyError, IndexError):
+        return None
+
+
+def get_char(x, y, map_, pixel):
+    left = get_block(x-1, y, map_)
+    right = get_block(x+1, y, map_)
+    below = get_block(x, y+1, map_)
+
+    char = blocks[pixel]['char']
+
+    if below is None or not is_solid(below):
+
+        if left is not None and is_solid(left) and 'char_left' in blocks[pixel]:
+            char = blocks[pixel]['char_left']
+
+        elif right is not None and is_solid(right) and 'char_right' in blocks[pixel]:
+            char = blocks[pixel]['char_right']
+
+    return char
 
 
 def bk_objects(ticks, width, fancy_lights):
@@ -393,16 +409,3 @@ def render_grids(grids, x, max_height):
         POS_STR(x, y, ' ' + row + CLS_END_LN)
             for y, row in enumerate(merged_grids)
     )
-
-
-def gen_blocks():
-    blocks = data.blocks
-
-    for key, block in blocks.items():
-        # Get supported version of block char
-        blocks[key]['char'] = supported_chars(*block['char'])
-
-    return blocks
-
-
-blocks = gen_blocks()
