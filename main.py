@@ -131,6 +131,10 @@ def game(server, settings):
                 server.redraw = False
                 last_out = time()
 
+                if settings.get('gravity', False):
+                    blocks = terrain.apply_gravity(server.map_, edges)
+                    if blocks: server.set_blocks(blocks)
+
                 cursor_colour = player.cursor_colour(
                     x, y, cursor, server.map_, server.inv, inv_sel
                 )
