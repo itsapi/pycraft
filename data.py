@@ -70,10 +70,10 @@ blocks = {
         'hierarchy': 5
     },
     '#': {
-        'char': ' ',
+        'char': '~',
         'name': 'Stone',
         'colours': {
-            'fg': None,
+            'fg': (.15, .15, .15),
             'bg': (.15, .15, .15),
             'style': None
         },
