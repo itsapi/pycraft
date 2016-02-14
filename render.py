@@ -90,7 +90,8 @@ def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, li
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
-        bg = blocks[pixel_f]['colours']['bg']
+        bg = get_block_light(x, y, lights, sky_colour, blocks[pixel_f]['colours']['bg'], fancy_lights)
+
     else:
         bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
 
@@ -102,7 +103,11 @@ def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, li
         fg = obj_colour
     else:
         char = get_char(world_x, y, map_, pixel_f)
-        fg = blocks[pixel_f]['colours']['fg']
+
+        if blocks[pixel_f]['colours']['fg'] is not None:
+            fg = get_block_light(x, y, lights, sky_colour, blocks[pixel_f]['colours']['fg'], fancy_lights)
+        else:
+            fg = None
 
     fg_colour = rgb(*fg) if fg is not None else None
     bg_colour = rgb(*bg) if bg is not None else None
@@ -190,11 +195,14 @@ def bk_objects(ticks, width, fancy_lights):
     return objects, sky_colour
 
 
+def get_block_lights(x, y, lights):
+    # Get all lights which affect this pixel
+    return filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+
+
 def get_light_colour(x, y, lights, colour_behind, fancy_lights):
     if fancy_lights:
-
-        # Get all lights which affect this pixel
-        pixel_lights = filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+        pixel_lights = get_block_lights(x, y, lights)
 
         # Calculate light level for each light source
         light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l[0]), l[1], colour_behind)) for l in pixel_lights]
@@ -213,6 +221,30 @@ def get_light_colour(x, y, lights, colour_behind, fancy_lights):
             light = colour_behind
 
     return light
+
+
+def get_block_light(x, y, lights, sky_colour, block_colour, fancy_lights):
+    lit_block = block_colour
+
+    if fancy_lights:
+
+        block_lights = get_block_lights(x, y, lights)
+
+        # Multiply the distance from the source by the lightness of the source colour.
+        block_lights_lightness = map(lambda l: l[1] * lightness(l[0]), block_lights)
+
+        try:
+            block_lightness = (1 - max(block_lights_lightness))
+        except ValueError:
+            block_lightness = 0
+
+        block_lightness += lightness(hsv_to_rgb(sky_colour))
+
+        lit_block = (block_colour[0] * block_lightness,
+                     block_colour[1] * block_lightness,
+                     block_colour[2] * block_lightness)
+
+    return lit_block
 
 
 def sky(x, y, bk_objects, sky_colour, lights, fancy_lights):
