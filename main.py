@@ -12,22 +12,8 @@ import saves, ui, terrain, player, render, server_interface
 
 
 def main():
-    print(HIDE_CUR + CLS)
-
-    log('Start\n')
-
-    # Menu loop
     try:
-        meta = saves.get_global_meta()
-        settings = saves.get_settings()
-
-        profile = c.getenv_b('PYCRAFT_PROFILE')
-
-        name = c.getenv('PYCRAFT_NAME') or settings.get('name') or ui.name(settings)
-        port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
-
-        init_colours(settings)
-        saves.check_map_dir()
+        meta, settings, profile, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -52,7 +38,29 @@ def main():
                 ui.error(server_obj.error)
 
     finally:
-        print(SHOW_CUR + CLS)
+        setdown()
+
+
+def setup():
+    log('Start\n')
+
+    meta = saves.get_global_meta()
+    settings = saves.get_settings()
+
+    profile = c.getenv_b('PYCRAFT_PROFILE')
+
+    name = c.getenv('PYCRAFT_NAME') or settings.get('name') or ui.name(settings)
+    port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
+
+    init_colours(settings)
+    saves.check_map_dir()
+
+    print(HIDE_CUR + CLS)
+    return meta, settings, profile, name, port
+
+
+def setdown():
+    print(SHOW_CUR + CLS)
 
 
 def game(server, settings):
