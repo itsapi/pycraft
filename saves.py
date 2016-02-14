@@ -21,7 +21,8 @@ default_global_meta = {}
 default_settings = {
     'name': None,
     'colours': True,
-    'fancy_lights': True
+    'fancy_lights': True,
+    'gravity': False
 }
 
 default_player = {

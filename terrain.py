@@ -36,6 +36,47 @@ def detect_edges(map_, edges):
     return slices
 
 
+def apply_gravity(map_, edges):
+    start_pos = (sum(edges) / 2,
+                 world_gen['height'] - 1)
+
+    new_blocks = {}
+    connected_to_ground = explore_map(map_, edges, start_pos, [])
+
+    for x, slice_ in map_.items():
+        if x not in range(*edges):
+            continue
+        for y in range(len(slice_)-3, -1, -1):
+            block = slice_[y]
+            if (is_solid(block) and (x, y) not in connected_to_ground):
+                new_blocks.setdefault(x, {})
+                new_blocks[x][y] = ' '
+                new_blocks[x][y+1] = block
+
+    return new_blocks
+
+
+def explore_map(map_, edges, start_pos, found):
+    if (start_pos[1] >= 0 and start_pos[1] < world_gen['height'] and
+            start_pos not in found and
+            start_pos[0] in range(edges[0]-1, edges[1]+1)):
+
+        try:
+            current_block = map_[start_pos[0]][start_pos[1]]
+        except (IndexError, KeyError):
+            current_block = None
+
+        if (current_block is not None and
+                is_solid(current_block)) or start_pos[0] in (edges[0]-1, edges[1]):
+
+            found.append(start_pos)
+            for diff in ((x, y) for x in range(3) for y in range(3)):
+                pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
+                found = explore_map(map_, edges, pos, found)
+
+    return found
+
+
 def spawn_hierarchy(tests):
     # TODO: Use argument expansion for tests
     return max(tests, key=lambda block: blocks[block]['hierarchy'])
