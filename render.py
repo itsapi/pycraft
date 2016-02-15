@@ -231,10 +231,10 @@ def get_block_light(x, y, lights, sky_colour, block_colour, fancy_lights):
         block_lights = get_block_lights(x, y, lights)
 
         # Multiply the distance from the source by the lightness of the source colour.
-        block_lights_lightness = map(lambda l: 1 - (l[1] * lightness(l[0])), block_lights)
+        block_lights_lightness = map(lambda l: l[1] * lightness(l[0]), block_lights)
 
         try:
-            block_lightness = max(block_lights_lightness)
+            block_lightness = (1 - min(block_lights_lightness))
         except ValueError:
             block_lightness = 0
 
