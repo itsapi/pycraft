@@ -240,9 +240,16 @@ def get_block_light(x, y, lights, sky_colour, block_colour, fancy_lights):
 
         block_lightness += lightness(hsv_to_rgb(sky_colour))
 
-        lit_block = (block_colour[0] * block_lightness,
+        lit_block = [block_colour[0] * block_lightness,
                      block_colour[1] * block_lightness,
-                     block_colour[2] * block_lightness)
+                     block_colour[2] * block_lightness]
+
+        if lit_block[0] > 1:
+            lit_block[0] = 1
+        if lit_block[1] > 1:
+            lit_block[1] = 1
+        if lit_block[2] > 1:
+            lit_block[2] = 1
 
     return lit_block
 
