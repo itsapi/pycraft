@@ -197,7 +197,7 @@ def bk_objects(ticks, width, fancy_lights):
 
 def get_block_lights(x, y, lights):
     # Get all lights which affect this pixel
-    return filter(lambda l: l[1] < 1, map(lambda l: (l['colour'], lit(x, y, l)), lights))
+    return filter(lambda l: l['distance'] < 1, map(lambda l: {'distance': lit(x, y, l), 'colour': l['colour']}, lights))
 
 
 def get_light_colour(x, y, lights, colour_behind, fancy_lights):
@@ -205,7 +205,7 @@ def get_light_colour(x, y, lights, colour_behind, fancy_lights):
         pixel_lights = get_block_lights(x, y, lights)
 
         # Calculate light level for each light source
-        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l[0]), l[1], colour_behind)) for l in pixel_lights]
+        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l['colour']), l['distance'], colour_behind)) for l in pixel_lights]
 
         # Get brightest light
         if light_levels:
@@ -231,10 +231,10 @@ def get_block_light(x, y, lights, sky_colour, block_colour, fancy_lights):
         block_lights = get_block_lights(x, y, lights)
 
         # Multiply the distance from the source by the lightness of the source colour.
-        block_lights_lightness = map(lambda l: l[1] * lightness(l[0]), block_lights)
+        block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
 
         try:
-            block_lightness = (1 - min(block_lights_lightness))
+            block_lightness = 1 - min(block_lights_lightness)
         except ValueError:
             block_lightness = 0
 
