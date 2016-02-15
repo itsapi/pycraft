@@ -55,7 +55,7 @@ def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame,
             x = world_x - edges[0]
 
             for y, pixel in enumerate(column):
-                pixel_out = calc_pixel(x, y, world_x, map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
+                pixel_out = calc_pixel(x, y, world_x, edges[0], map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
                 if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
                     pixel_out = colour_str('*', bg=RED, fg=YELLOW)
@@ -86,11 +86,11 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
+def calc_pixel(x, y, world_x, world_screen_x, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
-        bg = get_block_light(x, y, lights, sky_colour, blocks[pixel_f]['colours']['bg'], fancy_lights)
+        bg = get_block_light(x, y, world_screen_x, map_, lights, sky_colour, blocks[pixel_f]['colours']['bg'], fancy_lights)
 
     else:
         bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
@@ -105,7 +105,7 @@ def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, li
         char = get_char(world_x, y, map_, pixel_f)
 
         if blocks[pixel_f]['colours']['fg'] is not None:
-            fg = get_block_light(x, y, lights, sky_colour, blocks[pixel_f]['colours']['fg'], fancy_lights)
+            fg = get_block_light(x, y, world_screen_x, map_, lights, sky_colour, blocks[pixel_f]['colours']['fg'], fancy_lights)
         else:
             fg = None
 
@@ -166,6 +166,7 @@ def bk_objects(ticks, width, fancy_lights):
     obj = {
         'x': x,
         'y': y,
+        'z': -1,
         'width': 2,
         'height': 1,
         'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
@@ -197,7 +198,9 @@ def bk_objects(ticks, width, fancy_lights):
 
 def get_block_lights(x, y, lights):
     # Get all lights which affect this pixel
-    return filter(lambda l: l['distance'] < 1, map(lambda l: {'distance': lit(x, y, l), 'colour': l['colour']}, lights))
+    for l in lights:
+        l['distance'] = lit(x, y, l)
+    return filter(lambda l: l['distance'] < 1, lights)
 
 
 def get_light_colour(x, y, lights, colour_behind, fancy_lights):
@@ -223,12 +226,23 @@ def get_light_colour(x, y, lights, colour_behind, fancy_lights):
     return light
 
 
-def get_block_light(x, y, lights, sky_colour, block_colour, fancy_lights):
+def light_mask(x, y, map_):
+    if is_solid(map_[x][y]):
+        z = 0
+    else:
+        z = -1
+    return z
+
+
+def get_block_light(x, y, world_x, map_, lights, sky_colour, block_colour, fancy_lights):
     lit_block = block_colour
 
     if fancy_lights:
 
         block_lights = get_block_lights(x, y, lights)
+
+        # If the light is not hidden by the mask
+        block_lights = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_), block_lights)
 
         # Multiply the distance from the source by the lightness of the source colour.
         block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
@@ -343,6 +357,7 @@ def get_lights(_map, start_x, bk_objects):
         'radius': obj['light_radius'],
         'x': obj['x'],
         'y': obj['y'],
+        'z': obj['z'],
         'colour': obj['light_colour']
     }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
 
@@ -358,6 +373,7 @@ def get_lights(_map, start_x, bk_objects):
                 'radius': blocks[pixel[1]]['light_radius'],
                 'x': x-start_x,
                 'y': pixel[0],
+                'z': 0,
                 'colour': blocks[pixel[1]].get('light_colour', (1,1,1))
             },
             slice_lights
