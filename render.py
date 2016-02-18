@@ -205,7 +205,24 @@ def get_block_lights(x, y, lights):
 
 def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, fancy_lights):
     if (world_gen['height'] - y) < slice_heights[world_x + x]:
-        light = get_block_light(x, y, world_x, map_, slice_heights, lights, BLACK, fancy_lights)
+
+        if fancy_lights:
+            # If the light is not hidden by the mask
+            block_lights = filter(lambda l: l['z'] == 0, get_block_lights(x, y, lights))
+
+            # Multiply the distance from the source by the lightness of the source colour.
+            block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
+
+            try:
+                block_lightness = 1 - min(block_lights_lightness)
+            except ValueError:
+                block_lightness = 0
+
+            light = [(b + block_lightness) / 2 for b in BLACK]
+
+        else:
+
+            light = BLACK
 
     else:
 
@@ -253,22 +270,11 @@ def get_block_light(x, y, world_x, map_, slice_heights, lights, block_colour, fa
         block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
 
         try:
-            block_lightness = (min(block_lights_lightness))
+            block_lightness = 1 - min(block_lights_lightness)
         except ValueError:
-            block_lightness = 1
+            block_lightness = 0
 
-        solid = (1.5, .75)[is_solid(map_[world_x + x][y])]
-
-        lit_block = [1 - ((1 - block_colour[0]) * block_lightness),
-                     1 - ((1 - block_colour[1]) * block_lightness),
-                     1 - ((1 - block_colour[2]) * block_lightness)]
-
-        if lit_block[0] > 1:
-            lit_block[0] = 1
-        if lit_block[1] > 1:
-            lit_block[1] = 1
-        if lit_block[2] > 1:
-            lit_block[2] = 1
+        lit_block = [(b + block_lightness) / 6 for b in block_colour]
 
     return lit_block
 
