@@ -256,10 +256,12 @@ def gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 random.seed(str(meta['seed']) + str(x) + feature_name)
                 if random.random() <= ore['chance']:
 
+                    upper = world_gen['height'] * ore['upper']
+                    lower = world_gen['height'] * ore['lower']
+
                     attrs = {}
                     attrs['root_height'] = world_gen['height'] - random.randint(
-                        ore['lower'],
-                        min(ore['upper'], (ground_heights[x] - 1))  # -1 for grass.
+                        lower, min(upper, (ground_heights[x] - 1))  # -1 for grass.
                     )
 
                     # Generates ore at random position around root ore
