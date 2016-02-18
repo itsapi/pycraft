@@ -74,7 +74,7 @@ def game(server, settings):
     dinv = False  # Inventory
     dcraft = False  # Crafting
     width = 110
-    height = 30
+    height = 35
     # height = terrain.world_gen['height'] - 1
     FPS = 15  # Max
     IPS = 20  # Input
