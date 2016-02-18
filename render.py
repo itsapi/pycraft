@@ -204,6 +204,7 @@ def get_block_lights(x, y, lights):
 
 
 def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, fancy_lights):
+    # return colour_behind
     if (world_gen['height'] - y) < slice_heights[world_x + x]:
 
         if fancy_lights:
