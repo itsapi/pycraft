@@ -27,7 +27,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
+def render_map(map_, slice_heights, edges, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
@@ -55,7 +55,7 @@ def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame,
             x = world_x - edges[0]
 
             for y, pixel in enumerate(column):
-                pixel_out = calc_pixel(x, y, world_x, edges[0], map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
+                pixel_out = calc_pixel(x, y, world_x, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
                 if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
                     pixel_out = colour_str('*', bg=RED, fg=YELLOW)
@@ -86,14 +86,14 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, world_x, world_screen_x, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
+def calc_pixel(x, y, world_x, world_screen_x, map_, slice_heights, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
-        bg = get_block_light(x, y, world_screen_x, map_, lights, sky_colour, blocks[pixel_f]['colours']['bg'], fancy_lights)
+        bg = get_block_light(x, y, world_screen_x, map_, slice_heights, lights, blocks[pixel_f]['colours']['bg'], fancy_lights)
 
     else:
-        bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
+        bg = sky(x, y, world_screen_x, map_, slice_heights, bk_objects, sky_colour, lights, fancy_lights)
 
     # Get any object
     object_char, obj_colour = obj_pixel(x, y, objects)
@@ -105,7 +105,7 @@ def calc_pixel(x, y, world_x, world_screen_x, map_, pixel_f, objects, bk_objects
         char = get_char(world_x, y, map_, pixel_f)
 
         if blocks[pixel_f]['colours']['fg'] is not None:
-            fg = get_block_light(x, y, world_screen_x, map_, lights, sky_colour, blocks[pixel_f]['colours']['fg'], fancy_lights)
+            fg = get_block_light(x, y, world_screen_x, map_, slice_heights, lights, blocks[pixel_f]['colours']['fg'], fancy_lights)
         else:
             fg = None
 
@@ -203,38 +203,43 @@ def get_block_lights(x, y, lights):
     return filter(lambda l: l['distance'] < 1, lights)
 
 
-def get_light_colour(x, y, lights, colour_behind, fancy_lights):
-    if fancy_lights:
-        pixel_lights = get_block_lights(x, y, lights)
-
-        # Calculate light level for each light source
-        light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l['colour']), l['distance'], colour_behind)) for l in pixel_lights]
-
-        # Get brightest light
-        if light_levels:
-            light = max(map(lambda l: round_to_palette(*l), light_levels), key=lightness)
-        else:
-            light = hsv_to_rgb(colour_behind)
+def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, fancy_lights):
+    if (world_gen['height'] - y) < slice_heights[world_x + x]:
+        light = get_block_light(x, y, world_x, map_, slice_heights, lights, BLACK, fancy_lights)
 
     else:
 
-        if any(map(lambda l: lit(x, y, l) < 1, lights)):
-            light = CYAN
+        if fancy_lights:
+            pixel_lights = get_block_lights(x, y, lights)
+
+            # Calculate light level for each light source
+            light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l['colour']), l['distance'], colour_behind)) for l in pixel_lights]
+
+            # Get brightest light
+            if light_levels:
+                light = max(map(lambda l: round_to_palette(*l), light_levels), key=lightness)
+            else:
+                light = hsv_to_rgb(colour_behind)
+
         else:
-            light = colour_behind
+
+            if any(map(lambda l: lit(x, y, l) < 1, lights)):
+                light = CYAN
+            else:
+                light = colour_behind
 
     return light
 
 
-def light_mask(x, y, map_):
-    if is_solid(map_[x][y]):
+def light_mask(x, y, map_, slice_heights):
+    if is_solid(map_[x][y]) or (world_gen['height'] - y) < slice_heights[x]:
         z = 0
     else:
         z = -1
     return z
 
 
-def get_block_light(x, y, world_x, map_, lights, sky_colour, block_colour, fancy_lights):
+def get_block_light(x, y, world_x, map_, slice_heights, lights, block_colour, fancy_lights):
     lit_block = block_colour
 
     if fancy_lights:
@@ -242,21 +247,21 @@ def get_block_light(x, y, world_x, map_, lights, sky_colour, block_colour, fancy
         block_lights = get_block_lights(x, y, lights)
 
         # If the light is not hidden by the mask
-        block_lights = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_), block_lights)
+        block_lights = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_, slice_heights), block_lights)
 
         # Multiply the distance from the source by the lightness of the source colour.
         block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
 
         try:
-            block_lightness = 1 - min(block_lights_lightness)
+            block_lightness = (min(block_lights_lightness))
         except ValueError:
-            block_lightness = 0
+            block_lightness = 1
 
-        block_lightness += lightness(hsv_to_rgb(sky_colour))
+        solid = (1.5, .75)[is_solid(map_[world_x + x][y])]
 
-        lit_block = [block_colour[0] * block_lightness,
-                     block_colour[1] * block_lightness,
-                     block_colour[2] * block_lightness]
+        lit_block = [1 - ((1 - block_colour[0]) * block_lightness),
+                     1 - ((1 - block_colour[1]) * block_lightness),
+                     1 - ((1 - block_colour[2]) * block_lightness)]
 
         if lit_block[0] > 1:
             lit_block[0] = 1
@@ -268,14 +273,14 @@ def get_block_light(x, y, world_x, map_, lights, sky_colour, block_colour, fancy
     return lit_block
 
 
-def sky(x, y, bk_objects, sky_colour, lights, fancy_lights):
+def sky(x, y, world_x, map_, slice_heights, bk_objects, sky_colour, lights, fancy_lights):
     """ Returns the sky colour. """
 
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
             return obj['colour']
 
-    return get_light_colour(x, y, lights, sky_colour, fancy_lights)
+    return get_light_colour(x, y, world_x, map_, slice_heights, lights, sky_colour, fancy_lights)
 
 
 def lerp(a, s, b):

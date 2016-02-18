@@ -152,6 +152,7 @@ def game(server, settings):
 
                 out, last_frame = render.render_map(
                     server.map_,
+                    server.slice_heights,
                     edges,
                     objects,
                     bk_objects,
