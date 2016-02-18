@@ -445,4 +445,4 @@ def gen_chunk(chunk_n, meta):
                         build_ore(chunk, chunk_pos, feature_x, feature, ore, ground_heights)
                         break
 
-    return chunk
+    return chunk, ground_heights

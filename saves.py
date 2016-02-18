@@ -33,7 +33,8 @@ default_player = {
 
 SAVES_DIR = 'saves'
 CHUNK_EXT = '.chunk'
-CHUNK_SIZE = world_gen['chunk_size'] * (world_gen['height'] + 1)
+SAVE_LINE_LENGTH = world_gen['height'] + 2 + 1  # + slice_height + newline
+CHUNK_SIZE = world_gen['chunk_size'] * SAVE_LINE_LENGTH
 
 
 save_path = lambda save, filename='': os.path.join(SAVES_DIR, save, filename)
@@ -83,29 +84,36 @@ def chunk_file_name(save, chunk_n):
 
 def load_chunk(save, chunk_n):
     map_ = {}
+    slice_heights = {}
     chunk_pos = chunk_n * world_gen['chunk_size']
 
     try:
         with open(chunk_file_name(save, chunk_n)) as data:
-            for d_pos, slice_ in enumerate(data):
+            for d_pos, line in enumerate(data):
+                abs_pos = chunk_pos + d_pos
 
                 # Truncate to correct size
-                slice_ = slice_[:world_gen['height']]
+                slice_ = line[:world_gen['height']]
 
                 height_error = world_gen['height'] - len(slice_)
                 if not height_error == 0:
                     # Extend slice height
                     slice_ = (' ' * height_error) + slice_
 
-                map_[chunk_pos + d_pos] = list(slice_)
+                map_[abs_pos] = list(slice_)
+
+                try:
+                    slice_heights[abs_pos] = int(line[world_gen['height']:])
+                except ValueError:
+                    slice_heights[abs_pos] = world_gen['ground_height']
 
     except FileNotFoundError:
         pass
 
-    return map_
+    return map_, slice_heights
 
 
-def save_chunk(save, chunk_n, chunk):
+def save_chunk(save, chunk_n, chunk, slice_heights):
     """ Updates slices within one chunk. """
 
     filename = chunk_file_name(save, chunk_n)
@@ -120,11 +128,11 @@ def save_chunk(save, chunk_n, chunk):
         for pos, slice_ in chunk.items():
             rel_pos = int(pos) % world_gen['chunk_size']
 
-            file_.seek(int(rel_pos) * (world_gen['height'] + 1))
-            file_.write(''.join(slice_) + '\n')
+            file_.seek(int(rel_pos) * SAVE_LINE_LENGTH)
+            file_.write(''.join(slice_) + str(slice_heights[pos])[:2].zfill(2) + '\n')
 
 
-def save_slices(save, new_slices):
+def save_slices(save, new_slices, slice_heights):
     """ Updates slices anywhere in the world. """
 
     # Group slices by chunk
@@ -142,7 +150,7 @@ def save_slices(save, new_slices):
 
     # Update chunk files
     for chunk_pos, chunk in chunks.items():
-        save_chunk(save, chunk_pos, chunk)
+        save_chunk(save, chunk_pos, chunk, slice_heights)
 
 
 def set_blocks(map_, blocks):
