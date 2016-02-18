@@ -218,11 +218,11 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
             except ValueError:
                 block_lightness = 0
 
-            light = [(b + block_lightness) / 2 for b in BLACK]
+            light = [(b + block_lightness) / 2 for b in (.1,.1,.1)]
 
         else:
 
-            light = BLACK
+            light = (.1,.1,.1)
 
     else:
 
