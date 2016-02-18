@@ -275,7 +275,10 @@ def get_block_light(x, y, world_x, map_, slice_heights, lights, day, block_colou
         except ValueError:
             block_lightness = 0
 
-        lit_block = [(b + block_lightness) / 6 for b in block_colour]
+        d_ground_height = slice_heights[world_x+x] - (world_gen['height'] - y)
+        v = lerp(day, min(1, max(0, d_ground_height/3)), 0)
+        hsv = rgb_to_hsv(lit_block)
+        lit_block = hsv_to_rgb((hsv[0], hsv[1], lerp(0, max(v, block_lightness), hsv[2])))
 
     return lit_block
 
