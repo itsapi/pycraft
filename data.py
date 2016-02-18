@@ -376,48 +376,48 @@ world_gen = {
             'vain_size': 4,
             'vain_density': .4,
             'chance': 0.05,
-            'upper': 30,
-            'lower': 1
+            'upper': 1,
+            'lower': 0
         },
         'iron': {
             'char': '+',
             'vain_size': 3,
             'vain_density': .3,
             'chance': 0.03,
-            'upper': 15,
-            'lower': 1
+            'upper': 1/2,
+            'lower': 0
         },
         'redstone': {
             'char': ':',
             'vain_size': 4,
             'vain_density': .6,
             'chance': 0.03,
-            'upper': 7,
-            'lower': 1
+            'upper': 1/5,
+            'lower': 0
         },
         'gold': {
             'char': '"',
             'vain_size': 2,
             'vain_density': .3,
             'chance': 0.02,
-            'upper': 10,
-            'lower': 1
+            'upper': 1/3,
+            'lower': 0
         },
         'diamond': {
             'char': 'o',
             'vain_size': 2,
             'vain_density': .5,
             'chance': 0.01,
-            'upper': 5,
-            'lower': 1
+            'upper': 1/6,
+            'lower': 0
         },
         'emerald': {
             'char': '.',
             'vain_size': 1,
             'vain_density': 1,
             'chance': 0.002,
-            'upper': 7,
-            'lower': 1
+            'upper': 1/5,
+            'lower': 0
         }
     },
     'trees': (  # TODO: Preprocessing should be done on these, to give the data
