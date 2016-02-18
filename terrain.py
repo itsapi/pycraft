@@ -256,8 +256,8 @@ def gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 random.seed(str(meta['seed']) + str(x) + feature_name)
                 if random.random() <= ore['chance']:
 
-                    upper = world_gen['height'] * ore['upper']
-                    lower = world_gen['height'] * ore['lower']
+                    upper = int(world_gen['height'] * ore['upper'])
+                    lower = int(world_gen['height'] * ore['lower'])
 
                     attrs = {}
                     attrs['root_height'] = world_gen['height'] - random.randint(
