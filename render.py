@@ -60,10 +60,10 @@ def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame,
                 if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
                     pixel_out = colour_str('*', bg=RED, fg=YELLOW)
 
-                this_frame[(x,y)] = pixel_out
+                this_frame[x, y] = pixel_out
 
                 try:
-                    if not last_frame[(x,y)] == pixel_out:
+                    if not last_frame[x, y] == pixel_out:
                         # Changed
                         diff += POS_STR(x, y, pixel_out)
                 except KeyError:
