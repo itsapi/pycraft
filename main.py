@@ -73,8 +73,9 @@ def game(server, settings):
     ds = 0  # Selector
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    width = 40
-    height = terrain.world_gen['height'] - 1
+    width = 110
+    height = 30
+    # height = terrain.world_gen['height'] - 1
     FPS = 15  # Max
     IPS = 20  # Input
     MPS = 15  # Movement
@@ -111,6 +112,7 @@ def game(server, settings):
             sleep(1/1000)
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
+            edges_y = (y - int(height / 2), y + int(height / 2))
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
             slice_list = terrain.detect_edges(server.map_, extended_edges)
@@ -161,6 +163,7 @@ def game(server, settings):
                 out, last_frame = render.render_map(
                     server.map_,
                     edges,
+                    edges_y,
                     objects,
                     bk_objects,
                     sky_colour,

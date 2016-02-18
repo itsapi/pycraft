@@ -27,7 +27,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
+def render_map(map_, edges, edges_y, objects, bk_objects, sky_colour, lights, last_frame, fancy_lights):
     """
         Prints out a frame of the game.
 
@@ -54,21 +54,25 @@ def render_map(map_, edges, objects, bk_objects, sky_colour, lights, last_frame,
 
             x = world_x - edges[0]
 
-            for y, pixel in enumerate(column):
-                pixel_out = calc_pixel(x, y, world_x, map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
+            for world_y, pixel in enumerate(column):
+                if world_y in range(*edges_y):
 
-                if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
-                    pixel_out = colour_str('*', bg=RED, fg=YELLOW)
+                    y = world_y - edges_y[0]
 
-                this_frame[(x,y)] = pixel_out
+                    pixel_out = calc_pixel(x, y, world_x, world_y, map_, pixel, objects, bk_objects, sky_colour, lights, fancy_lights)
 
-                try:
-                    if not last_frame[(x,y)] == pixel_out:
-                        # Changed
+                    if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
+                        pixel_out = colour_str('*', bg=RED, fg=YELLOW)
+
+                    this_frame[(x,y)] = pixel_out
+
+                    try:
+                        if not last_frame[(x,y)] == pixel_out:
+                            # Changed
+                            diff += POS_STR(x, y, pixel_out)
+                    except KeyError:
+                        # Doesn't exist
                         diff += POS_STR(x, y, pixel_out)
-                except KeyError:
-                    # Doesn't exist
-                    diff += POS_STR(x, y, pixel_out)
 
     return diff, this_frame
 
@@ -86,7 +90,7 @@ def obj_pixel(x, y, objects):
     return None, None
 
 
-def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
+def calc_pixel(x, y, world_x, world_y, map_, pixel_f, objects, bk_objects, sky_colour, lights, fancy_lights):
 
     # If the front block has a bg
     if blocks[pixel_f]['colours']['bg'] is not None:
@@ -95,13 +99,13 @@ def calc_pixel(x, y, world_x, map_, pixel_f, objects, bk_objects, sky_colour, li
         bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
 
     # Get any object
-    object_char, obj_colour = obj_pixel(x, y, objects)
+    object_char, obj_colour = obj_pixel(x, world_y, objects)
 
     if object_char:
         char = object_char
         fg = obj_colour
     else:
-        char = get_char(world_x, y, map_, pixel_f)
+        char = get_char(world_x, world_y, map_, pixel_f)
         fg = blocks[pixel_f]['colours']['fg']
 
     fg_colour = rgb(*fg) if fg is not None else None

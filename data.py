@@ -336,10 +336,10 @@ blocks = {
 }
 
 world_gen = {
-    'height': 30,
+    'height': 100,
     'max_hill': 15,
     'min_grad': 5,
-    'ground_height': 10,
+    'ground_height': 75,
     'chunk_size': 16,
     'min_biome': 16,
     'max_biome': 64,
