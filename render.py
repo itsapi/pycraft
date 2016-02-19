@@ -181,7 +181,7 @@ def bk_objects(ticks, width, fancy_lights):
         light_colour = world_gen[light_type + '_light_colour']
 
         obj['light_colour'] = light_colour
-        obj['light_radius'] = world_gen['sun_light_radius'] * sin(sun_angle)
+        obj['light_radius'] = world_gen[light_type + '_light_radius'] * sin(sun_angle)
     else:
         sky_colour = CYAN if day else BLUE
 
