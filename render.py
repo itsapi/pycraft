@@ -166,7 +166,7 @@ def bk_objects(ticks, width, fancy_lights):
     obj = {
         'x': x,
         'y': y,
-        'z': -1,
+        'z': -1 if day else -2,
         'width': 2,
         'height': 1,
         'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
