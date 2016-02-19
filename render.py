@@ -57,8 +57,8 @@ def render_map(map_, slice_heights, edges, objects, bk_objects, sky_colour, day,
             for y, pixel in enumerate(column):
                 pixel_out = calc_pixel(x, y, world_x, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
 
-                if DEBUG and y == 1 and world_positions[x] % world_gen['chunk_size'] == 0:
-                    pixel_out = colour_str('*', bg=RED, fg=YELLOW)
+                if DEBUG and y == 1 and world_x % world_gen['chunk_size'] == 0:
+                    pixel_out = colour_str('*', bg=rgb(*RED), fg=rgb(*YELLOW))
 
                 this_frame[(x,y)] = pixel_out
 
