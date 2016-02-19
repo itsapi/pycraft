@@ -162,6 +162,8 @@ def bk_objects(ticks, width, fancy_lights):
     x = int(sun_r * cos(sun_angle % pi) + width/2 + 1)
     y = int(sun_y - sun_r * sin(sun_angle % pi))
 
+    light_type = 'sun' if day else 'moon'
+
     # Sun/moon
     obj = {
         'x': x,
@@ -169,27 +171,19 @@ def bk_objects(ticks, width, fancy_lights):
         'z': -1 if day else -2,
         'width': 2,
         'height': 1,
-        'colour': world_gen['sun_colour'] if day else world_gen['moon_colour']
+        'colour': world_gen[light_type + '_colour']
     }
 
     shade = (sin(day_angle) + 1)/2
+
     if fancy_lights:
-
         sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
-
-        if day:
-            light_colour = world_gen['sun_light_colour']
-        else:
-            light_colour = world_gen['moon_light_colour']
+        light_colour = world_gen[light_type + '_light_colour']
 
         obj['light_colour'] = light_colour
         obj['light_radius'] = world_gen['sun_light_radius'] * sin(sun_angle)
     else:
-
-        if day:
-            sky_colour = CYAN
-        else:
-            sky_colour = BLUE
+        sky_colour = CYAN if day else BLUE
 
     objects.append(obj)
 
