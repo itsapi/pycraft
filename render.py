@@ -38,7 +38,7 @@ def render_map(map_, slice_heights, edges, objects, bk_objects, sky_colour, day,
             {'x': int, 'y': int, 'char': block}
         - blocks: the main dictionary describing the blocks in the game.
         - bk_objects: list of objects to be displayed in the background:
-            {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_raduis': tuple[3]}
+            {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_radius': tuple[3]}
         - sky_colour: the colour of the sky
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
