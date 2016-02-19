@@ -1,7 +1,7 @@
 from time import time
 from math import radians, floor, ceil
 from threading import Thread
-from colours import colour_str, YELLOW
+from colours import colour_str, TERM_YELLOW
 
 import terrain, saves, network
 
@@ -12,7 +12,7 @@ TPS = 10  # Ticks
 
 
 def _log_event(event, args):
-    log('  Event:', colour_str(event, fg=YELLOW))
+    log('  Event:', colour_str(event, fg=TERM_YELLOW))
     log('  Args:', args)
     log()
 
