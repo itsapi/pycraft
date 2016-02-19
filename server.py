@@ -102,7 +102,7 @@ class Server:
         self._update_clients({'event': 'set_blocks', 'args': [self.game.set_blocks(blocks)]})
 
     def event_get_chunks(self, chunk_list):
-        return {'event': 'set_chunks', 'args': [self.game.get_chunks(chunk_list)]}
+        return {'event': 'set_chunks', 'args': list(self.game.get_chunks(chunk_list))}
 
     def event_set_player(self, name, player):
         self.game.set_player(name, player)
