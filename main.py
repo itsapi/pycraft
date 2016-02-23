@@ -128,7 +128,7 @@ def game(server, settings):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width, settings.get('fancy_lights', True))
+            bk_objects, sky_colour, day = render.bk_objects(server.time, width, settings.get('fancy_lights', True))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -160,10 +160,12 @@ def game(server, settings):
 
                 out, last_frame = render.render_map(
                     server.map_,
+                    server.slice_heights,
                     edges,
                     objects,
                     bk_objects,
                     sky_colour,
+                    day,
                     lights,
                     last_frame,
                     settings.get('fancy_lights', True)
