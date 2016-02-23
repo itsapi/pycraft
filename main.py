@@ -8,7 +8,7 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player, render, server_interface
+import saves, ui, terrain, player, render, server_interface, data
 
 
 def main():
@@ -113,6 +113,12 @@ def game(server, settings):
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
             edges_y = (y - int(height / 2), y + int(height / 2))
+
+            if edges_y[1] > data.world_gen['height']:
+                edges_y = (data.world_gen['height'] - height, data.world_gen['height'])
+            elif edges_y[0] < 0:
+                edges_y = (0, height)
+
             extended_edges = (edges[0]-render.max_light, edges[1]+render.max_light)
 
             slice_list = terrain.detect_edges(server.map_, extended_edges)
