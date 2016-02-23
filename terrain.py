@@ -447,4 +447,4 @@ def gen_chunk(chunk_n, meta):
                         build_ore(chunk, chunk_pos, feature_x, feature, ore, ground_heights)
                         break
 
-    return chunk
+    return chunk, {x: s for x, s in ground_heights.items() if x in range(chunk_pos, chunk_pos+world_gen['chunk_size'])}

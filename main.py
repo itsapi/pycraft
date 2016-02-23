@@ -73,9 +73,6 @@ def game(server, settings):
     ds = 0  # Selector
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    width = 110
-    height = 35
-    # height = terrain.world_gen['height'] - 1
     FPS = 15  # Max
     IPS = 20  # Input
     MPS = 15  # Movement
@@ -109,6 +106,9 @@ def game(server, settings):
         while server.game:
             x, y = server.pos
 
+            width = settings.get('width')
+            height = settings.get('height')
+
             sleep(1/1000)
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
@@ -136,7 +136,7 @@ def game(server, settings):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width, settings.get('fancy_lights', True))
+            bk_objects, sky_colour, day = render.bk_objects(server.time, width, settings.get('fancy_lights'))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -147,7 +147,7 @@ def game(server, settings):
                 server.redraw = False
                 last_out = time()
 
-                if settings.get('gravity', False):
+                if settings.get('gravity'):
                     blocks = terrain.apply_gravity(server.map_, edges)
                     if blocks: server.set_blocks(blocks)
 
@@ -168,14 +168,16 @@ def game(server, settings):
 
                 out, last_frame = render.render_map(
                     server.map_,
+                    server.slice_heights,
                     edges,
                     edges_y,
                     objects,
                     bk_objects,
                     sky_colour,
+                    day,
                     lights,
                     last_frame,
-                    settings.get('fancy_lights', True)
+                    settings.get('fancy_lights')
                 )
 
                 crafting_grid = render.render_grid(
