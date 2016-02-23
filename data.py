@@ -376,7 +376,7 @@ world_gen = {
             'char': 'x',
             'vain_size': 4,
             'vain_density': .4,
-            'chance': 0.05,
+            'chance': 0.5,
             'upper': 1,
             'lower': 0
         },
@@ -384,7 +384,7 @@ world_gen = {
             'char': '+',
             'vain_size': 3,
             'vain_density': .3,
-            'chance': 0.03,
+            'chance': 0.1,
             'upper': 1/2,
             'lower': 0
         },
