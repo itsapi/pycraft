@@ -22,7 +22,9 @@ default_settings = {
     'name': None,
     'colours': True,
     'fancy_lights': True,
-    'gravity': False
+    'gravity': False,
+    'width': 50,
+    'height': 40
 }
 
 default_player = {
