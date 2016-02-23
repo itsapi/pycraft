@@ -96,7 +96,7 @@ def calc_pixel(x, y, world_x, world_y, map_, pixel_f, objects, bk_objects, sky_c
     if blocks[pixel_f]['colours']['bg'] is not None:
         bg = blocks[pixel_f]['colours']['bg']
     else:
-        bg = sky(x, y, bk_objects, sky_colour, lights, fancy_lights)
+        bg = sky(x, world_y, bk_objects, sky_colour, lights, fancy_lights)
 
     # Get any object
     object_char, obj_colour = obj_pixel(x, world_y, objects)
