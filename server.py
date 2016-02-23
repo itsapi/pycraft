@@ -1,7 +1,7 @@
 from time import time
 from math import radians, floor, ceil
 from threading import Thread
-from colours import colour_str, YELLOW
+from colours import colour_str, TERM_YELLOW
 
 import terrain, saves, network
 
@@ -12,7 +12,7 @@ TPS = 10  # Ticks
 
 
 def _log_event(event, args):
-    log('  Event:', colour_str(event, fg=YELLOW))
+    log('  Event:', colour_str(event, fg=TERM_YELLOW))
     log('  Args:', args)
     log()
 
@@ -102,7 +102,7 @@ class Server:
         self._update_clients({'event': 'set_blocks', 'args': [self.game.set_blocks(blocks)]})
 
     def event_get_chunks(self, chunk_list):
-        return {'event': 'set_chunks', 'args': [self.game.get_chunks(chunk_list)]}
+        return {'event': 'set_chunks', 'args': list(self.game.get_chunks(chunk_list))}
 
     def event_set_player(self, name, player):
         self.game.set_player(name, player)
@@ -154,6 +154,9 @@ class Server:
     def local_interface_map(self):
         return self.game._map
 
+    def local_interface_slice_heights(self):
+        return self.game._slice_heights
+
     def local_interface_dt(self):
         dt, time = self.game.dt()
         if dt and time % 100 == 0:
@@ -167,31 +170,36 @@ class Game:
     def __init__(self, save):
         self._save = save
         self._map = {}
+        self._slice_heights = {}
         self._meta = saves.get_meta(save)
         self._last_tick = time()
 
     def get_chunks(self, chunk_list):
         new_slices = {}
+        new_slice_heights = {}
 
         log('loading chunks', chunk_list)
 
         # Generates new terrain
         for chunk_n in chunk_list:
 
-            chunk = saves.load_chunk(self._save, chunk_n)
+            chunk, chunk_slice_heights = saves.load_chunk(self._save, chunk_n)
             if not chunk:
-                chunk = terrain.gen_chunk(chunk_n, self._meta)
-                saves.save_chunk(self._save, chunk_n, chunk)
+                chunk, chunk_slice_heights = terrain.gen_chunk(chunk_n, self._meta)
+                saves.save_chunk(self._save, chunk_n, chunk, chunk_slice_heights)
+
             new_slices.update(chunk)
+            new_slice_heights.update(chunk_slice_heights)
 
         log('new slices', new_slices.keys())
 
         self._map.update(new_slices)
-        return new_slices
+        self._slice_heights.update(new_slice_heights)
+        return new_slices, new_slice_heights
 
     def set_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
-        saves.save_slices(self._save, new_slices)
+        saves.save_slices(self._save, new_slices, self._slice_heights)
         return blocks
 
     def set_player(self, name, player):

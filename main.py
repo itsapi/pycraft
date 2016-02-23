@@ -73,7 +73,6 @@ def game(server, settings):
     ds = 0  # Selector
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    # height = terrain.world_gen['height'] - 1
     FPS = 15  # Max
     IPS = 20  # Input
     MPS = 15  # Movement
@@ -131,7 +130,7 @@ def game(server, settings):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour = render.bk_objects(server.time, width, settings.get('fancy_lights'))
+            bk_objects, sky_colour, day = render.bk_objects(server.time, width, settings.get('fancy_lights'))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -163,11 +162,13 @@ def game(server, settings):
 
                 out, last_frame = render.render_map(
                     server.map_,
+                    server.slice_heights,
                     edges,
                     edges_y,
                     objects,
                     bk_objects,
                     sky_colour,
+                    day,
                     lights,
                     last_frame,
                     settings.get('fancy_lights')

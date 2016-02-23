@@ -19,6 +19,7 @@ class RemoteInterface:
 
     def __init__(self, name, ip, port):
         self.map_ = {}
+        self.slice_heights = {}
         self.current_players = {}
         self.game = True
         self.error = None
@@ -106,8 +107,10 @@ class RemoteInterface:
         self.map_, _ = saves.set_blocks(self.map_, blocks)
         self.view_change = True
 
-    def _event_set_chunks(self, new_chunks):
+    def _event_set_chunks(self, new_chunks, new_slice_heights):
         self.map_.update({int(key): value for key, value in new_chunks.items()})
+        self.slice_heights.update(new_slice_heights)
+
         self._chunks_requested.difference_update(terrain.get_chunk_list(new_chunks.keys()))
         self.view_change = True
 
@@ -161,7 +164,8 @@ class RemoteInterface:
     def unload_slices(self, edges):
         edges = [chunk_size * floor(edges[0] / chunk_size),
                  chunk_size * ceil(edges[1] / chunk_size)]
-        self.map_ = {x: s for x, s in self.map_.items() if int(x) in range(*edges)}
+        self.map_ = {x: s for x, s in self.map_.items() if x in range(*edges)}
+        self.slice_heights = {x: h for x, h in self.slice_heights.items() if x in range(*edges)}
 
         # TODO: Figure out if we always need to send this...
         self._send('unload_slices', [edges])
@@ -328,6 +332,10 @@ class LocalInterface:
     @property
     def map_(self):
         return self._server.local_interface_map()
+
+    @property
+    def slice_heights(self):
+        return self._server.local_interface_slice_heights()
 
     @property
     def port(self):
