@@ -178,9 +178,8 @@ def bk_objects(ticks, width, fancy_lights):
 
     if fancy_lights:
         sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
-        light_colour = world_gen[light_type + '_light_colour']
 
-        obj['light_colour'] = light_colour
+        obj['light_colour'] = world_gen[light_type + '_light_colour']
         obj['light_radius'] = world_gen[light_type + '_light_radius'] * sin(sun_angle)
     else:
         sky_colour = CYAN if day else BLUE
