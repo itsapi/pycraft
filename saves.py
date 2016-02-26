@@ -23,6 +23,7 @@ default_settings = {
     'colours': True,
     'fancy_lights': True,
     'gravity': False,
+    'flight': False,
     'width': 40,
     'height': 30
 }

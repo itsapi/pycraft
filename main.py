@@ -213,15 +213,17 @@ def game(server, settings):
                 server.respawn()
 
             if dt and server.chunk_loaded(x):
-                # Player falls when no solid block below it
-                if jump > 0:
-                    # Countdown till fall
-                    jump -= 1
-                elif not terrain.is_solid(server.map_[x][y+1]):
-                    # Fall
-                    y += 1
-                    server.pos = x, y
-                    server.redraw = True
+
+                if not settings.get('flight'):
+                    # Player falls when no solid block below it
+                    if jump > 0:
+                        # Countdown till fall
+                        jump -= 1
+                    elif not terrain.is_solid(server.map_[x][y+1]):
+                        # Fall
+                        y += 1
+                        server.pos = x, y
+                        server.redraw = True
 
                 new_blocks = process_events(events, server.map_)
 
@@ -236,7 +238,7 @@ def game(server, settings):
 
             # Receive input if a key is pressed
             char = str(nbi.char()).lower()
-            inp = char if char in 'wadkjliuo-=' else None
+            inp = char if char in 'wasdkjliuo-=' else None
 
             # Input Frame
             if time() >= (1/IPS) + last_inp and alive and inp:
@@ -244,7 +246,7 @@ def game(server, settings):
                 if time() >= (1/MPS) + last_move:
                     # Update player position
                     dx, dy, jump = player.get_pos_delta(
-                        str(inp), server.map_, x, y, jump)
+                        str(inp), server.map_, x, y, jump, settings.get('flight'))
                     y += dy
                     x += dx
 

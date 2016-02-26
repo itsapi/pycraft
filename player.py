@@ -12,7 +12,7 @@ CRAFT_TITLE = 'Crafting'
 HAND_STRENGTH = 20
 
 
-def get_pos_delta(char, map_, x, y, jump):
+def get_pos_delta(char, map_, x, y, jump, flight):
 
     left_slice = map_[x - 1]
     player_slice = map_[x]
@@ -42,12 +42,17 @@ def get_pos_delta(char, map_, x, y, jump):
 
     # Jumps if up pressed, block below, no block above
     if ( char in 'w' and y > 1
-         and not is_solid( player_slice[above_y] )
-         and ( is_solid( player_slice[below_y] )
-               or player_slice[feet_y] == '=' )):
+         and (not is_solid( player_slice[above_y] )
+              and ( is_solid( player_slice[below_y] )
+                    or player_slice[feet_y] == '=' )
+              or flight)):
 
         dy = -1
         jump = 5
+
+    if (flight and char in 's' and head_y < world_gen['height']
+         and (not is_solid(player_slice[below_y]))):
+        dy = 1
 
     return dx, dy, jump
 
