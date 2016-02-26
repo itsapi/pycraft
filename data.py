@@ -343,6 +343,9 @@ world_gen = {
     'chunk_size': 16,
     'min_biome': 16,
     'max_biome': 64,
+    'max_cave_radius': 20,
+    'max_cave_segments': 20,
+    'cave_chance': 0.01,
     'biomes': {
         'plains': {
             'chance': .3,
