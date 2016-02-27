@@ -1,6 +1,6 @@
 import random
 from collections import OrderedDict
-from math import ceil, cos, atan2
+from math import ceil, cos, sin, radians, atan2
 
 from data import world_gen, blocks
 from console import log, DEBUG
@@ -406,17 +406,38 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
     for segment in cave_feature['segments']:
         (sx, sy), (dx, dy), r = segment
 
-        for slice_x in range(sx - r, sx + dx + r):
-            if in_chunk(slice_x, chunk_pos):
-                log(sy + dy * (slice_x - sx) / dx, m='cave')
-                log(cos(atan2(dy, dx)), m='cave')
-                y_intercept = int(world_gen['height'] - (sy + dy * (slice_x - sx) / dx))
-                ry = int(r * cos(atan2(dy, dx)))
-                log(y_intercept, ry, m='cave')
+        x_quad = abs(dx) >= abs(dy)
 
-                # for dy in range(y_intercept-ry, y_intercept+ry):
-                #     chunk[slice_x][dy] = ' '
-                chunk[slice_x][y_intercept] = ' '
+        if x_quad:
+            if dx < 0:
+                sx = sx + dx
+                dx *= -1
+                sy = sy + dy
+                dy *= -1
+
+            ry = int(r * cos(atan2(dy, dx)))
+            for u in range(sx, sx + dx):
+                if in_chunk(u, chunk_pos):
+                    y_intercept = int(world_gen['height'] - (sy + dy * (u - sx) / dx))
+
+                    for zy in range(y_intercept-ry, y_intercept+ry+1):
+                        chunk[u][zy] = ' '
+
+        else:
+            if dy < 0:
+                sy = sy + dy
+                dy *= -1
+                sx = sx + dx
+                dx *= -1
+
+            rx = int(r * cos(atan2(dx, dy)))
+            for v in range(sy, sy + dy):
+                x_intercept = int((sx + dx * (v - sy) / dy))
+
+                for zx in range(x_intercept-rx, x_intercept+rx):
+                    if in_chunk(zx, chunk_pos):
+                        chunk[zx][world_gen['height'] - v] = ' '
+
 
 def gen_chunk(chunk_n, meta):
     chunk_pos = chunk_n * world_gen['chunk_size']
