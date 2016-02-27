@@ -301,25 +301,23 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
-    def gen_segments(x, y, length):
+    def gen_segments(x, y, old_d):
         new_segments = []
 
-        if not length == 0:
-            length -= 1
+        for c in range(random.randint(0, 2)):
 
-            for c in range(random.randint(0, 3)):
+            d = old_d + random.randint(-30, 30)
+            dx = int(10*sin(radians(d)))
+            dy = int(5*cos(radians(d)))
+            width = random.randint(1, 3)
+            log(d, dx, dy, m='cave')
 
-                dx = random.randint(-5, 5)
-                dy = random.randint(-5, 5)
-                width = random.randint(2, 5)
+            if (x+dx in range(chunk_pos - world_gen['max_cave_radius'],
+                              chunk_pos + world_gen['max_cave_radius'] + world_gen['chunk_size']) and
+               0 < y+dy < ground_heights[x+dx]):
 
-                if (x+dx in range(chunk_pos - world_gen['max_cave_radius'],
-                                  chunk_pos + world_gen['max_cave_radius'] + world_gen['chunk_size']) and
-                   0 < y+dy < ground_heights[x+dx]
-                   and dx is not 0):
-
-                    new_segments.append(((x, y), (dx, dy), width))
-                    new_segments += gen_segments(x + dx, y + dy, length)
+                new_segments.append(((x, y), (dx, dy), width))
+                new_segments += gen_segments(x + dx, y + dy, d)
 
         return new_segments
 
@@ -339,9 +337,9 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
             if random.random() <= world_gen['cave_chance']:
 
                 attrs = {}
-                attrs['y'] = ground_heights[x]
+                attrs['y'] = ground_heights[x] + 1
 
-                attrs['segments'] = gen_segments(x, attrs['y'], world_gen['max_cave_segments'])
+                attrs['segments'] = gen_segments(x, attrs['y'], 180)
 
                 features[x]['cave'] = attrs
                 log('got a cave', features[x]['cave'], m='cave')
