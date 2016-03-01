@@ -301,23 +301,30 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
-    def gen_segments(x, y, old_d):
+    def gen_segments(x, y, old_w, old_d):
         new_segments = []
+        d = old_d % 360
 
-        for c in range(random.randint(0, 2)):
+        target = (90, 270)[d > 180]
+        upper = target - d
+        lower = random.randint(-10, 10)
+        if lower > upper:
+            lower, upper = upper, lower
+        d += random.randint(lower, upper)
 
-            d = old_d + random.randint(-30, 30)
-            dx = int(10*sin(radians(d)))
-            dy = int(5*cos(radians(d)))
-            width = random.randint(1, 3)
-            log(d, dx, dy, m='cave')
+        dx = int(10*sin(radians(d)))
+        dy = int(10*cos(radians(d)))
+        width = min(3, max(1, old_w + random.randint(-1, 1)))
+        log(d, dx, dy, m='cave')
 
-            if (x+dx in range(chunk_pos - world_gen['max_cave_radius'],
-                              chunk_pos + world_gen['max_cave_radius'] + world_gen['chunk_size']) and
-               0 < y+dy < ground_heights[x+dx]):
+        if (x+dx in range(chunk_pos - world_gen['max_cave_radius'],
+                          chunk_pos + world_gen['max_cave_radius'] + world_gen['chunk_size']) and
+           0 < y+dy < ground_heights[x+dx]):
 
-                new_segments.append(((x, y), (dx, dy), width))
-                new_segments += gen_segments(x + dx, y + dy, d)
+            new_segments.append(((x, y), (dx, dy), width))
+            new_segments += gen_segments(x + dx, y + dy, width, d)
+            if random.random() < 0.1:
+                new_segments += gen_segments(x + dx, y + dy, width, random.choice([-90, 90]) + d)
 
         return new_segments
 
@@ -339,7 +346,7 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 attrs = {}
                 attrs['y'] = ground_heights[x] + 1
 
-                attrs['segments'] = gen_segments(x, attrs['y'], 180)
+                attrs['segments'] = gen_segments(x, attrs['y'], 2, 180)
 
                 features[x]['cave'] = attrs
                 log('got a cave', features[x]['cave'], m='cave')
