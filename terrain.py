@@ -113,7 +113,7 @@ class TerrainCache(OrderedDict):
 features = None
 def init_features():
     global features
-    cache_size = (world_gen['max_biome'] * 2) + world_gen['chunk_size']
+    cache_size = (world_gen['max_biome'] * 4) + world_gen['chunk_size']
     features = TerrainCache(limit=cache_size)
 
 init_features()
