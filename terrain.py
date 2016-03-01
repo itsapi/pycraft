@@ -412,6 +412,8 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
         (sx, sy), (dx, dy), r = segment
 
         x_quad = abs(dx) >= abs(dy)
+        r -= (r/2) * abs(cos(atan2(dy, dx)))
+        log(r, x_quad, m='cave')
 
         if x_quad:
             if dx < 0:
