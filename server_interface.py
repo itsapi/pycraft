@@ -110,7 +110,7 @@ class RemoteInterface:
 
     def _event_set_chunks(self, new_chunks, new_slice_heights):
         self.map_.update({int(key): value for key, value in new_chunks.items()})
-        self.slice_heights.update(new_slice_heights)
+        self.slice_heights.update({int(key): value for key, value in new_slice_heights.items()})
 
         self._chunks_requested.difference_update(terrain.get_chunk_list(new_chunks.keys()))
         self.view_change = True
