@@ -194,7 +194,7 @@ blocks = {
             'x': 1
         },
         'crafts': 4,
-        'light_radius': 7,
+        'light_radius': 10,
         'light_colour': (.2,.8,.8),
         'placed_on_solid': True,
         'placed_on_wall': True
