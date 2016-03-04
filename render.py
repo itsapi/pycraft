@@ -2,13 +2,8 @@ from math import pi, cos, sin, sqrt, modf, radians
 
 from colours import *
 from console import *
-from server import TPS
-from data import lighting, world_gen, blocks
+from data import lighting, world_gen, blocks, timings
 from terrain import is_solid
-
-
-# 10 mins for full day, night cycle
-DAY_LENGTH = 10 * 60
 
 
 sun_y = world_gen['height'] - world_gen['ground_height']
@@ -153,8 +148,8 @@ def bk_objects(ticks, width, fancy_lights):
 
     objects = []
 
-    seconds = ticks / TPS
-    day_time = (seconds / DAY_LENGTH) % 1
+    seconds = ticks / timings['tps']
+    day_time = (seconds / timings['day_length']) % 1
     day = day_time < .5
 
     day_angle = day_time * 2 * pi

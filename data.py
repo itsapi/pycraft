@@ -356,6 +356,7 @@ world_gen = {
     'chunk_size': 16,
     'min_biome': 16,
     'max_biome': 64,
+
     'biomes': {
         'plains': {
             'chance': .3,
@@ -425,8 +426,9 @@ world_gen = {
             'lower': 0
         }
     },
-    'trees': (  # TODO: Preprocessing should be done on these, to give the data
-                #         the terrain gen needs.
+
+    # TODO: Preprocessing should be done on these, to give the data the terrain gen needs.
+    'trees': (
         {
             'chance': 1,
             'leaves': ((0, 1, 1),
@@ -498,6 +500,13 @@ world_gen = {
         }
     )
 }
+
+
+timings = {}
+
+timings['day_length'] = 10 * 60
+timings['tps'] = 10
+timings['tick'] = timings['day_length'] * timings['tps']  / 4
 
 
 help_data = {

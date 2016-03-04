@@ -2,8 +2,9 @@ from threading import Thread, Event
 from math import radians, floor, ceil
 from time import time
 
-from server import Server, log_event_send, log_event_receive, TPS
+from server import Server, log_event_send, log_event_receive
 from console import log
+from data import timings
 
 import saves, terrain, network
 
@@ -63,7 +64,7 @@ class RemoteInterface:
 
         # Login successful!
 
-        self.time = 0
+        self.time = timings['tick']
         self._dt = False
         self._last_tick = time()
 
@@ -179,7 +180,7 @@ class RemoteInterface:
         self._event_logout()
 
     def dt(self):
-        if time() >= (1/TPS) + self._last_tick:
+        if time() >= (1/timings['tps']) + self._last_tick:
             self._last_tick = time()
             self.time += 1
             self._dt = True
@@ -225,7 +226,7 @@ class LocalInterface:
         self.game = True
         self.error = None
         self.serving = False
-        self.time = 0
+        self.time = timings['tick']
         self._name = name
         self.current_players = {}
         self._server = Server(name, save, port, self)
