@@ -266,6 +266,8 @@ def get_block_light(x, y, world_x, map_, slice_heights, lights, day, block_colou
 def sky(x, y, world_x, map_, slice_heights, bk_objects, sky_colour, lights, fancy_lights):
     """ Returns the sky colour. """
 
+    bk_objects = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_, slice_heights), bk_objects)
+
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
             return obj['colour']
