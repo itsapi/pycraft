@@ -335,6 +335,19 @@ blocks = {
     }
 }
 
+
+lighting = {
+    'day_colour': (0,.4,1),
+    'night_colour': (0,0,.2),
+    'sun_light_radius': 25,
+    'moon_light_radius': 10,
+    'sun_colour': (.8,.6,0),
+    'moon_colour': (1,1,1),
+    'sun_light_colour': (0,1,1),
+    'moon_light_colour': (.6,.6,.8)
+}
+
+
 world_gen = {
     'height': 200,
     'max_hill': 15,
@@ -345,6 +358,7 @@ world_gen = {
     'max_biome': 64,
     'max_cave_radius': 50,
     'cave_chance': 0.1,
+
     'biomes': {
         'plains': {
             'chance': .3,
@@ -362,15 +376,6 @@ world_gen = {
             'grass': 0
         }
     },
-
-    'day_colour': (0,.4,1),
-    'night_colour': (0,0,.2),
-    'sun_light_radius': 25,
-    'moon_light_radius': 10,
-    'sun_colour': (.8,.6,0),
-    'moon_colour': (1,1,1),
-    'sun_light_colour': (0,1,1),
-    'moon_light_colour': (.6,.6,.8),
 
     # TODO: Densities need tuning.
     'ores': {
@@ -423,8 +428,9 @@ world_gen = {
             'lower': 0
         }
     },
-    'trees': (  # TODO: Preprocessing should be done on these, to give the data
-                #         the terrain gen needs.
+
+    # TODO: Preprocessing should be done on these, to give the data the terrain gen needs.
+    'trees': (
         {
             'chance': 1,
             'leaves': ((0, 1, 1),
@@ -496,6 +502,14 @@ world_gen = {
         }
     )
 }
+
+
+timings = {}
+
+timings['day_length'] = 10 * 60
+timings['tps'] = 10
+timings['tick'] = timings['day_length'] * timings['tps']  / 4
+
 
 help_data = {
     'Movement:': [

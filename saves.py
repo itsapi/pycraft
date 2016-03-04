@@ -6,13 +6,14 @@ from shutil import rmtree
 
 from terrain import world_gen
 from console import log
+from data import timings
 
 
 default_meta = {
     'name': 'Untitled',
     'seed': lambda: hash(random.random()),
     'spawn': 0,
-    'tick': 0,
+    'tick': timings['tick'],
     'players': {}
 }
 

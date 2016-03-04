@@ -6,9 +6,7 @@ from colours import colour_str, TERM_YELLOW
 import terrain, saves, network
 
 from console import log
-
-
-TPS = 10  # Ticks
+from data import timings
 
 
 def _log_event(event, args):
@@ -220,7 +218,7 @@ class Game:
 
     # TODO: Needs rethinking
     def dt(self):
-        if time() >= (1/TPS) + self._last_tick:
+        if time() >= (1/timings['tps']) + self._last_tick:
             self._last_tick = time()
             self.time += 1
             self._dt = True
