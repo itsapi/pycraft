@@ -399,10 +399,16 @@ def build_ore(chunk, chunk_pos, x, ore_feature, ore, ground_heights):
             block_x = block_dx + x
             block_y = block_dy + ore_feature['root_height']
 
-            if in_chunk(block_x, chunk_pos):
-                # Won't allow ore above surface
-                if world_gen['height'] > block_y > world_gen['height'] - ground_heights[block_x]:
-                    chunk[block_x][block_y] = spawn_hierarchy((ore['char'], chunk[block_x][block_y]))
+            if not in_chunk(block_x, chunk_pos):
+                continue
+
+            if not world_gen['height'] > block_y > world_gen['height'] - ground_heights[block_x]:
+                continue
+
+            if chunk[block_x][block_y] is ' ':
+                continue
+
+            chunk[block_x][block_y] = spawn_hierarchy((ore['char'], chunk[block_x][block_y]))
 
 
 def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
