@@ -344,7 +344,7 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
             if random.random() <= world_gen['cave_chance']:
 
                 attrs = {}
-                attrs['y'] = ground_heights[x] + 1
+                attrs['y'] = random.randint(0, ground_heights[x] + 1)
 
                 attrs['segments'] = gen_segments(x, attrs['y'], 2, 180)
 
