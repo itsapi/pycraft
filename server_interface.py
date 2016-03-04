@@ -109,8 +109,8 @@ class RemoteInterface:
         self.view_change = True
 
     def _event_set_chunks(self, new_chunks, new_slice_heights):
-        self.map_.update({int(key): value for key, value in new_chunks.items()})
-        self.slice_heights.update(new_slice_heights)
+        self.map_.update({int(key): list(value) for key, value in new_chunks.items()})
+        self.slice_heights.update({int(key): value for key, value in new_slice_heights.items()})
 
         self._chunks_requested.difference_update(terrain.get_chunk_list(new_chunks.keys()))
         self.view_change = True
@@ -152,9 +152,10 @@ class RemoteInterface:
     # Main loop methods:
 
     def get_chunks(self, chunk_list):
-        slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
+        slices_its_loading = [(chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size)]
 
         self.map_.update({i: list(terrain.EMPTY_SLICE) for i in slices_its_loading})
+        self.slice_heights.update({i: terrain.world_gen['ground_height'] for i in slices_its_loading})
         self._send('get_chunks', [chunk_list])
         self._chunks_requested.update(chunk_list)
         self.view_change = True

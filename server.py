@@ -193,7 +193,7 @@ class Game:
 
         self._map.update(new_slices)
         self._slice_heights.update(new_slice_heights)
-        return new_slices, new_slice_heights
+        return {key: ''.join(value) for key, value in new_slices.items()}, new_slice_heights
 
     def set_blocks(self, blocks):
         self._map, new_slices = saves.set_blocks(self._map, blocks)
