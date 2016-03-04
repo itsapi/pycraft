@@ -434,7 +434,8 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
                     y_intercept = int(world_gen['height'] - (sy + dy * (u - sx) / dx))
 
                     for zy in range(y_intercept-ry, y_intercept+ry+1):
-                        chunk[u][zy] = ' '
+                        if zy < world_gen['height'] and chunk[u][zy] is not '_':
+                            chunk[u][zy] = ' '
 
         else:
             if dy < 0:
@@ -447,9 +448,12 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
             for v in range(sy, sy + dy):
                 x_intercept = int((sx + dx * (v - sy) / dy))
 
-                for zx in range(x_intercept-rx, x_intercept+rx):
-                    if in_chunk(zx, chunk_pos):
-                        chunk[zx][world_gen['height'] - v] = ' '
+                world_y = world_gen['height'] - v
+                if world_y < world_gen['height']:
+
+                    for zx in range(x_intercept-rx, x_intercept+rx):
+                        if in_chunk(zx, chunk_pos) and chunk[zx][world_y] is not '_':
+                            chunk[zx][world_y] = ' '
 
 
 def gen_chunk(chunk_n, meta):
