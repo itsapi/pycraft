@@ -3,7 +3,7 @@ from math import pi, cos, sin, sqrt, modf, radians
 from colours import *
 from console import *
 from server import TPS
-from data import world_gen, blocks
+from data import lighting, world_gen, blocks
 from terrain import is_solid
 
 
@@ -174,16 +174,16 @@ def bk_objects(ticks, width, fancy_lights):
         'z': -1 if day else -2,
         'width': 2,
         'height': 1,
-        'colour': world_gen[light_type + '_colour']
+        'colour': lighting[light_type + '_colour']
     }
 
     shade = (sin(day_angle) + 1)/2
 
     if fancy_lights:
-        sky_colour = lerp_n(rgb_to_hsv(world_gen['night_colour']), shade, rgb_to_hsv(world_gen['day_colour']))
+        sky_colour = lerp_n(rgb_to_hsv(lighting['night_colour']), shade, rgb_to_hsv(lighting['day_colour']))
 
-        obj['light_colour'] = world_gen[light_type + '_light_colour']
-        obj['light_radius'] = world_gen[light_type + '_light_radius'] * sin(sun_angle)
+        obj['light_colour'] = lighting[light_type + '_light_colour']
+        obj['light_radius'] = lighting[light_type + '_light_radius'] * sin(sun_angle)
     else:
         sky_colour = CYAN if day else BLUE
 

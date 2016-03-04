@@ -335,6 +335,19 @@ blocks = {
     }
 }
 
+
+lighting = {
+    'day_colour': (0,.4,1),
+    'night_colour': (0,0,.2),
+    'sun_light_radius': 25,
+    'moon_light_radius': 10,
+    'sun_colour': (.8,.6,0),
+    'moon_colour': (1,1,1),
+    'sun_light_colour': (0,1,1),
+    'moon_light_colour': (.6,.6,.8)
+}
+
+
 world_gen = {
     'height': 200,
     'max_hill': 15,
@@ -360,15 +373,6 @@ world_gen = {
             'grass': 0
         }
     },
-
-    'day_colour': (0,.4,1),
-    'night_colour': (0,0,.2),
-    'sun_light_radius': 25,
-    'moon_light_radius': 10,
-    'sun_colour': (.8,.6,0),
-    'moon_colour': (1,1,1),
-    'sun_light_colour': (0,1,1),
-    'moon_light_colour': (.6,.6,.8),
 
     # TODO: Densities need tuning.
     'ores': {
@@ -494,6 +498,7 @@ world_gen = {
         }
     )
 }
+
 
 help_data = {
     'Movement:': [
