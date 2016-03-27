@@ -8,12 +8,14 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
-import saves, ui, terrain, player, render, server_interface, data
+import saves, ui, terrain, player, render, server_interface, data, neopixels
 
 
 def main():
+    leds = None
+
     try:
-        meta, settings, profile, name, port = setup()
+        meta, settings, profile, name, port, leds = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -32,13 +34,13 @@ def main():
                 if profile:
                     cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
                 else:
-                    game(server_obj, settings)
+                    game(server_obj, settings, led, ledss)
 
             if server_obj.error:
                 ui.error(server_obj.error)
 
     finally:
-        setdown()
+        setdown(leds)
 
 
 def setup():
@@ -55,15 +57,19 @@ def setup():
     init_colours(settings)
     saves.check_map_dir()
 
+    leds = neopixels.init(settings.get('width'), settings.get('height'))
+
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, name, port
+    return meta, settings, profile, name, port, leds
 
 
-def setdown():
+def setdown(leds):
+    if leds:
+        neopixels.deinit(leds)
     print(SHOW_CUR + CLS)
 
 
-def game(server, settings):
+def game(server, settings, leds):
     x, y = server.pos
     dx = 0
     dy = 0
@@ -79,7 +85,6 @@ def game(server, settings):
 
     old_bk_objects = None
     old_edges = None
-    last_frame = {}
     last_out = time()
     last_inp = time()
     last_move = time()
@@ -166,7 +171,7 @@ def game(server, settings):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                out, last_frame = render.render_map(
+                render.render_map(
                     server.map_,
                     server.slice_heights,
                     edges,
@@ -176,8 +181,10 @@ def game(server, settings):
                     sky_colour,
                     day,
                     lights,
-                    last_frame,
-                    settings.get('fancy_lights')
+                    settings.get('fancy_lights'),
+                    leds,
+                    width,
+                    height
                 )
 
                 crafting_grid = render.render_grid(
@@ -324,7 +331,6 @@ def game(server, settings):
             if char in ' \n':
                 server.pos = x, y
                 server.redraw = True
-                last_frame = {}
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
 

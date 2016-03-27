@@ -5,6 +5,8 @@ from console import *
 from data import lighting, world_gen, blocks, timings
 from terrain import is_solid
 
+import neopixels
+
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light_radius', 0), blocks.values()))
@@ -22,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, last_frame, fancy_lights):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, leds, width, height):
     """
         Prints out a frame of the game.
 
@@ -37,12 +39,8 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
         - sky_colour: the colour of the sky
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
-        - last_frame: dictionary of all blocks displayed in the last frame
         - fancy_lights: bool
     """
-
-    diff = ''
-    this_frame = {}
 
     for world_x, column in map_.items():
         if world_x in range(*edges):
@@ -54,22 +52,11 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
                     y = world_y - edges_y[0]
 
-                    pixel_out = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
+                    colour = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
 
-                    if DEBUG and y == 1 and world_x % world_gen['chunk_size'] == 0:
-                        pixel_out = colour_str('*', bg=TERM_RED, fg=TERM_YELLOW)
+                    neopixels.set_pixel(width, height, x, y, colour)
 
-                    this_frame[x, y] = pixel_out
-
-                    try:
-                        if not last_frame[x, y] == pixel_out:
-                            # Changed
-                            diff += POS_STR(x, y, pixel_out)
-                    except KeyError:
-                        # Doesn't exist
-                        diff += POS_STR(x, y, pixel_out)
-
-    return diff, this_frame
+    neopixels.render(leds)
 
 
 def obj_pixel(x, y, objects):
@@ -107,15 +94,7 @@ def calc_pixel(x, y, world_x, world_y, world_screen_x, map_, slice_heights, pixe
         else:
             fg = None
 
-    fg_colour = rgb(*fg) if fg is not None else None
-    bg_colour = rgb(*bg) if bg is not None else None
-
-    return colour_str(
-        char,
-        bg = bg_colour,
-        fg = fg_colour,
-        style = blocks[pixel_f]['colours']['style']
-    )
+    return fg or bg
 
 
 def get_block(x, y, map_):
