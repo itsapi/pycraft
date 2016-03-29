@@ -23,6 +23,7 @@ default_settings = {
     'name': None,
     'colours': True,
     'fancy_lights': True,
+    'neopixels': True,
     'terminal_output': True,
     'gravity': False,
     'flight': False,

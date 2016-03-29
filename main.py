@@ -57,7 +57,10 @@ def setup():
     init_colours(settings)
     saves.check_map_dir()
 
-    leds = neopixels.init(settings.get('width'), settings.get('height'))
+    if settings.get('neopixels'):
+        leds = neopixels.init(settings.get('width'), settings.get('height'))
+    else:
+        leds = None
 
     print(HIDE_CUR + CLS)
     return meta, settings, profile, name, port, leds
@@ -183,6 +186,7 @@ def game(server, settings, leds):
                     day,
                     lights,
                     settings.get('fancy_lights'),
+                    settings.get('neopixels'),
                     last_frame,
                     leds,
                     width,

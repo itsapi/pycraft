@@ -24,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, last_frame, leds, width, height):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, neopixels_enabled, last_frame, leds, width, height):
     """
         Prints out a frame of the game.
 
@@ -74,7 +74,8 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                         # Doesn't exist
                         diff += POS_STR(x, y, pixel)
 
-                    neopixels.set_pixel(leds, width, height, x, y, fg or bg)
+                    if neopixels_enabled:
+                        neopixels.set_pixel(leds, width, height, x, y, fg or bg)
 
     neopixels.render(leds)
 
