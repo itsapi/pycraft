@@ -24,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, leds, width, height):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, last_frame, leds, width, height):
     """
         Prints out a frame of the game.
 
@@ -39,8 +39,12 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
         - sky_colour: the colour of the sky
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
+        - last_frame: dictionary of all blocks displayed in the last frame
         - fancy_lights: bool
     """
+
+    diff = ''
+    this_frame = {}
 
     for world_x, column in map_.items():
         if world_x in range(*edges):
@@ -52,11 +56,29 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
                     y = world_y - edges_y[0]
 
-                    colour = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
+                    fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
+                    pixel = colour_str(
+                        char,
+                        bg = rgb(*bg) if bg is not None else None,
+                        fg = rgb(*fg) if fg is not None else None,
+                        style = style
+                    )
 
-                    neopixels.set_pixel(width, height, x, y, colour)
+                    this_frame[x, y] = pixel
+
+                    try:
+                        if not last_frame[x, y] == pixel:
+                            # Changed
+                            diff += POS_STR(x, y, pixel)
+                    except KeyError:
+                        # Doesn't exist
+                        diff += POS_STR(x, y, pixel)
+
+                    neopixels.set_pixel(leds, width, height, x, y, fg or bg)
 
     neopixels.render(leds)
+
+    return diff, this_frame
 
 
 def obj_pixel(x, y, objects):
@@ -94,7 +116,7 @@ def calc_pixel(x, y, world_x, world_y, world_screen_x, map_, slice_heights, pixe
         else:
             fg = None
 
-    return fg or bg
+    return fg, bg, char, blocks[pixel_f]['colours']['style']
 
 
 def get_block(x, y, map_):

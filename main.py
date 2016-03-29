@@ -85,6 +85,7 @@ def game(server, settings, leds):
 
     old_bk_objects = None
     old_edges = None
+    last_frame = {}
     last_out = time()
     last_inp = time()
     last_move = time()
@@ -171,7 +172,7 @@ def game(server, settings, leds):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                render.render_map(
+                out, last_frame = render.render_map(
                     server.map_,
                     server.slice_heights,
                     edges,
@@ -182,6 +183,7 @@ def game(server, settings, leds):
                     day,
                     lights,
                     settings.get('fancy_lights'),
+                    last_frame,
                     leds,
                     width,
                     height
@@ -201,7 +203,7 @@ def game(server, settings, leds):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
-                out += render.render_grids(
+                out = render.render_grids(
                     [
                         [inv_grid, crafting_grid],
                         [[label]]
@@ -331,6 +333,7 @@ def game(server, settings, leds):
             if char in ' \n':
                 server.pos = x, y
                 server.redraw = True
+                last_frame = {}
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
 
