@@ -23,6 +23,7 @@ default_settings = {
     'name': None,
     'colours': True,
     'fancy_lights': True,
+    'differential_output': True,
     'gravity': False,
     'flight': False,
     'width': 40,

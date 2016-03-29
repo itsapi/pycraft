@@ -189,6 +189,9 @@ def game(server, settings, leds):
                     height
                 )
 
+                if not settings.get('differential_output'):
+                    out = ''
+
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
                     height, crafting_sel
@@ -203,7 +206,7 @@ def game(server, settings, leds):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
-                out = render.render_grids(
+                out += render.render_grids(
                     [
                         [inv_grid, crafting_grid],
                         [[label]]
