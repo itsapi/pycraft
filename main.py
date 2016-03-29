@@ -34,7 +34,7 @@ def main():
                 if profile:
                     cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
                 else:
-                    game(server_obj, settings, led, ledss)
+                    game(server_obj, settings, leds)
 
             if server_obj.error:
                 ui.error(server_obj.error)
