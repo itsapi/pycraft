@@ -77,7 +77,8 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                     if neopixels_enabled:
                         neopixels.set_pixel(leds, width, height, x, y, fg or bg)
 
-    neopixels.render(leds)
+    if neopixels_enabled:
+        neopixels.render(leds)
 
     return diff, this_frame
 
