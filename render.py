@@ -24,7 +24,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, fancy_lights, neopixels_enabled, last_frame, leds, width, height):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame, leds, width, height):
     """
         Prints out a frame of the game.
 
@@ -40,7 +40,7 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
         - last_frame: dictionary of all blocks displayed in the last frame
-        - fancy_lights: bool
+        - settings: the settings dictionary
     """
 
     diff = ''
@@ -56,28 +56,31 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
                     y = world_y - edges_y[0]
 
-                    fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
-                    pixel = colour_str(
-                        char,
-                        bg = rgb(*bg) if bg is not None else None,
-                        fg = rgb(*fg) if fg is not None else None,
-                        style = style
-                    )
+                    fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects,
+                        bk_objects, sky_colour, day, lights, settings.get('fancy_lights'))
 
-                    this_frame[x, y] = pixel
+                    if settings.get('terminal_output'):
+                        pixel = colour_str(
+                            char,
+                            bg = rgb(*bg) if bg is not None else None,
+                            fg = rgb(*fg) if fg is not None else None,
+                            style = style
+                        )
 
-                    try:
-                        if not last_frame[x, y] == pixel:
-                            # Changed
+                        this_frame[x, y] = pixel
+
+                        try:
+                            if not last_frame[x, y] == pixel:
+                                # Changed
+                                diff += POS_STR(x, y, pixel)
+                        except KeyError:
+                            # Doesn't exist
                             diff += POS_STR(x, y, pixel)
-                    except KeyError:
-                        # Doesn't exist
-                        diff += POS_STR(x, y, pixel)
 
-                    if neopixels_enabled:
+                    if settings.get('neopixels'):
                         neopixels.set_pixel(leds, width, height, x, y, fg or bg)
 
-    if neopixels_enabled:
+    if settings.get('neopixels'):
         neopixels.render(leds)
 
     return diff, this_frame

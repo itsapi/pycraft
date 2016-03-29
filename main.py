@@ -185,16 +185,12 @@ def game(server, settings, leds):
                     sky_colour,
                     day,
                     lights,
-                    settings.get('fancy_lights'),
-                    settings.get('neopixels'),
+                    settings,
                     last_frame,
                     leds,
                     width,
                     height
                 )
-
-                if not settings.get('terminal_output'):
-                    out = ''
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
