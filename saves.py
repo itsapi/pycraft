@@ -111,7 +111,7 @@ def load_chunk(save, chunk_n):
                 except ValueError:
                     slice_heights[abs_pos] = world_gen['ground_height']
 
-    except FileNotFoundError:
+    except IOError:
         pass
 
     return map_, slice_heights
@@ -224,7 +224,7 @@ def load_meta(path, default):
     try:
         with open(path) as f:
             meta = json.load(f)
-    except FileNotFoundError:
+    except IOError:
         meta = default
     else:
         set_defaults(meta, default)
