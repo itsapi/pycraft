@@ -189,7 +189,7 @@ def game(server, settings, leds):
                     height
                 )
 
-                if not settings.get('differential_output'):
+                if not settings.get('terminal_output'):
                     out = ''
 
                 crafting_grid = render.render_grid(
