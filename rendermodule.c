@@ -1,73 +1,194 @@
 #include "Python.h"
 
 
-calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
-           PyObject *map_, PyObject *slice_heights, char pixel_f, PyObject *objects, PyObject *bk_objects,
-           Colour sky_colour, bool day, PyObject *lights, bool fancy_lights):
+typedef struct
 {
-    Colour bg;
+    wchar_t character;
+    wchar_t character_left;
+    wchar_t character_right;
+
+    struct colours
+    {
+        Colour fg, bg;
+        int style;
+    };
+    bool solid;
+} BlockData;
+
+
+char
+get_block(long x, long y, PyObject *map)
+{
+    char result = 0;
+    try:
+        return map[x][y]
+    except (KeyError, IndexError):
+        pass
+
+    return result;
+}
+
+
+wchar_t
+get_char(long x, long y, PyObject *map, BlockData *pixel)
+{
+    char left_block_key = get_block(x-1, y, map);
+    char right_block_key = get_block(x+1, y, map);
+    char below_block_key = get_block(x, y+1, map);
+
+    wchar_t character = pixel->character;
+
+    if (below == 0 || !is_solid(below))
+    {
+        if (left_block_key != 0 && is_solid(left_block_key) && pixel->character_left != 0)
+        {
+            character = pixel->character_left;
+        }
+        else if (right_block_key != 0 && is_solid(right_block_key) && pixel->character_right != 0)
+        {
+            character = pixel->character_right;
+        }
+    }
+
+    return character;
+}
+
+
+typedef struct
+{
+    wchar_t character;
+    Colour fg, bg;
+    int style;
+} PrintableChar;
+
+void
+calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
+           PyObject *map, PyObject *slice_heights, char pixel_f_key, PyObject *objects, PyObject *bk_objects,
+           Colour sky_colour, float day, PyObject *lights, bool fancy_lights, PrintableChar *result):
+{
+    result->bg.r = -1;
+    result->fg.r = -1;
 
     // If the front block has a bg
-    if (blocks[pixel_f]['colours']['bg'] is not None)
+    BlockData pixel_f = get_block_data(pixel_f_key);
+    if (pixel_f.colours.bg.r >= 0)
     {
-        bg = get_block_light(x, world_y, world_screen_x, map_, slice_heights, lights, day, blocks[pixel_f]['colours']['bg'], fancy_lights);
+        result->bg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, pixel_f.colours.bg, fancy_lights);
     }
     else
     {
-        bg = sky(x, world_y, world_screen_x, map_, slice_heights, bk_objects, sky_colour, lights, fancy_lights);
+        result->bg = sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, fancy_lights);
     }
 
     // Get any object
-    object_char, obj_colour = obj_pixel(x, world_y, objects);
+    wchar_t object_char = 0;
+    Colour obj_colour;
+    get_obj_pixel(x, world_y, objects, &object_char, &obj_colour);
 
-    if (object_char)
+    if (object_char != 0)
     {
-        char = object_char;
-        fg = obj_colour;
+        result->character = object_char;
+        result->fg = obj_colour;
     }
     else
     {
-        char = get_char(world_x, world_y, map_, pixel_f);
+        result->character = get_char(world_x, world_y, map, &pixel_f);
 
-        if (blocks[pixel_f]['colours']['fg'] is not None)
+        if (pixel_f.colours.fg.r >= 0)
         {
-            fg = get_block_light(x, world_y, world_screen_x, map_, slice_heights, lights, day, blocks[pixel_f]['colours']['fg'], fancy_lights);
-        }
-        else
-        {
-            fg = None;
+            result->fg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, pixel_f.colours.fg, fancy_lights);
         }
     }
 
-    return fg, bg, char, blocks[pixel_f]['colours']['style']
+    result->style = pixel_f.colours.style;
 }
 
-void
-terminal_out(Color fg, Colour bg, char *character, int style)
+
+typedef struct
 {
-    // char *pixel = colour_str(
-    //     character,
-    //     bg = rgb(bg) if bg is not None else None,
-    //     fg = rgb(fg) if fg is not None else None,
-    //     style = style
-    // )
+    char *buffer;
+    size_t size;
+    size_t cur_pos;
+} ScreenBuffer;
 
-    // this_frame[x, y] = pixel
 
-    // try:
-    //     if not last_frame[x, y] == pixel:
-    //         // Changed
-    //         diff += POS_STR(x, y, pixel)
-    // except KeyError:
-    //     # Doesn`t exist
-    //     diff += POS_STR(x, y, pixel)
+#define POS_STR_FORMAT "\033[%ld;%ldH%s"
+#define POS_STR_FORMAT_MAX_LEN sizeof(POS_STR_FORMAT)
+size_t
+pos_str(long x, long y, char *s, char *result)
+{
+    char format[] = POS_STR_FORMAT;
+    return sprintf(result, format, y+1, x+1, s);
 }
 
-void
+
+int
+terminal_out(PrintableChar *c, long width)
+{
+    size_t frame_pos = y * width + x;
+    if (last_frame[frame_pos] != c)
+    {
+        last_frame[frame_pos] = *c;
+
+        char *pixel = colour_str(c->character, rgb(c->bg), rgb(c->fg), x->style);
+
+        size_t added = pos_str(x, y, pixel, frame->buffer[frame->pos]);
+        frame->cur_pos += added;
+        if (frame->cur_pos >= frame->size)
+        {
+            printf("Error: Exceeded frame buffer size in terminal_out!\n");
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+int
 neopixels_out()
 {
     // neopixels.set_pixel(leds, width, height, x, y, fg or bg)
+    return 0;
 }
+
+
+static PrintableChar *last_frame;
+static ScreenBuffer frame;
+static long width = 0;
+static long height = 0;
+
+int
+setup_frame(long new_width, long new_height)
+{
+    bool resize = false;
+    if (new_width != width)
+    {
+        resize = true;
+        width = new_width;
+    }
+    if (new_height != height)
+    {
+        resize = true;
+        height = new_height;
+    }
+
+    if (resize)
+    {
+        frame->size = width * height * POS_STR_FORMAT_MAX_LEN;
+        frame->buffer = (char *)malloc(frame->size);
+        if (frame->buffer)
+        {
+            printf("Error: Could not allocate frame buffer!\n");
+            return -1;
+        }
+        last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
+    }
+
+    frame->cur_pos = 0;
+    return 0;
+}
+
 
 static PyObject *
 render_render(PyObject *self, PyObject *args)
@@ -80,6 +201,10 @@ render_render(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O(ll)(ll):render", &map,
             &left_edge, &right_edge, &top_edge, &bottom_edge))
         return NULL;
+
+    long cur_width = right_edge - left_edge;
+    long cur_height = bottom_edge - top_edge;
+    setup_frame(cur_width, cur_height);
 
     if (!PyDict_Check(map))
         return NULL;
@@ -99,6 +224,8 @@ render_render(PyObject *self, PyObject *args)
         if (!(world_x_l >= left_edge && world_x_l < right_edge))
             continue;
 
+        long x = world_x_l - left_edge;
+
         PyObject *iter = PyObject_GetIter(column);
         PyObject *pixel;
         long world_y_l = 0;
@@ -107,13 +234,24 @@ render_render(PyObject *self, PyObject *args)
         {
             if (world_y_l >= top_edge && world_y_l < bottom_edge)
             {
-                calc_pixel(pixel);
+                long y = world_y_l - top_edge;
+
+                PrintableChar printable_char
+                calc_pixel(x, y, world_x_l, world_y_l, left_edge,
+                    map, slice_heights, pixel, objects, bk_objects,
+                    sky_colour, day, lights, fancy_lights, &printable_char);
 
                 if (terminal_output)
-                    terminal_out();
+                {
+                    if (!terminal_out(&printable_char, width))
+                        return NULL;
+                }
 
                 if (neopixels)
-                    neopixels_out();
+                {
+                    if (!neopixels_out(&printable_char))
+                        return NULL;
+                }
             }
 
             ++world_y_l;
@@ -123,6 +261,8 @@ render_render(PyObject *self, PyObject *args)
         printf("\n");
         Py_XDECREF(iter);
     }
+
+    printf(frame->buffer);
 
     Py_RETURN_NONE;
 }
