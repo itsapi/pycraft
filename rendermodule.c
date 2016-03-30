@@ -117,12 +117,11 @@ typedef struct
     wchar_t character;
     wchar_t character_left;
     wchar_t character_right;
-
-    struct colours
+    struct
     {
         Colour fg, bg;
         int style;
-    };
+    } colours;
     bool solid;
 } BlockData;
 
@@ -131,10 +130,10 @@ char
 get_block(long x, long y, PyObject *map)
 {
     char result = 0;
-    try:
-        return map[x][y]
-    except (KeyError, IndexError):
-        pass
+    // try:
+    //     return map[x][y]
+    // except (KeyError, IndexError):
+    //     pass
 
     return result;
 }
@@ -149,7 +148,7 @@ get_char(long x, long y, PyObject *map, BlockData *pixel)
 
     wchar_t character = pixel->character;
 
-    if (below == 0 || !is_solid(below))
+    if (below_block_key == 0 || !is_solid(below_block_key))
     {
         if (left_block_key != 0 && is_solid(left_block_key) && pixel->character_left != 0)
         {
@@ -233,19 +232,24 @@ pos_str(long x, long y, char *s, char *result)
 }
 
 
+static PrintableChar *last_frame;
+static ScreenBuffer frame;
+static long width;
+static long height;
+
 int
-terminal_out(PrintableChar *c, long width)
+terminal_out(PrintableChar *c, long x, long y, long width)
 {
     size_t frame_pos = y * width + x;
-    if (last_frame[frame_pos] != c)
+    if (last_frame[frame_pos] != *c)
     {
         last_frame[frame_pos] = *c;
 
         char *pixel = colour_str(c->character, rgb(c->bg), rgb(c->fg), x->style);
 
-        size_t added = pos_str(x, y, pixel, frame->buffer[frame->pos]);
-        frame->cur_pos += added;
-        if (frame->cur_pos >= frame->size)
+        size_t added = pos_str(x, y, pixel, frame.buffer + frame.cur_pos);
+        frame.cur_pos += added;
+        if (frame.cur_pos >= frame.size)
         {
             printf("Error: Exceeded frame buffer size in terminal_out!\n");
             return -1;
@@ -257,17 +261,12 @@ terminal_out(PrintableChar *c, long width)
 
 
 int
-neopixels_out()
+neopixels_out(PrintableChar *printable_char)
 {
     // neopixels.set_pixel(leds, width, height, x, y, fg or bg)
     return 0;
 }
 
-
-static PrintableChar *last_frame;
-static ScreenBuffer frame;
-static long width = 0;
-static long height = 0;
 
 int
 setup_frame(long new_width, long new_height)
@@ -286,9 +285,9 @@ setup_frame(long new_width, long new_height)
 
     if (resize)
     {
-        frame->size = width * height * POS_STR_FORMAT_MAX_LEN;
-        frame->buffer = (char *)malloc(frame->size);
-        if (frame->buffer)
+        frame.size = width * height * POS_STR_FORMAT_MAX_LEN;
+        frame.buffer = (char *)malloc(frame.size);
+        if (frame.buffer)
         {
             printf("Error: Could not allocate frame buffer!\n");
             return -1;
@@ -296,7 +295,7 @@ setup_frame(long new_width, long new_height)
         last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
     }
 
-    frame->cur_pos = 0;
+    frame.cur_pos = 0;
     return 0;
 }
 
@@ -347,14 +346,14 @@ render_render(PyObject *self, PyObject *args)
             {
                 long y = world_y_l - top_edge;
 
-                PrintableChar printable_char
-                calc_pixel(x, y, world_x_l, world_y_l, left_edge,
-                    map, slice_heights, pixel, objects, bk_objects,
-                    sky_colour, day, lights, fancy_lights, &printable_char);
+                PrintableChar printable_char;
+                // calc_pixel(x, y, world_x_l, world_y_l, left_edge,
+                //     map, slice_heights, pixel, objects, bk_objects,
+                //     sky_colour, day, lights, fancy_lights, &printable_char);
 
                 if (terminal_output)
                 {
-                    if (!terminal_out(&printable_char, width))
+                    if (!terminal_out(&printable_char, x, y, width))
                         return NULL;
                 }
 
@@ -373,16 +372,15 @@ render_render(PyObject *self, PyObject *args)
         Py_XDECREF(iter);
     }
 
-    printf(frame->buffer);
+    printf(frame.buffer);
 
     Py_RETURN_NONE;
 }
 
 
 static PyMethodDef render_methods[] = {
-    {"render",          render_render,      METH_VARARGS,
-        PyDoc_STR("render(map) -> None")},
-    {NULL,              NULL}           /* sentinel */
+    {"render", render_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
+    {NULL, NULL}  /* sentinel */
 };
 
 PyDoc_STRVAR(module_doc, "The super-duper-fast renderer");
