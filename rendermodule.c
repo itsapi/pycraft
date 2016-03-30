@@ -22,9 +22,8 @@ circle_dist(long test_x, long test_y, long x, long y, long r)
 int
 light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
 {
-    // PyObject *px = PyLong_FromLong(x);
-    // return (is_solid(map_[x][y]) || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
-    return 0;
+    PyObject *px = PyLong_FromLong(x);
+    return (get_block_data(get_block(x, y, map))->solid || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
 }
 
 float
