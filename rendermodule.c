@@ -15,14 +15,16 @@ lightness(Colour rgb)
 float
 circle_dist(long test_x, long test_y, long x, long y, long r)
 {
-    return ( ( (pow(test_x - x), 2) / pow(r   , 2) +
-             ( (pow(test_y - y), 2) / pow(r/2), 2) );
+    return ( pow(test_x - x, 2) / pow(r  , 2) +
+             pow(test_y - y, 2) / pow(r/2, 2) );
 }
 
 int
-light_mask(long x, long y, PyObject *map, PyObject *slice_heights):
-    PyObject *px = PyLong_FromLong(x);
-    return (is_solid(map_[x][y]) || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
+light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
+{
+    // PyObject *px = PyLong_FromLong(x);
+    // return (is_solid(map_[x][y]) || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
+    return 0;
 }
 
 float
@@ -35,17 +37,15 @@ lit(long x, long y, PyObject *pixel)
   return fmin(circle_dist(x, y, PyLong_AsLong(px), PyLong_AsLong(py), PyLong_AsLong(radius)), 1);
 }
 
-bool[]
-get_block_lights(long x, long y, PyObject *lights, PyObject *block_lights)
+bool *
+get_block_lights(long x, long y, PyObject *lights, bool *bitmap)
 {
     // Get all lights which affect this pixel
-    bool bitmap[PyList_Size(lights)];
-
     long i = 0;
     PyObject *iter = PyObject_GetIter(lights);
     PyObject *pixel;
 
-    while (pixel = PyIter_Next(iter))
+    while ((pixel = PyIter_Next(iter)))
     {
         bitmap[i] = lit(x, y, pixel) < 1;
         ++i;
@@ -57,7 +57,8 @@ get_block_lights(long x, long y, PyObject *lights, PyObject *block_lights)
 float
 get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights)
 {
-    bool bitmap[] = get_block_lights(x, y, lights);
+    bool bitmap[PyList_Size(lights)];
+    get_block_lights(x, y, lights, bitmap);
 
     long min = 1;
     long i = 0;
@@ -65,11 +66,11 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
     PyObject *pixel;
 
     // If the light is not hidden by the mask
-    while (pixel = PyIter_Next(iter))
+    while ((pixel = PyIter_Next(iter)))
     {
-        PyObject *px = PyDict_GetItemString(pixel, "x");
-        PyObject *py = PyDict_GetItemString(pixel, "y");
-        PyObject *z = PyDict_GetItemString(pixel, "z");
+        long px = PyLong_AsLong(PyDict_GetItemString(pixel, "x"));
+        long py = PyLong_AsLong(PyDict_GetItemString(pixel, "y"));
+        long z = PyLong_AsLong(PyDict_GetItemString(pixel, "z"));
         PyObject *colour = PyDict_GetItemString(pixel, "colour");
 
         Colour rgb = {
@@ -78,11 +79,11 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
             .b = PyFloat_AsDouble(PyTuple_GetItem(colour, 2))
         };
 
-        bitmap[i] = bitmap || z >= light_mask(world_x + px, py, map, slice_heights);
+        bitmap[i] = bitmap[i] || z >= light_mask(world_x + px, py, map, slice_heights);
 
-        float lightness = lit(x, y, pixel) * lightness(rgb);
-        if (bitmap[i] && lightness < min)
-            min = lightness;
+        float block_lightness = lit(x, y, pixel) * lightness(rgb);
+        if (bitmap[i] && block_lightness < min)
+            min = block_lightness;
 
         ++i;
     }
@@ -174,7 +175,7 @@ typedef struct
 void
 calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
            PyObject *map, PyObject *slice_heights, char pixel_f_key, PyObject *objects, PyObject *bk_objects,
-           Colour sky_colour, float day, PyObject *lights, bool fancy_lights, PrintableChar *result):
+           Colour sky_colour, float day, PyObject *lights, bool fancy_lights, PrintableChar *result)
 {
     result->bg.r = -1;
     result->fg.r = -1;

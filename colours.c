@@ -33,11 +33,11 @@ rgb_to_hsv(Colour rgb)
 {
     Colour hsv;
 
-    min = fmin(rgb.r, fmin(rgb.g, rgb.b));
-    max = fmax(rgb.r, fmin(rgb.g, rgb.b));
+    float min = fmin(rgb.r, fmin(rgb.g, rgb.b));
+    float max = fmax(rgb.r, fmin(rgb.g, rgb.b));
     hsv.v = max;
 
-    delta = max - min;
+    float delta = max - min;
 
     if (max != 0)
     {
