@@ -6,6 +6,34 @@
 #define true 1
 #define false 0
 
+
+typedef struct
+{
+    wchar_t character;
+    wchar_t character_left;
+    wchar_t character_right;
+
+    struct
+    {
+        Colour fg, bg;
+        int style;
+    } colours;
+    bool solid;
+} BlockData;
+
+
+char
+get_block(long x, long y, PyObject *map)
+{
+    char result = 0;
+    try:
+        return map[x][y]
+    except (KeyError, IndexError):
+        pass
+
+    return result;
+}
+
 float
 lightness(Colour rgb)
 {
@@ -22,9 +50,8 @@ circle_dist(long test_x, long test_y, long x, long y, long r)
 int
 light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
 {
-    // PyObject *px = PyLong_FromLong(x);
-    // return (is_solid(map_[x][y]) || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
-    return 0;
+    PyObject *px = PyLong_FromLong(x);
+    return (get_block_data(get_block(x, y, map))->solid || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
 }
 
 float
@@ -110,32 +137,6 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
     }
 
     return block_colour;
-}
-
-typedef struct
-{
-    wchar_t character;
-    wchar_t character_left;
-    wchar_t character_right;
-    struct
-    {
-        Colour fg, bg;
-        int style;
-    } colours;
-    bool solid;
-} BlockData;
-
-
-char
-get_block(long x, long y, PyObject *map)
-{
-    char result = 0;
-    // try:
-    //     return map[x][y]
-    // except (KeyError, IndexError):
-    //     pass
-
-    return result;
 }
 
 
