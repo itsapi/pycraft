@@ -63,3 +63,4 @@ settings.json
 
 .floo
 .flooignore
+_rpi_ws281x.py

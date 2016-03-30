@@ -1,5 +1,111 @@
-#include "Python.h"
+#include <Python.h>
+#include <math.h>
+#include "colours.c"
 
+float
+lightness(Colour rgb)
+{
+    return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+}
+
+float
+circle_dist(long test_x, long test_y, long x, long y, long r)
+{
+    return ( ( (pow(test_x - x), 2) / pow(r   , 2) +
+             ( (pow(test_y - y), 2) / pow(r/2), 2) );
+}
+
+int
+light_mask(long x, long y, PyObject *map, PyObject *slice_heights):
+    PyObject *px = PyLong_FromLong(x);
+    return (is_solid(map_[x][y]) || (world_gen['height'] - y) < PyDict_GetItem(slice_heights, px)) ? 0 : -1;
+}
+
+float
+lit(long x, long y, PyObject *pixel)
+{
+  PyObject *px = PyDict_GetItemString(pixel, "x"),
+           *py = PyDict_GetItemString(pixel, "y"),
+           *radius = PyDict_GetItemString(pixel, "radius");
+
+  return fmin(circle_dist(x, y, PyLong_AsLong(px), PyLong_AsLong(py), PyLong_AsLong(radius)), 1);
+}
+
+bool[]
+get_block_lights(long x, long y, PyObject *lights, PyObject *block_lights)
+{
+    // Get all lights which affect this pixel
+    bool bitmap[PyList_Size(lights)];
+
+    long i = 0;
+    PyObject *iter = PyObject_GetIter(lights);
+    PyObject *pixel;
+
+    while (pixel = PyIter_Next(iter))
+    {
+        bitmap[i] = lit(x, y, pixel) < 1;
+        ++i;
+    }
+
+    return bitmap;
+}
+
+float
+get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights)
+{
+    bool bitmap[] = get_block_lights(x, y, lights);
+
+    long min = 1;
+    long i = 0;
+    PyObject *iter = PyObject_GetIter(lights);
+    PyObject *pixel;
+
+    // If the light is not hidden by the mask
+    while (pixel = PyIter_Next(iter))
+    {
+        PyObject *px = PyDict_GetItemString(pixel, "x");
+        PyObject *py = PyDict_GetItemString(pixel, "y");
+        PyObject *z = PyDict_GetItemString(pixel, "z");
+        PyObject *colour = PyDict_GetItemString(pixel, "colour");
+
+        Colour rgb = {
+            .r = PyFloat_AsDouble(PyTuple_GetItem(colour, 0)),
+            .g = PyFloat_AsDouble(PyTuple_GetItem(colour, 1)),
+            .b = PyFloat_AsDouble(PyTuple_GetItem(colour, 2))
+        };
+
+        bitmap[i] = bitmap || z >= light_mask(world_x + px, py, map, slice_heights);
+
+        float lightness = lit(x, y, pixel) * lightness(rgb);
+        if (bitmap[i] && lightness < min)
+            min = lightness;
+
+        ++i;
+    }
+
+    return 1 - min;
+}
+
+Colour
+get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_heights,
+                PyObject *lights, float day, Colour block_colour, bool fancy_lights)
+{
+    if (fancy_lights)
+    {
+        float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
+        float d_ground_height = PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x)) - (world_gen['height'] - y);
+        float v = lerp(day, fmin(1, fmax(0, d_ground_height / 3)), 0);
+
+        Colour hsv = rgb_to_hsv(block_colour);
+        block_colour = hsv_to_rgb((Colour) {
+            .h = hsv.h,
+            .s = hsv.s,
+            .v = lerp(0, fmax(v, block_lightness), hsv.v)
+        });
+    }
+
+    return block_colour;
+}
 
 typedef struct
 {
