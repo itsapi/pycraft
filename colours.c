@@ -12,6 +12,15 @@ typedef union {
 } Colour;
 
 
+bool
+colour_eq(Colour *a, Colour *b)
+{
+    return (a->r == b->r &&
+            a->g == b->g &&
+            a->b == b->b);
+}
+
+
 float
 lerp(float a, float s, float b)
 {
@@ -123,3 +132,33 @@ hsv_to_rgb(Colour hsv)
     return rgb;
 }
 
+
+int
+grey(float value)
+{
+    return 232 + (int)(value * 23);
+}
+
+
+int
+rgb(Colour *c)
+{
+    int rgb;
+    if (c->r == c->g && c->g == c->b)
+    {
+        rgb = grey(c->r);
+    }
+    else
+    {
+        rgb = 16 + (int)(c->r*5)*36 + (int)(c->g*5)*6 + (int)(c->b*5);
+    }
+
+    return rgb;
+}
+
+
+char *
+colour_str(wchar_t character, Colour bg, Colour fg, int style)
+{
+    return (char *)0;
+}
