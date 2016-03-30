@@ -26,10 +26,10 @@ char
 get_block(long x, long y, PyObject *map)
 {
     char result = 0;
-    try:
-        return map[x][y]
-    except (KeyError, IndexError):
-        pass
+    // try:
+    //     return map[x][y]
+    // except (KeyError, IndexError):
+    //     pass
 
     return result;
 }
