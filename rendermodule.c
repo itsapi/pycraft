@@ -379,12 +379,6 @@ render_render(PyObject *self, PyObject *args)
 
 
 static PyMethodDef render_methods[] = {
-    {"foo",             render_foo,         METH_VARARGS,
-        render_foo_doc},
-    {"bug",             render_bug,         METH_VARARGS,
-        PyDoc_STR("bug(o) -> None")},
-    {"render_test",     render_render_test, METH_VARARGS,
-        PyDoc_STR("render_test(map) -> None")},
     {"render",          render_render,      METH_VARARGS,
         PyDoc_STR("render(map) -> None")},
     {NULL,              NULL}           /* sentinel */
