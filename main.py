@@ -8,6 +8,10 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
+
+import sys, glob
+if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
+
 import saves, ui, terrain, player, render, server_interface, data, neopixels
 
 
