@@ -6,6 +6,34 @@
 #define true 1
 #define false 0
 
+
+typedef struct
+{
+    wchar_t character;
+    wchar_t character_left;
+    wchar_t character_right;
+
+    struct colours
+    {
+        Colour fg, bg;
+        int style;
+    };
+    bool solid;
+} BlockData;
+
+
+char
+get_block(long x, long y, PyObject *map)
+{
+    char result = 0;
+    try:
+        return map[x][y]
+    except (KeyError, IndexError):
+        pass
+
+    return result;
+}
+
 float
 lightness(Colour rgb)
 {
@@ -110,34 +138,6 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
 
     return block_colour;
 }
-
-typedef struct
-{
-    wchar_t character;
-    wchar_t character_left;
-    wchar_t character_right;
-
-    struct colours
-    {
-        Colour fg, bg;
-        int style;
-    };
-    bool solid;
-} BlockData;
-
-
-char
-get_block(long x, long y, PyObject *map)
-{
-    char result = 0;
-    try:
-        return map[x][y]
-    except (KeyError, IndexError):
-        pass
-
-    return result;
-}
-
 
 wchar_t
 get_char(long x, long y, PyObject *map, BlockData *pixel)
