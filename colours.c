@@ -1,33 +1,20 @@
-typedef union {
-    struct {
-        float r;
-        float g;
-        float b;
-    };
-    struct {
-        float h;
-        float s;
-        float v;
-    };
-} Colour;
 
-
-#define BLACK         (Colour){{0,   0,   0}}
-#define RED           (Colour){{2/3, 0,   0}}
-#define GREEN         (Colour){{0,   2/3, 0}}
-#define YELLOW        (Colour){{2/3, 1/3, 0}}
-#define BLUE          (Colour){{0,   0,   2/3}}
-#define MAGENTA       (Colour){{2/3, 0,   2/3}}
-#define CYAN          (Colour){{0,   2/3, 2/3}}
-#define GRAY          (Colour){{2/3, 2/3, 2/3}}
-#define DARK_GRAY     (Colour){{1/3, 1/3, 1/3}}
-#define LIGHT_RED     (Colour){{1,   1/3, 1/3}}
-#define LIGHT_GREEN   (Colour){{1/3, 1,   1/3}}
-#define LIGHT_YELLOW  (Colour){{1,   1,   1/3}}
-#define LIGHT_BLUE    (Colour){{1/3, 1/3, 1}}
-#define LIGHT_MAGENTA (Colour){{1,   1/3, 1}}
-#define LIGHT_CYAN    (Colour){{1/3, 1,   1}}
-#define WHITE         (Colour){{1,   1,   1}}
+#define BLACK         (Colour){{0,         0,         0}}
+#define RED           (Colour){{2.0f/3.0f, 0,         0}}
+#define GREEN         (Colour){{0,         2.0f/3.0f, 0}}
+#define YELLOW        (Colour){{2.0f/3.0f, 1.0f/3.0f, 0}}
+#define BLUE          (Colour){{0,         0,         2.0f/3.0f}}
+#define MAGENTA       (Colour){{2.0f/3.0f, 0,         2.0f/3.0f}}
+#define CYAN          (Colour){{0,         2.0f/3.0f, 2.0f/3.0f}}
+#define GRAY          (Colour){{2.0f/3.0f, 2.0f/3.0f, 2.0f/3.0f}}
+#define DARK_GRAY     (Colour){{1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f}}
+#define LIGHT_RED     (Colour){{1,         1.0f/3.0f, 1.0f/3.0f}}
+#define LIGHT_GREEN   (Colour){{1.0f/3.0f, 1,         1.0f/3.0f}}
+#define LIGHT_YELLOW  (Colour){{1,         1,         1.0f/3.0f}}
+#define LIGHT_BLUE    (Colour){{1.0f/3.0f, 1.0f/3.0f, 1}}
+#define LIGHT_MAGENTA (Colour){{1,         1.0f/3.0f, 1}}
+#define LIGHT_CYAN    (Colour){{1.0f/3.0f, 1,         1}}
+#define WHITE         (Colour){{1,         1,         1}}
 
 
 enum
@@ -94,7 +81,7 @@ rgb_to_hsv(Colour *rgb)
         else
             hsv.h = 4 + (rgb->r - rgb->g) / delta;  // between magenta & cyan
 
-        hsv.h *= 60;
+        hsv.h *= 60.0f;
 
         if (hsv.h < 0)
             hsv.h += 360;
@@ -122,12 +109,12 @@ hsv_to_rgb(Colour *hsv)
         return rgb;
     }
 
-    hsv->h /= 60;
+    hsv->h /= 60.0f;
     i = floor(hsv->h);
     f = hsv->h - i;
-    p = hsv->v * (1 - hsv->s);
-    q = hsv->v * (1 - hsv->s * f);
-    t = hsv->v * (1 - hsv->s * (1 - f));
+    p = hsv->v * (1.0f - hsv->s);
+    q = hsv->v * (1.0f - hsv->s * f);
+    t = hsv->v * (1.0f - hsv->s * (1.0f - f));
 
     switch (i) {
         case 0:
@@ -169,7 +156,7 @@ hsv_to_rgb(Colour *hsv)
 int
 grey(float value)
 {
-    return 232 + (int)(value * 23);
+    return 232 + (int)(value * 23.0f);
 }
 
 

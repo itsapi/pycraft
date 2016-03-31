@@ -46,15 +46,15 @@ get_block(long x, long y, PyObject *map)
 float
 lightness(Colour *rgb)
 {
-    return 0.2126 * rgb->r + 0.7152 * rgb->g + 0.0722 * rgb->b;
+    return 0.2126f * rgb->r + 0.7152f * rgb->g + 0.0722f * rgb->b;
 }
 
 
 float
 circle_dist(long test_x, long test_y, long x, long y, long r)
 {
-    return ( pow(test_x - x, 2) / pow(r   , 2) +
-             pow(test_y - y, 2) / pow(r*.5, 2) );
+    return ( pow(test_x - x, 2.0f) / pow(r    , 2.0f) +
+             pow(test_y - y, 2.0f) / pow(r*.5f, 2.0f) );
 }
 
 
@@ -74,7 +74,7 @@ lit(long x, long y, PyObject *light)
              *ly = PyDict_GetItemString(light, "y"),
              *radius = PyDict_GetItemString(light, "radius");
 
-    return fmin(circle_dist(x, y, PyLong_AsLong(lx), PyLong_AsLong(ly), PyLong_AsLong(radius)), 1);
+    return fmin(circle_dist(x, y, PyLong_AsLong(lx), PyLong_AsLong(ly), PyLong_AsLong(radius)), 1.0f);
 }
 
 
@@ -116,7 +116,7 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
     bool bitmap[PyList_Size(lights)];
     get_block_lights(x, y, lights, bitmap);
 
-    float min = 1;
+    float min = 1.0f;
     int i = 0;
     PyObject *iter = PyObject_GetIter(lights);
     PyObject *light;
@@ -146,15 +146,15 @@ Colour
 get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_heights,
                 PyObject *lights, float day, Colour *block_colour, Settings *settings)
 {
-    Colour result;
+    Colour result = *block_colour;
     if (settings->fancy_lights)
     {
         float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
         float d_ground_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x))) - (world_gen_height - y);
-        float v = lerp(day, fmin(1, fmax(0, d_ground_height / 3)), 0);
+        float v = lerp(day, fmin(1.0f, fmax(0.0f, d_ground_height / 3.0f)), 0.0f);
 
         Colour hsv = rgb_to_hsv(block_colour);
-        hsv.v = lerp(0, fmax(v, block_lightness), hsv.v);
+        hsv.v = lerp(0.0f, fmax(v, block_lightness), hsv.v);
         result = hsv_to_rgb(&hsv);
     }
     return result;
@@ -170,15 +170,15 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
     float slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x)));
     if ((world_gen_height - y) < slice_height)
     {
-        result.r = .1;
-        result.g = .1;
-        result.b = .1;
+        result.r = .1f;
+        result.g = .1f;
+        result.b = .1f;
         if (settings->fancy_lights)
         {
             float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
-            result.r = (result.r + block_lightness) * .5;
-            result.g = (result.g + block_lightness) * .5;
-            result.b = (result.b + block_lightness) * .5;
+            result.r = (result.r + block_lightness) * .5f;
+            result.g = (result.g + block_lightness) * .5f;
+            result.b = (result.b + block_lightness) * .5f;
         }
     }
     else
@@ -227,7 +227,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
         }
         else
         {
-            result = *colour_behind_hsv;
+            result = hsv_to_rgb(colour_behind_hsv);
 
             PyObject *iter = PyObject_GetIter(lights);
             PyObject *light;
