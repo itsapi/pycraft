@@ -73,9 +73,9 @@ get_block_data(char block_key)
 
 
 float
-lightness(Colour rgb)
+lightness(Colour *rgb)
 {
-    return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+    return 0.2126 * rgb->r + 0.7152 * rgb->g + 0.0722 * rgb->b;
 }
 
 
@@ -99,15 +99,15 @@ light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
 float
 lit(long x, long y, PyObject *pixel)
 {
-  PyObject *px = PyDict_GetItemString(pixel, "x"),
-           *py = PyDict_GetItemString(pixel, "y"),
-           *radius = PyDict_GetItemString(pixel, "radius");
+    PyObject *px = PyDict_GetItemString(pixel, "x"),
+             *py = PyDict_GetItemString(pixel, "y"),
+             *radius = PyDict_GetItemString(pixel, "radius");
 
-  return fmin(circle_dist(x, y, PyLong_AsLong(px), PyLong_AsLong(py), PyLong_AsLong(radius)), 1);
+    return fmin(circle_dist(x, y, PyLong_AsLong(px), PyLong_AsLong(py), PyLong_AsLong(radius)), 1);
 }
 
 
-bool *
+void
 get_block_lights(long x, long y, PyObject *lights, bool *bitmap)
 {
     // Get all lights which affect this pixel
@@ -120,8 +120,6 @@ get_block_lights(long x, long y, PyObject *lights, bool *bitmap)
         bitmap[i] = lit(x, y, pixel) < 1;
         ++i;
     }
-
-    return bitmap;
 }
 
 
@@ -143,8 +141,8 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
     bool bitmap[PyList_Size(lights)];
     get_block_lights(x, y, lights, bitmap);
 
-    long min = 1;
-    long i = 0;
+    float min = 1;
+    int i = 0;
     PyObject *iter = PyObject_GetIter(lights);
     PyObject *pixel;
 
@@ -158,7 +156,7 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
 
         bitmap[i] = bitmap[i] || z >= light_mask(world_x + px, py, map, slice_heights);
 
-        float block_lightness = lit(x, y, pixel) * lightness(rgb);
+        float block_lightness = lit(x, y, pixel) * lightness(&rgb);
         if (bitmap[i] && block_lightness < min)
             min = block_lightness;
 
@@ -169,9 +167,9 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
 }
 
 
-Colour
+void
 get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_heights,
-                PyObject *lights, float day, Colour block_colour, Settings *settings)
+                PyObject *lights, float day, Colour *block_colour, Settings *settings)
 {
     if (settings->fancy_lights)
     {
@@ -179,23 +177,17 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
         float d_ground_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x))) - (world_gen_height - y);
         float v = lerp(day, fmin(1, fmax(0, d_ground_height / 3)), 0);
 
-        Colour hsv = rgb_to_hsv(block_colour);
-        block_colour = hsv_to_rgb((Colour) {
-            .h = hsv.h,
-            .s = hsv.s,
-            .v = lerp(0, fmax(v, block_lightness), hsv.v)
-        });
+        Colour *hsv;
+        rgb_to_hsv(block_colour, hsv);
+        hsv->v = lerp(0, fmax(v, block_lightness), hsv->v);
+        hsv_to_rgb(hsv, block_colour);
     }
-
-    return block_colour;
 }
 
 
-Colour
-sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *bk_objects, Colour sky_colour, PyObject *lights, Settings *settings)
+void
+sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *bk_objects, Colour *sky_colour, PyObject *lights, Settings *settings)
 {
-    Colour result;
-    return result;
 }
 
 
@@ -250,7 +242,7 @@ get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour
 void
 calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
            PyObject *map, PyObject *slice_heights, char pixel_f_key, PyObject *objects, PyObject *bk_objects,
-           Colour sky_colour, float day, PyObject *lights, Settings *settings, PrintableChar *result)
+           Colour *sky_colour, float day, PyObject *lights, Settings *settings, PrintableChar *result)
 {
     result->bg.r = -1;
     result->fg.r = -1;
@@ -259,11 +251,13 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     BlockData *pixel_f = get_block_data(pixel_f_key);
     if (pixel_f->colours.bg.r >= 0)
     {
-        result->bg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, pixel_f->colours.bg, settings);
+        get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.bg), settings);
+        result->bg = pixel_f->colours.bg;
     }
     else
     {
-        result->bg = sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, settings);
+        sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, settings);
+        result->bg = *sky_colour;
     }
 
     // Get any object
@@ -282,7 +276,8 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
         if (pixel_f->colours.fg.r >= 0)
         {
-            result->fg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, pixel_f->colours.fg, settings);
+            get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.fg), settings);
+            result->fg = pixel_f->colours.fg;
         }
     }
 
@@ -439,7 +434,7 @@ render_render(PyObject *self, PyObject *args)
                 PrintableChar printable_char;
                 calc_pixel(x, y, world_x_l, world_y_l, left_edge,
                     map, slice_heights, pixel, objects, bk_objects,
-                    sky_colour, day, lights, &settings, &printable_char);
+                    &sky_colour, day, lights, &settings, &printable_char);
 
                 if (settings.terminal_output)
                 {
