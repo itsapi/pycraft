@@ -141,27 +141,30 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
 }
 
 
-void
+Colour
 get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_heights,
                 PyObject *lights, float day, Colour *block_colour, bool fancy_lights)
 {
+    Colour result;
     if (fancy_lights)
     {
         float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
         float d_ground_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x))) - (world_gen_height - y);
         float v = lerp(day, fmin(1, fmax(0, d_ground_height / 3)), 0);
 
-        Colour *hsv;
-        rgb_to_hsv(block_colour, hsv);
-        hsv->v = lerp(0, fmax(v, block_lightness), hsv->v);
-        hsv_to_rgb(hsv, block_colour);
+        Colour hsv = rgb_to_hsv(block_colour);
+        hsv.v = lerp(0, fmax(v, block_lightness), hsv.v);
+        result = hsv_to_rgb(&hsv);
     }
+    return result;
 }
 
 
-void
+Colour
 sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *bk_objects, Colour *sky_colour, PyObject *lights, bool fancy_lights)
 {
+    Colour result;
+    return result;
 }
 
 
@@ -225,13 +228,11 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     BlockData *pixel_f = get_block_data(pixel_f_key);
     if (pixel_f->colours.bg.r >= 0)
     {
-        get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.bg), fancy_lights);
-        result->bg = pixel_f->colours.bg;
+        result->bg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.bg), fancy_lights);
     }
     else
     {
-        sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, fancy_lights);
-        result->bg = *sky_colour;
+        result->bg = sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, fancy_lights);
     }
 
     // Get any object
@@ -250,8 +251,7 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
         if (pixel_f->colours.fg.r >= 0)
         {
-            get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.fg), fancy_lights);
-            result->fg = pixel_f->colours.fg;
+            result->fg = get_block_light(x, world_y, world_screen_x, map, slice_heights, lights, day, &(pixel_f->colours.fg), fancy_lights);
         }
     }
 
