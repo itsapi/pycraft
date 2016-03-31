@@ -183,15 +183,44 @@ rgb(Colour *c)
     }
     else
     {
-        rgb = 16 + (int)(c->r*5)*36 + (int)(c->g*5)*6 + (int)(c->b*5);
+        rgb = 16 + (int)(c->r*5.0f)*36 + (int)(c->g*5.0f)*6 + (int)(c->b*5.0f);
     }
 
     return rgb;
 }
 
 
-char *
-colour_str(wchar_t character, Colour bg, Colour fg, int style)
+int
+colour_str(PrintableChar *c, char *result, Settings *settings)
 {
-    return (char *)0;
+    int added = 0;
+
+    if (settings->colours)
+    {
+        if (c->bg.r >= 0)
+        {
+            int bg = rgb(&(c->bg));
+            added += sprintf(result + added, "\033[48;5;%dm", bg);
+        }
+
+        if (c->fg.r >= 0)
+        {
+            int fg = rgb(&(c->fg));
+            added += sprintf(result + added, "\033[38;5;%dm", fg);
+        }
+
+        if (c->style >= 0)
+        {
+            added += sprintf(result + added, "\033[%dm", c->style);
+        }
+
+        added += sprintf(result + added, "%C\033[0m", c->character);
+    }
+    else
+    {
+        *(result + added) = c->character;
+        added += 1;
+    }
+
+    return added;
 }

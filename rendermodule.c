@@ -392,13 +392,12 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 }
 
 
-#define POS_STR_FORMAT "\033[%ld;%ldH%s"
-#define POS_STR_FORMAT_MAX_LEN sizeof(POS_STR_FORMAT)
+#define POS_STR_FORMAT "\033[%ld;%ldH"
+#define POS_STR_FORMAT_MAX_LEN (sizeof(POS_STR_FORMAT)+30)
 size_t
-pos_str(long x, long y, char *s, char *result)
+pos_str(long x, long y, char *result)
 {
-    char format[] = POS_STR_FORMAT;
-    return sprintf(result, format, y+1, x+1, s);
+    return sprintf(result, POS_STR_FORMAT, y+1, x+1);
 }
 
 
@@ -408,17 +407,16 @@ static long width;
 static long height;
 
 int
-terminal_out(PrintableChar *c, long x, long y, long width)
+terminal_out(PrintableChar *c, long x, long y, long width, Settings *settings)
 {
     size_t frame_pos = y * width + x;
     if (!printable_char_eq(last_frame + frame_pos, c))
     {
         last_frame[frame_pos] = *c;
 
-        char *pixel = colour_str(c->character, c->bg, c->fg, c->style);
+        frame.cur_pos += pos_str(x, y, frame.buffer + frame.cur_pos);
+        frame.cur_pos += colour_str(c, frame.buffer + frame.cur_pos, settings);
 
-        size_t added = pos_str(x, y, pixel, frame.buffer + frame.cur_pos);
-        frame.cur_pos += added;
         if (frame.cur_pos >= frame.size)
         {
             printf("Error: Exceeded frame buffer size in terminal_out!\n");
@@ -486,7 +484,7 @@ render_c_render(PyObject *self, PyObject *args)
         return NULL;
 
     Colour sky_colour = PyColour_AsColour(py_sky_colour);
-    Settings settings;
+    Settings settings = {1, 0, 1, 1};
 
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
