@@ -535,13 +535,13 @@ render_c_render(PyObject *self, PyObject *args)
 
                 if (settings.terminal_output)
                 {
-                    if (terminal_out(&printable_char, x, y, width))
+                    if (!terminal_out(&printable_char, x, y, width, &settings))
                         return NULL;
                 }
 
                 if (settings.neopixels_output)
                 {
-                    if (neopixels_out(&printable_char))
+                    if (!neopixels_out(&printable_char))
                         return NULL;
                 }
             }
