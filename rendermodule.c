@@ -238,8 +238,31 @@ printable_char_eq(PrintableChar *a, PrintableChar *b)
 
 
 void
-get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour *obj_colour_result)
+get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *obj_colour_result)
 {
+    PyObject *iter = PyObject_GetIter(objects);
+    PyObject *object;
+
+    while ((object = PyIter_Next(iter)))
+    {
+        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
+        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
+
+        if (ox == x && oy == y)
+        {
+            char c = PyString_AsChar(PyDict_GetItemString(object, "char"));
+            Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+
+            if (rgb.r == -1)
+            {
+                rgb = get_block_data(c)->colours.bg;
+            }
+
+            obj_key_result = &c;
+            obj_colour_result = &rgb;
+            return;
+        }
+    }
 }
 
 
@@ -263,13 +286,13 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     }
 
     // Get any object
-    wchar_t obj_key = 0;
+    char obj_key = 0;
     Colour obj_colour;
     get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
 
     if (obj_key != 0)
     {
-        result->character = obj_key;
+        result->character = (wchar_t) obj_key;
         result->fg = obj_colour;
     }
     else
