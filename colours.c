@@ -12,6 +12,24 @@ typedef union {
 } Colour;
 
 
+#define BLACK         (Colour){{0,   0,   0}}
+#define RED           (Colour){{2/3, 0,   0}}
+#define GREEN         (Colour){{0,   2/3, 0}}
+#define YELLOW        (Colour){{2/3, 1/3, 0}}
+#define BLUE          (Colour){{0,   0,   2/3}}
+#define MAGENTA       (Colour){{2/3, 0,   2/3}}
+#define CYAN          (Colour){{0,   2/3, 2/3}}
+#define GRAY          (Colour){{2/3, 2/3, 2/3}}
+#define DARK_GRAY     (Colour){{1/3, 1/3, 1/3}}
+#define LIGHT_RED     (Colour){{1,   1/3, 1/3}}
+#define LIGHT_GREEN   (Colour){{1/3, 1,   1/3}}
+#define LIGHT_YELLOW  (Colour){{1,   1,   1/3}}
+#define LIGHT_BLUE    (Colour){{1/3, 1/3, 1}}
+#define LIGHT_MAGENTA (Colour){{1,   1/3, 1}}
+#define LIGHT_CYAN    (Colour){{1/3, 1,   1}}
+#define WHITE         (Colour){{1,   1,   1}}
+
+
 bool
 colour_eq(Colour *a, Colour *b)
 {

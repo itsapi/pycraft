@@ -98,13 +98,13 @@ light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
 
 
 float
-lit(long x, long y, PyObject *pixel)
+lit(long x, long y, PyObject *light)
 {
-    PyObject *px = PyDict_GetItemString(pixel, "x"),
-             *py = PyDict_GetItemString(pixel, "y"),
-             *radius = PyDict_GetItemString(pixel, "radius");
+    PyObject *lx = PyDict_GetItemString(light, "x"),
+             *ly = PyDict_GetItemString(light, "y"),
+             *radius = PyDict_GetItemString(light, "radius");
 
-    return fmin(circle_dist(x, y, PyLong_AsLong(px), PyLong_AsLong(py), PyLong_AsLong(radius)), 1);
+    return fmin(circle_dist(x, y, PyLong_AsLong(lx), PyLong_AsLong(ly), PyLong_AsLong(radius)), 1);
 }
 
 
@@ -127,11 +127,15 @@ get_block_lights(long x, long y, PyObject *lights, bool *bitmap)
 Colour
 PyColour_AsColour(PyObject *py_colour)
 {
-    Colour rgb = {
-        .r = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 0)),
-        .g = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 1)),
-        .b = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 2))
-    };
+    Colour rgb;
+    rgb.r = -1;
+
+    if (py_colour)
+    {
+        rgb.r = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 0));
+        rgb.g = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 1));
+        rgb.b = PyFloat_AsDouble(PyTuple_GetItem(py_colour, 2));
+    }
     return rgb;
 }
 
@@ -145,19 +149,19 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
     float min = 1;
     int i = 0;
     PyObject *iter = PyObject_GetIter(lights);
-    PyObject *pixel;
+    PyObject *light;
 
     // If the light is not hidden by the mask
-    while ((pixel = PyIter_Next(iter)))
+    while ((light = PyIter_Next(iter)))
     {
-        long px = PyLong_AsLong(PyDict_GetItemString(pixel, "x"));
-        long py = PyLong_AsLong(PyDict_GetItemString(pixel, "y"));
-        long z = PyLong_AsLong(PyDict_GetItemString(pixel, "z"));
-        Colour rgb = PyColour_AsColour(PyDict_GetItemString(pixel, "colour"));
+        long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
+        long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
+        long z = PyLong_AsLong(PyDict_GetItemString(light, "z"));
+        Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
 
-        bitmap[i] = bitmap[i] || z >= light_mask(world_x + px, py, map, slice_heights);
+        bitmap[i] = bitmap[i] || z >= light_mask(world_x + lx, ly, map, slice_heights);
 
-        float block_lightness = lit(x, y, pixel) * lightness(&rgb);
+        float block_lightness = lit(x, y, light) * lightness(&rgb);
         if (bitmap[i] && block_lightness < min)
             min = block_lightness;
 
@@ -188,9 +192,125 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
 
 
 Colour
+get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights, Colour *colour_behind_hsv, Settings *settings)
+{
+    Colour result;
+    result.r = -1;
+
+    float slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x)));
+    if ((world_gen_height - y) < slice_height)
+    {
+        result.r = .1;
+        result.g = .1;
+        result.b = .1;
+        if (settings->fancy_lights)
+        {
+            float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
+            result.r = (result.r + block_lightness) * .5;
+            result.g = (result.g + block_lightness) * .5;
+            result.b = (result.b + block_lightness) * .5;
+        }
+    }
+    else
+    {
+        if (settings->fancy_lights)
+        {
+            bool bitmap[PyList_Size(lights)];
+            get_block_lights(x, y, lights, bitmap);
+
+            // Calculate light level for each light source
+            int i = 0;
+            PyObject *iter = PyObject_GetIter(lights);
+            PyObject *light;
+            long max_light_level = -1;
+            Colour max_light_level_colour = {};
+
+            while ((light = PyIter_Next(iter)))
+            {
+                if (bitmap[i])
+                {
+                    float light_distance = PyFloat_AsDouble(PyDict_GetItemString(light, "distance"));
+
+                    Colour light_colour_rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
+                    Colour light_colour_hsv = rgb_to_hsv(&light_colour_rgb);
+
+                    Colour this_light_pixel_colour_hsv = lerp_colour(&light_colour_hsv, light_distance, colour_behind_hsv);
+                    Colour this_light_pixel_colour_rgb = hsv_to_rgb(&this_light_pixel_colour_hsv);
+                    long light_level = lightness(&this_light_pixel_colour_rgb);
+
+                    if (light_level > max_light_level)
+                        max_light_level = light_level;
+                        max_light_level_colour = this_light_pixel_colour_rgb;
+                }
+                ++i;
+            }
+
+            // Get brightest light
+            if (max_light_level >= 0)
+            {
+                result = max_light_level_colour;
+            }
+            else
+            {
+                result = hsv_to_rgb(colour_behind_hsv);
+            }
+        }
+        else
+        {
+            result = *colour_behind_hsv;
+
+            PyObject *iter = PyObject_GetIter(lights);
+            PyObject *light;
+
+            while ((light = PyIter_Next(iter)))
+            {
+                if (lit(x, y, light) < 1)
+                {
+                    result = CYAN;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+
+Colour
 sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *bk_objects, Colour *sky_colour, PyObject *lights, Settings *settings)
 {
     Colour result;
+    result.r = -1;
+
+    PyObject *iter = PyObject_GetIter(bk_objects);
+    PyObject *object;
+
+    while ((object = PyIter_Next(iter)))
+    {
+        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
+        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
+        long oz = PyLong_AsLong(PyDict_GetItemString(object, "z"));
+
+        if (oz >= light_mask(world_x + ox, oy, map, slice_heights))
+        {
+            long o_width= PyLong_AsLong(PyDict_GetItemString(object, "width"));
+            long o_height= PyLong_AsLong(PyDict_GetItemString(object, "height"));
+
+            if (x <= ox && ox < (x + o_width) &&
+                y <= oy && oy < (y + o_height))
+            {
+                result = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+                break;
+            }
+        }
+    }
+
+    if (result.r < 0)
+    {
+        result = get_light_colour(x, y, world_x, map, slice_heights, lights, sky_colour, settings);
+    }
+
     return result;
 }
 
