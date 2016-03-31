@@ -569,7 +569,7 @@ render_c_render(PyObject *self, PyObject *args)
                 long y = world_y_l - top_edge;
 
                 char pixel = PyString_AsChar(py_pixel);
-                if (pixel)
+                if (!pixel)
                 {
                     printf("Error: Cannot get char from pixel!\n");
                     return NULL;
