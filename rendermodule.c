@@ -562,7 +562,7 @@ render_c_render(PyObject *self, PyObject *args)
 
                 if (settings.terminal_output)
                 {
-                    if (terminal_out(&printable_char, x, y, width))
+                    if (terminal_out(&frame, &printable_char, x, y, width))
                         return NULL;
                 }
 
