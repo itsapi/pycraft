@@ -516,7 +516,7 @@ setup_frame(long new_width, long new_height)
 
 
 static PyObject *
-render_render(PyObject *self, PyObject *args)
+render_c_render(PyObject *self, PyObject *args)
 {
     long left_edge,
          right_edge,
@@ -609,7 +609,7 @@ render_render(PyObject *self, PyObject *args)
 
 
 static PyMethodDef render_methods[] = {
-    {"render", render_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
+    {"render", render_c_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
     {NULL, NULL}  /* sentinel */
 };
 
@@ -628,7 +628,7 @@ static struct PyModuleDef rendermodule = {
 };
 
 PyMODINIT_FUNC
-PyInit_render(void)
+PyInit_render_c(void)
 {
     PyObject *m = NULL;
 

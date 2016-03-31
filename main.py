@@ -12,7 +12,7 @@ from nbinput import NonBlockingInput
 import sys, glob
 if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
 
-import saves, ui, terrain, player, render, server_interface, data, neopixels
+import saves, ui, terrain, player, render, server_interface, data, neopixels, render_c
 
 
 def main():
