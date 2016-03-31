@@ -1,19 +1,4 @@
 
-typedef struct
-{
-    wchar_t character;
-    wchar_t character_left;
-    wchar_t character_right;
-
-    struct
-    {
-        Colour fg, bg;
-        int style;
-    } colours;
-    bool solid;
-} BlockData;
-
-
 static BlockData air_block_data = {
     .character = ' ',
     .colours.fg.r = -1,

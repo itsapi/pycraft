@@ -1,20 +1,10 @@
 #include <Python.h>
 #include <math.h>
 
-#define bool int
-#define true 1
-#define false 0
+#include "render.h"
 
 #include "colours.c"
 #include "data.c"
-
-
-typedef struct
-{
-    bool terminal_output;
-    bool neopixels_output;
-    bool fancy_lights;
-} Settings;
 
 
 static long world_gen_height = 10;
@@ -320,13 +310,6 @@ get_char(long x, long y, PyObject *map, BlockData *pixel)
 }
 
 
-typedef struct
-{
-    wchar_t character;
-    Colour fg, bg;
-    int style;
-} PrintableChar;
-
 bool
 printable_char_eq(PrintableChar *a, PrintableChar *b)
 {
@@ -407,14 +390,6 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
     result->style = pixel_f->colours.style;
 }
-
-
-typedef struct
-{
-    char *buffer;
-    size_t size;
-    size_t cur_pos;
-} ScreenBuffer;
 
 
 #define POS_STR_FORMAT "\033[%ld;%ldH%s"
