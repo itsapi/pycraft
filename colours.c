@@ -30,6 +30,21 @@ typedef union {
 #define WHITE         (Colour){{1,   1,   1}}
 
 
+enum
+{
+    NORMAL,
+    BOLD,
+    DARK,
+    ITALICS,
+    UNDERLINE,
+    _NULL_STYLE_A,
+    _NULL_STYLE_B,
+    INVERT,
+    CLEAR,
+    STRIKETHROUGH
+};
+
+
 bool
 colour_eq(Colour *a, Colour *b)
 {

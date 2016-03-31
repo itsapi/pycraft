@@ -6,6 +6,7 @@
 #define false 0
 
 #include "colours.c"
+#include "data.c"
 
 
 typedef struct
@@ -15,20 +16,6 @@ typedef struct
     bool fancy_lights;
 } Settings;
 
-
-typedef struct
-{
-    wchar_t character;
-    wchar_t character_left;
-    wchar_t character_right;
-
-    struct
-    {
-        Colour fg, bg;
-        int style;
-    } colours;
-    bool solid;
-} BlockData;
 
 static long world_gen_height = 10;
 
@@ -63,13 +50,6 @@ get_block(long x, long y, PyObject *map)
     }
 
     return result;
-}
-
-
-BlockData *
-get_block_data(char block_key)
-{
-    return (BlockData *)0;
 }
 
 
@@ -599,7 +579,6 @@ render_c_render(PyObject *self, PyObject *args)
 
         Py_XDECREF(iter);
     }
-
     fwrite(frame.buffer, frame.cur_pos, 1, stdout);
 
     Py_RETURN_NONE;
