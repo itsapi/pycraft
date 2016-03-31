@@ -37,8 +37,9 @@ char
 PyString_AsChar(PyObject *str)
 {
     char result = 0;
-    char *chars = PyString_AsString(str);
-    if (chars)
+    Py_ssize_t size;
+    wchar_t *chars = PyUnicode_AsWideCharString(str, &size);
+    if (chars && size > 0)
     {
         result = *chars;
     }
