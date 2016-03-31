@@ -448,12 +448,11 @@ pos_str(long x, long y, char *s, char *result)
 
 
 static PrintableChar *last_frame;
-static ScreenBuffer frame;
 static long width;
 static long height;
 
 int
-terminal_out(PrintableChar *c, long x, long y, long width)
+terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, long width)
 {
     size_t frame_pos = y * width + x;
     if (!printable_char_eq(last_frame + frame_pos, c))
@@ -462,9 +461,9 @@ terminal_out(PrintableChar *c, long x, long y, long width)
 
         char *pixel = colour_str(c->character, c->bg, c->fg, c->style);
 
-        size_t added = pos_str(x, y, pixel, frame.buffer + frame.cur_pos);
-        frame.cur_pos += added;
-        if (frame.cur_pos >= frame.size)
+        size_t added = pos_str(x, y, pixel, frame->buffer + frame->cur_pos);
+        frame->cur_pos += added;
+        if (frame->cur_pos >= frame->size)
         {
             printf("Error: Exceeded frame buffer size in terminal_out!\n");
             return 0;
@@ -484,7 +483,7 @@ neopixels_out(PrintableChar *printable_char)
 
 
 int
-setup_frame(long new_width, long new_height)
+setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
     bool resize = false;
     if (new_width != width)
@@ -500,9 +499,9 @@ setup_frame(long new_width, long new_height)
 
     if (resize)
     {
-        frame.size = width * height * POS_STR_FORMAT_MAX_LEN;
-        frame.buffer = (char *)malloc(frame.size);
-        if (!frame.buffer)
+        frame->size = width * height * POS_STR_FORMAT_MAX_LEN;
+        frame->buffer = (char *)malloc(frame->size);
+        if (!frame->buffer)
         {
             printf("Error: Could not allocate frame buffer!\n");
             return 0;
@@ -510,7 +509,7 @@ setup_frame(long new_width, long new_height)
         last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
     }
 
-    frame.cur_pos = 0;
+    frame->cur_pos = 0;
     return 1;
 }
 
@@ -518,6 +517,7 @@ setup_frame(long new_width, long new_height)
 static PyObject *
 render_c_render(PyObject *self, PyObject *args)
 {
+    static ScreenBuffer frame;
     long left_edge,
          right_edge,
          top_edge,
@@ -535,7 +535,7 @@ render_c_render(PyObject *self, PyObject *args)
 
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
-    if (!setup_frame(cur_width, cur_height))
+    if (!setup_frame(&frame, cur_width, cur_height))
         return NULL;
 
     if (!PyDict_Check(map))
@@ -597,8 +597,6 @@ render_c_render(PyObject *self, PyObject *args)
             Py_XDECREF(py_pixel);
         }
 
-        strcpy("\n", frame.buffer + frame.cur_pos);
-        frame.cur_pos += 1;
         Py_XDECREF(iter);
     }
 
