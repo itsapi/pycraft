@@ -32,7 +32,7 @@ get_block(long x, long y, PyObject *map)
     PyObject *column = PyDict_GetItem(map, PyLong_FromLong(x));
     if (column)
     {
-        PyObject *block = PyList_GetItem(column, x);
+        PyObject *block = PyList_GetItem(column, y);
         if (block)
         {
             result = PyString_AsChar(block);
