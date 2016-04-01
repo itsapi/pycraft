@@ -19,6 +19,7 @@ pos_str(long x, long y, char *result)
 }
 
 
+#define debug_colour(c) debug("%f, %f, %f", c.r, c.g, c.b)
 void
 debug(char *str, ...)
 {
@@ -31,6 +32,7 @@ debug(char *str, ...)
     va_start(aptr, str);
     vprintf(str, aptr);
     va_end(aptr);
+    puts("\033[0K");
 
     if (debug_y > 30)
         debug_y = 0;
@@ -361,11 +363,11 @@ get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *o
 
             if (rgb.r == -1)
             {
-                rgb = get_block_data(c)->colours.bg;
+                rgb = get_block_data(c)->colours.fg;
             }
 
-            obj_key_result = &c;
-            obj_colour_result = &rgb;
+            *obj_key_result = c;
+            *obj_colour_result = rgb;
             return;
         }
     }
