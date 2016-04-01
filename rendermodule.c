@@ -288,19 +288,14 @@ sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObje
     {
         long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
         long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
-        long oz = PyLong_AsLong(PyDict_GetItemString(object, "z"));
+        long o_width= PyLong_AsLong(PyDict_GetItemString(object, "width"));
+        long o_height= PyLong_AsLong(PyDict_GetItemString(object, "height"));
 
-        if (oz >= light_mask(world_x + ox, oy, map, slice_heights))
+        if (x <= ox && ox < (x + o_width) &&
+            y <= oy && oy < (y + o_height))
         {
-            long o_width= PyLong_AsLong(PyDict_GetItemString(object, "width"));
-            long o_height= PyLong_AsLong(PyDict_GetItemString(object, "height"));
-
-            if (x <= ox && ox < (x + o_width) &&
-                y <= oy && oy < (y + o_height))
-            {
-                result = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
-                break;
-            }
+            result = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+            break;
         }
     }
 
