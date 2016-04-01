@@ -227,7 +227,8 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
         }
         else
         {
-            result = hsv_to_rgb(colour_behind_hsv);
+            // Not HSV because in non fancy light mode
+            result = *colour_behind_hsv;
 
             PyObject *iter = PyObject_GetIter(lights);
             PyObject *light;
