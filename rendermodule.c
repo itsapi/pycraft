@@ -196,7 +196,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
     Colour result;
     result.r = -1;
 
-    float slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x)));
+    long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x)));
     if ((world_gen_height - y) < slice_height)
     {
         result.r = .1f;
