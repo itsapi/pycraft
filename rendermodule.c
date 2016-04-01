@@ -1,13 +1,40 @@
 #include <Python.h>
 #include <math.h>
+#include <stdarg.h>
 
 #include "render.h"
 
 #include "colours.c"
 #include "data.c"
 
-
 static long world_gen_height = 200;
+
+
+#define POS_STR_FORMAT "\033[%ld;%ldH"
+#define POS_STR_FORMAT_MAX_LEN (sizeof(POS_STR_FORMAT)+30)
+size_t
+pos_str(long x, long y, char *result)
+{
+    return sprintf(result, POS_STR_FORMAT, y+1, x+1);
+}
+
+
+void
+debug(char *str, ...)
+{
+    static int debug_y = 0;
+    static char debug_buff[128];
+
+    fwrite(debug_buff, pos_str(50, debug_y++, debug_buff), 1, stdout);
+
+    va_list aptr;
+    va_start(aptr, str);
+    vprintf(str, aptr);
+    va_end(aptr);
+
+    if (debug_y > 30)
+        debug_y = 0;
+}
 
 
 char
@@ -390,15 +417,6 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     }
 
     result->style = pixel_f->colours.style;
-}
-
-
-#define POS_STR_FORMAT "\033[%ld;%ldH"
-#define POS_STR_FORMAT_MAX_LEN (sizeof(POS_STR_FORMAT)+30)
-size_t
-pos_str(long x, long y, char *result)
-{
-    return sprintf(result, POS_STR_FORMAT, y+1, x+1);
 }
 
 
