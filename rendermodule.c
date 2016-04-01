@@ -7,7 +7,7 @@
 #include "data.c"
 
 
-static long world_gen_height = 10;
+static long world_gen_height = 200;
 
 
 char
