@@ -368,11 +368,11 @@ get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *o
 
             if (rgb.r == -1)
             {
-                rgb = get_block_data(c)->colours.bg;
+                rgb = get_block_data(c)->colours.fg;
             }
 
-            obj_key_result = &c;
-            obj_colour_result = &rgb;
+            *obj_key_result = c;
+            *obj_colour_result = rgb;
             return;
         }
     }
