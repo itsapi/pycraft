@@ -25,7 +25,7 @@ debug(char *str, ...)
     static int debug_y = 0;
     static char debug_buff[128];
 
-    fwrite(debug_buff, pos_str(50, debug_y++, debug_buff), 1, stdout);
+    fwrite(debug_buff, pos_str(60, debug_y++, debug_buff), 1, stdout);
 
     va_list aptr;
     va_start(aptr, str);
