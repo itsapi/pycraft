@@ -179,22 +179,37 @@ def game(server, settings, leds):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                out, last_frame = render.render_map(
-                    server.map_,
-                    server.slice_heights,
-                    edges,
-                    edges_y,
-                    objects,
-                    bk_objects,
-                    sky_colour,
-                    day,
-                    lights,
-                    settings,
-                    last_frame,
-                    leds,
-                    width,
-                    height
-                )
+                out = ''
+                if c.getenv_b('PYCRAFT_RENDER_C'):
+                    render_c.render(
+                        server.map_,
+                        edges,
+                        edges_y,
+                        server.slice_heights,
+                        objects,
+                        bk_objects,
+                        sky_colour,
+                        day,
+                        lights,
+                        settings
+                    )
+                else:
+                    out, last_frame = render.render_map(
+                        server.map_,
+                        server.slice_heights,
+                        edges,
+                        edges_y,
+                        objects,
+                        bk_objects,
+                        sky_colour,
+                        day,
+                        lights,
+                        settings,
+                        last_frame,
+                        leds,
+                        width,
+                        height
+                    )
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
