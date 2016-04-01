@@ -500,7 +500,12 @@ render_c_render(PyObject *self, PyObject *args)
         return NULL;
 
     Colour sky_colour = PyColour_AsColour(py_sky_colour);
-    Settings settings = {1, 0, 1, 1};
+    Settings settings = {
+        .terminal_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "terminal_output")),
+        .neopixels_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "neopixels")),
+        .fancy_lights = PyLong_AsLong(PyDict_GetItemString(py_settings, "fancy_lights")),
+        .colours = PyLong_AsLong(PyDict_GetItemString(py_settings, "colours"))
+    };
 
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
