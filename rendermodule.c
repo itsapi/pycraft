@@ -31,6 +31,7 @@ debug(char *str, ...)
     va_start(aptr, str);
     vprintf(str, aptr);
     va_end(aptr);
+    puts("\033[0K");
 
     if (debug_y > 30)
         debug_y = 0;
