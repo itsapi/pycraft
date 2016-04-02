@@ -221,7 +221,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
             int i = 0;
             PyObject *iter = PyObject_GetIter(lights);
             PyObject *light;
-            long max_light_level = -1;
+            float max_light_level = -1;
             Colour max_light_level_colour = {};
 
             while ((light = PyIter_Next(iter)))
@@ -235,7 +235,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
 
                     Colour this_light_pixel_colour_hsv = lerp_colour(&light_colour_hsv, light_distance, colour_behind);
                     Colour this_light_pixel_colour_rgb = hsv_to_rgb(&this_light_pixel_colour_hsv);
-                    long light_level = lightness(&this_light_pixel_colour_rgb);
+                    float light_level = lightness(&this_light_pixel_colour_rgb);
 
                     if (light_level > max_light_level)
                     {
