@@ -419,6 +419,7 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
 
 static PrintableChar *last_frame;
+static bool resize;
 static long width;
 static long height;
 
@@ -426,7 +427,7 @@ int
 terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, long width, Settings *settings)
 {
     size_t frame_pos = y * width + x;
-    if (!printable_char_eq(last_frame + frame_pos, c))
+    if (!printable_char_eq(last_frame + frame_pos, c) || resize)
     {
         last_frame[frame_pos] = *c;
 
@@ -455,7 +456,7 @@ neopixels_out(PrintableChar *printable_char)
 int
 setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
-    bool resize = false;
+    resize = false;
     if (new_width != width)
     {
         resize = true;
