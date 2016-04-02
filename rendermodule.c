@@ -522,15 +522,15 @@ render_c_render(PyObject *self, PyObject *args)
 
     while (PyDict_Next(map, &i, &world_x, &column))
     {
+        long world_x_l = PyLong_AsLong(world_x);
+        if (!(world_x_l >= left_edge && world_x_l < right_edge))
+            continue;
+
         if (!PyList_Check(column))
         {
             printf("Error: Column is not a list!\n");
             return NULL;
         }
-
-        long world_x_l = PyLong_AsLong(world_x);
-        if (!(world_x_l >= left_edge && world_x_l < right_edge))
-            continue;
 
         long x = world_x_l - left_edge;
 
