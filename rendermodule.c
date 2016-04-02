@@ -438,11 +438,11 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
         if (frame->cur_pos >= frame->size)
         {
             printf("Error: Exceeded frame buffer size in terminal_out!\n");
-            return 0;
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
 
@@ -476,13 +476,13 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
         if (!frame->buffer)
         {
             printf("Error: Could not allocate frame buffer!\n");
-            return 0;
+            return false;
         }
         last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
     }
 
     frame->cur_pos = 0;
-    return 1;
+    return true;
 }
 
 
