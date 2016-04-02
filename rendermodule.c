@@ -191,7 +191,7 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
 
 
 Colour
-get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights, Colour *colour_behind_hsv, Settings *settings)
+get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights, Colour *colour_behind, Settings *settings)
 {
     Colour result;
     result.r = -1;
@@ -233,13 +233,15 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
                     Colour light_colour_rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
                     Colour light_colour_hsv = rgb_to_hsv(&light_colour_rgb);
 
-                    Colour this_light_pixel_colour_hsv = lerp_colour(&light_colour_hsv, light_distance, colour_behind_hsv);
+                    Colour this_light_pixel_colour_hsv = lerp_colour(&light_colour_hsv, light_distance, colour_behind);
                     Colour this_light_pixel_colour_rgb = hsv_to_rgb(&this_light_pixel_colour_hsv);
                     long light_level = lightness(&this_light_pixel_colour_rgb);
 
                     if (light_level > max_light_level)
+                    {
                         max_light_level = light_level;
                         max_light_level_colour = this_light_pixel_colour_rgb;
+                    }
                 }
                 ++i;
             }
@@ -251,13 +253,12 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
             }
             else
             {
-                result = hsv_to_rgb(colour_behind_hsv);
+                result = hsv_to_rgb(colour_behind);
             }
         }
         else
         {
-            // Not HSV because in non fancy light mode
-            result = *colour_behind_hsv;
+            result = *colour_behind;
 
             PyObject *iter = PyObject_GetIter(lights);
             PyObject *light;
