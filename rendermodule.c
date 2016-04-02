@@ -11,7 +11,8 @@ static long world_gen_height = 200;
 
 
 #define POS_STR_FORMAT "\033[%ld;%ldH"
-#define POS_STR_FORMAT_MAX_LEN (sizeof(POS_STR_FORMAT)+30)
+static long MAX_POS_STR_FORMAT_LEN = sizeof(POS_STR_FORMAT);
+
 size_t
 pos_str(long x, long y, char *result)
 {
@@ -468,7 +469,7 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 
     if (resize)
     {
-        frame->size = width * height * POS_STR_FORMAT_MAX_LEN;
+        frame->size = width * height * (MAX_POS_STR_FORMAT_LEN + MAX_COLOUR_CODE_LEN);
         frame->buffer = (char *)malloc(frame->size);
         if (!frame->buffer)
         {

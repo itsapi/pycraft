@@ -177,6 +177,13 @@ rgb(Colour *c)
 }
 
 
+#define BG_CODE "\033[48;5;%dm"
+#define FG_CODE "\033[38;5;%dm"
+#define STYLE_CODE "\033[%dm"
+#define COLOUR_END_CODE "%C\033[0m"
+
+extern int MAX_COLOUR_CODE_LEN = sizeof(BG_CODE)+1 + sizeof(FG_CODE)+1 + sizeof(STYLE_CODE) + sizeof(COLOUR_END_CODE);
+
 int
 colour_str(PrintableChar *c, char *result, Settings *settings)
 {
@@ -187,21 +194,21 @@ colour_str(PrintableChar *c, char *result, Settings *settings)
         if (c->bg.r >= 0)
         {
             int bg = rgb(&(c->bg));
-            added += sprintf(result + added, "\033[48;5;%dm", bg);
+            added += sprintf(result + added, BG_CODE, bg);
         }
 
         if (c->fg.r >= 0)
         {
             int fg = rgb(&(c->fg));
-            added += sprintf(result + added, "\033[38;5;%dm", fg);
+            added += sprintf(result + added, FG_CODE, fg);
         }
 
         if (c->style >= 0)
         {
-            added += sprintf(result + added, "\033[%dm", c->style);
+            added += sprintf(result + added, STYLE_CODE, c->style);
         }
 
-        added += sprintf(result + added, "%C\033[0m", c->character);
+        added += sprintf(result + added, COLOUR_END_CODE, c->character);
     }
     else
     {
