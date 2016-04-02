@@ -11,7 +11,8 @@ static long world_gen_height = 200;
 
 
 #define POS_STR_FORMAT "\033[%ld;%ldH"
-#define POS_STR_FORMAT_MAX_LEN (sizeof(POS_STR_FORMAT)+30)
+static long MAX_POS_STR_FORMAT_LEN = sizeof(POS_STR_FORMAT);
+
 size_t
 pos_str(long x, long y, char *result)
 {
@@ -419,14 +420,15 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
 
 static PrintableChar *last_frame;
+static bool resize;
 static long width;
 static long height;
 
 int
-terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, long width, Settings *settings)
+terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
 {
     size_t frame_pos = y * width + x;
-    if (!printable_char_eq(last_frame + frame_pos, c))
+    if (!printable_char_eq(last_frame + frame_pos, c) || resize)
     {
         last_frame[frame_pos] = *c;
 
@@ -455,7 +457,7 @@ neopixels_out(PrintableChar *printable_char)
 int
 setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
-    bool resize = false;
+    resize = false;
     if (new_width != width)
     {
         resize = true;
@@ -469,7 +471,7 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 
     if (resize)
     {
-        frame->size = width * height * POS_STR_FORMAT_MAX_LEN;
+        frame->size = width * height * (MAX_POS_STR_FORMAT_LEN + MAX_COLOUR_CODE_LEN);
         frame->buffer = (char *)malloc(frame->size);
         if (!frame->buffer)
         {
@@ -521,15 +523,15 @@ render_c_render(PyObject *self, PyObject *args)
 
     while (PyDict_Next(map, &i, &world_x, &column))
     {
+        long world_x_l = PyLong_AsLong(world_x);
+        if (!(world_x_l >= left_edge && world_x_l < right_edge))
+            continue;
+
         if (!PyList_Check(column))
         {
             printf("Error: Column is not a list!\n");
             return NULL;
         }
-
-        long world_x_l = PyLong_AsLong(world_x);
-        if (!(world_x_l >= left_edge && world_x_l < right_edge))
-            continue;
 
         long x = world_x_l - left_edge;
 
@@ -557,7 +559,7 @@ render_c_render(PyObject *self, PyObject *args)
 
                 if (settings.terminal_output)
                 {
-                    if (!terminal_out(&frame, &printable_char, x, y, width, &settings))
+                    if (!terminal_out(&frame, &printable_char, x, y, &settings))
                         return NULL;
                 }
 
