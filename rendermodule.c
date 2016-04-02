@@ -424,7 +424,7 @@ static long width;
 static long height;
 
 int
-terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, long width, Settings *settings)
+terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
 {
     size_t frame_pos = y * width + x;
     if (!printable_char_eq(last_frame + frame_pos, c) || resize)
@@ -558,7 +558,7 @@ render_c_render(PyObject *self, PyObject *args)
 
                 if (settings.terminal_output)
                 {
-                    if (!terminal_out(&frame, &printable_char, x, y, width, &settings))
+                    if (!terminal_out(&frame, &printable_char, x, y, &settings))
                         return NULL;
                 }
 
