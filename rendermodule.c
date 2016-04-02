@@ -19,7 +19,7 @@ pos_str(long x, long y, char *result)
 }
 
 
-#define debug_colour(c) debug("%f, %f, %f", c.r, c.g, c.b)
+#define debug_colour(c) debug("%f, %f, %f", (c).r, (c).g, (c).b)
 void
 debug(char *str, ...)
 {
