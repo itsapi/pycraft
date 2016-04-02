@@ -45,10 +45,11 @@ def main():
                 ui.error(server_obj.error)
 
     finally:
-        setdown()
+        setdown(settings)
 
 
 def setup():
+    global NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT;
     log('Start\n')
 
     meta = saves.get_global_meta()
@@ -63,17 +64,22 @@ def setup():
     saves.check_map_dir()
 
     if settings.get('neopixels'):
-        err, NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = render_c.init_neopixels()
-        if err:
-            print('Error initalising neopixels.')
+        if c.getenv_b('PYCRAFT_RENDER_C'):
+            NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = render_c.init_neopixels()
+        else:
+            NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = neopixels.init()
 
     print(HIDE_CUR + CLS)
     return meta, settings, profile, name, port
 
 
-def setdown():
+def setdown(settings):
     if settings.get('neopixels'):
-        render_c.deint_neopixels()
+        if c.getenv_b('PYCRAFT_RENDER_C'):
+            render_c.deinit_neopixels()
+        else:
+            neopixels.deinit()
+
     print(SHOW_CUR + CLS)
 
 
@@ -210,9 +216,7 @@ def game(server, settings):
                         day,
                         lights,
                         settings,
-                        last_frame,
-                        width,
-                        height
+                        last_frame
                     )
 
                 crafting_grid = render.render_grid(

@@ -8,7 +8,7 @@ def main():
     try:
         pycraft.game(pycraft.server_interface.LocalInterface('tester', save, 0), settings)
     finally:
-        pycraft.setdown()
+        pycraft.setdown(settings)
 
 
 if __name__ == '__main__':

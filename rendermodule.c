@@ -573,16 +573,14 @@ static void setup_handlers(void)
 static PyObject *
 render_c_init_neopixels(PyObject *self, PyObject *args)
 {
-    bool ret = true;
-
     setup_handlers();
 
     if (ws2811_init(&ledstring))
     {
-        ret = false;
+        return NULL;
     }
 
-    PyObject *py_ret = Py_BuildValue("(lll)", ret, NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT);
+    PyObject *py_ret = Py_BuildValue("(ll)", NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT);
     Py_XINCREF(py_ret);
     return py_ret;
 }
