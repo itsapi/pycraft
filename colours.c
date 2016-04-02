@@ -182,7 +182,7 @@ rgb(Colour *c)
 #define STYLE_CODE "\033[%dm"
 #define COLOUR_END_CODE "%C\033[0m"
 
-extern int MAX_COLOUR_CODE_LEN = sizeof(BG_CODE)+1 + sizeof(FG_CODE)+1 + sizeof(STYLE_CODE) + sizeof(COLOUR_END_CODE);
+int MAX_COLOUR_CODE_LEN = sizeof(BG_CODE)+1 + sizeof(FG_CODE)+1 + sizeof(STYLE_CODE) + sizeof(COLOUR_END_CODE);
 
 int
 colour_str(PrintableChar *c, char *result, Settings *settings)
