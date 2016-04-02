@@ -109,9 +109,9 @@ hsv_to_rgb(Colour *hsv)
         return rgb;
     }
 
-    hsv->h /= 60.0f;
-    i = floor(hsv->h);
-    f = hsv->h - i;
+    float h = hsv->h / 60.0f;
+    i = floor(h);
+    f = h - i;
     p = hsv->v * (1.0f - hsv->s);
     q = hsv->v * (1.0f - hsv->s * f);
     t = hsv->v * (1.0f - hsv->s * (1.0f - f));
