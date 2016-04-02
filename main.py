@@ -15,11 +15,12 @@ if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
 import saves, ui, terrain, player, render, server_interface, data, neopixels, render_c
 
 
-def main():
-    leds = None
+NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = 0, 0
 
+
+def main():
     try:
-        meta, settings, profile, name, port, leds = setup()
+        meta, settings, profile, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -38,13 +39,13 @@ def main():
                 if profile:
                     cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
                 else:
-                    game(server_obj, settings, leds)
+                    game(server_obj, settings)
 
             if server_obj.error:
                 ui.error(server_obj.error)
 
     finally:
-        setdown(leds)
+        setdown()
 
 
 def setup():
@@ -62,21 +63,21 @@ def setup():
     saves.check_map_dir()
 
     if settings.get('neopixels'):
-        leds = neopixels.init(settings.get('width'), settings.get('height'))
-    else:
-        leds = None
+        err, NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = render_c.init_neopixels()
+        if err:
+            print('Error initalising neopixels.')
 
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, name, port, leds
+    return meta, settings, profile, name, port
 
 
-def setdown(leds):
-    if leds:
-        neopixels.deinit(leds)
+def setdown():
+    if settings.get('neopixels'):
+        render_c.deint_neopixels()
     print(SHOW_CUR + CLS)
 
 
-def game(server, settings, leds):
+def game(server, settings):
     x, y = server.pos
     dx = 0
     dy = 0
@@ -119,8 +120,12 @@ def game(server, settings, leds):
         while server.game:
             x, y = server.pos
 
-            width = settings.get('width')
-            height = settings.get('height')
+            if settings.get('neopixels'):
+                width = NEOPIXELS_WIDTH
+                height = NEOPIXELS_HEIGHT
+            else:
+                width = settings.get('width')
+                height = settings.get('height')
 
             sleep(1/1000)
             # Finds display boundaries
@@ -206,7 +211,6 @@ def game(server, settings, leds):
                         lights,
                         settings,
                         last_frame,
-                        leds,
                         width,
                         height
                     )

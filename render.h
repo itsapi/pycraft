@@ -14,15 +14,16 @@ typedef struct
 
 typedef union {
     struct {
-        float r;
         float g;
+        float r;
         float b;
     };
     struct {
-        float h;
         float s;
+        float h;
         float v;
     };
+    int32_t colour32;
 } Colour;
 
 

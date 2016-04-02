@@ -7,6 +7,50 @@
 #include "colours.c"
 #include "data.c"
 
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <signal.h>
+
+#include "rpi_ws281x/ws2811.h"
+
+
+#define NEOPIXELS_WIDTH 36
+#define NEOPIXELS_HEIGHT 32
+
+
+ws2811_t ledstring =
+{
+    .freq = WS2811_TARGET_FREQ,
+    .dmanum = 5,
+    .channel =
+    {
+        [0] =
+        {
+            .gpionum = 18,
+            .count = NEOPIXELS_WIDTH * NEOPIXELS_HEIGHT,
+            .invert = 0,
+            .brightness = 255,
+        },
+        [1] =
+        {
+            .gpionum = 0,
+            .count = 0,
+            .invert = 0,
+            .brightness = 0,
+        },
+    },
+};
+
+
+
 static long world_gen_height = 200;
 
 
@@ -447,10 +491,33 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 
 
 int
-neopixels_out(PrintableChar *printable_char)
+neopixels_out(PrintableChar *c, long x, long y, Settings *settings)
 {
-    // neopixels.set_pixel(leds, width, height, x, y, fg or bg)
-    return 1;
+    Colour colour;
+    if (c->bg.r > 0)
+        colour = c->bg;
+    else if (c->fg.r > 0)
+        colour = c->fg;
+    else
+        return true;
+
+    y = NEOPIXELS_HEIGHT - y - 1;
+    if (!(y % 2))
+        x = NEOPIXELS_WIDTH - x - 1;
+
+    long pos = y * NEOPIXELS_WIDTH + x;
+
+    if (pos > (18*36))
+        pos -= 1;
+    if (pos > (22*36-1))
+        pos -= 1;
+
+    colour.r *= 255;
+    colour.g *= 255;
+    colour.b *= 255;
+
+    ledstring.channel[0].leds[(y * NEOPIXELS_WIDTH) + x] = (ws2811_led_t)colour.colour32;
+    return true;
 }
 
 
@@ -486,6 +553,50 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 }
 
 
+
+static void ctrl_c_handler(int signum)
+{
+    ws2811_fini(&ledstring);
+}
+
+static void setup_handlers(void)
+{
+    struct sigaction sa =
+    {
+        .sa_handler = ctrl_c_handler,
+    };
+
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+}
+
+static PyObject *
+render_c_init_neopixels(PyObject *self, PyObject *args)
+{
+    bool ret = true;
+
+    setup_handlers();
+
+    if (ws2811_init(&ledstring))
+    {
+        ret = false;
+    }
+
+    PyObject *py_ret = Py_BuildValue("(lll)", ret, NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT);
+    Py_XINCREF(py_ret);
+    return py_ret;
+}
+
+
+static PyObject *
+render_c_deinit_neopixels(PyObject *self, PyObject *args)
+{
+    ws2811_fini(&ledstring);
+
+    Py_RETURN_NONE;
+}
+
+
 static PyObject *
 render_c_render(PyObject *self, PyObject *args)
 {
@@ -510,6 +621,9 @@ render_c_render(PyObject *self, PyObject *args)
         .colours = PyLong_AsLong(PyDict_GetItemString(py_settings, "colours"))
     };
 
+    if (settings.neopixels_output)
+        right_edge = left_edge + NEOPIXELS_WIDTH;
+        top_edge = right_edge + NEOPIXELS_WIDTH;
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
     if (!setup_frame(&frame, cur_width, cur_height))
@@ -565,7 +679,7 @@ render_c_render(PyObject *self, PyObject *args)
 
                 if (settings.neopixels_output)
                 {
-                    if (!neopixels_out(&printable_char))
+                    if (!neopixels_out(&printable_char, x, y, &settings))
                         return NULL;
                 }
             }
@@ -576,7 +690,20 @@ render_c_render(PyObject *self, PyObject *args)
 
         Py_XDECREF(iter);
     }
-    fwrite(frame.buffer, frame.cur_pos, 1, stdout);
+
+    if (settings.neopixels_output)
+    {
+        if (ws2811_render(&ledstring))
+        {
+            ws2811_fini(&ledstring);
+            return NULL;
+        }
+    }
+
+    if (settings.terminal_output)
+    {
+        fwrite(frame.buffer, frame.cur_pos, 1, stdout);
+    }
 
     Py_RETURN_NONE;
 }
@@ -584,6 +711,8 @@ render_c_render(PyObject *self, PyObject *args)
 
 static PyMethodDef render_methods[] = {
     {"render", render_c_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
+    {"init_neopixels", render_c_init_neopixels, METH_VARARGS, PyDoc_STR("init_neopixels() -> Int")},
+    {"deinit_neopixels", render_c_deinit_neopixels, METH_VARARGS, PyDoc_STR("deinit_neopixels() -> None")},
     {NULL, NULL}  /* sentinel */
 };
 
@@ -606,7 +735,7 @@ PyInit_render_c(void)
 {
     PyObject *m = NULL;
 
-    /* Create the module and add the functions */
+    // Create the module and add the functions
     m = PyModule_Create(&rendermodule);
     if (m == NULL)
         goto fail;
