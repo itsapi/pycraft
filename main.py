@@ -19,6 +19,7 @@ NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = 0, 0
 
 
 def main():
+    settings = None
     try:
         meta, settings, profile, name, port = setup()
 
@@ -74,7 +75,7 @@ def setup():
 
 
 def setdown(settings):
-    if settings.get('neopixels'):
+    if settings and settings.get('neopixels'):
         if c.getenv_b('PYCRAFT_RENDER_C'):
             render_c.deinit_neopixels()
         else:
