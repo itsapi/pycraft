@@ -621,8 +621,11 @@ render_c_render(PyObject *self, PyObject *args)
     };
 
     if (settings.neopixels_output)
+    {
         right_edge = left_edge + NEOPIXELS_WIDTH;
         top_edge = right_edge + NEOPIXELS_WIDTH;
+    }
+
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
     if (!setup_frame(&frame, cur_width, cur_height))
