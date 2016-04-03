@@ -577,6 +577,7 @@ render_c_init_neopixels(PyObject *self, PyObject *args)
 
     if (ws2811_init(&ledstring))
     {
+        PyErr_SetString(PyExc_RuntimeError, "Neopixels initialisation failed.");
         return NULL;
     }
 
