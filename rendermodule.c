@@ -37,7 +37,7 @@ ws2811_t ledstring =
             .gpionum = 18,
             .count = NEOPIXELS_WIDTH * NEOPIXELS_HEIGHT,
             .invert = 0,
-            .brightness = 255,
+            .brightness = 15,
         },
         [1] =
         {
@@ -494,10 +494,10 @@ int
 neopixels_out(PrintableChar *c, long x, long y, Settings *settings)
 {
     Colour colour;
-    if (c->bg.r > 0)
-        colour = c->bg;
-    else if (c->fg.r > 0)
+    if (c->fg.r > -1)
         colour = c->fg;
+    else if (c->bg.r > -1)
+        colour = c->bg;
     else
         return true;
 
@@ -512,11 +512,8 @@ neopixels_out(PrintableChar *c, long x, long y, Settings *settings)
     if (pos > (22*36-1))
         pos -= 1;
 
-    colour.r *= 255;
-    colour.g *= 255;
-    colour.b *= 255;
-
-    ledstring.channel[0].leds[(y * NEOPIXELS_WIDTH) + x] = (ws2811_led_t)colour.colour32;
+    ws2811_led_t colour32 = ((int)(colour.g*255) << 16) | ((int)(colour.r*255) << 8) | (int)(colour.b*255);
+    ledstring.channel[0].leds[pos] = colour32;
     return true;
 }
 
@@ -623,11 +620,12 @@ render_c_render(PyObject *self, PyObject *args)
     if (settings.neopixels_output)
     {
         right_edge = left_edge + NEOPIXELS_WIDTH;
-        top_edge = right_edge + NEOPIXELS_WIDTH;
+        bottom_edge = top_edge + NEOPIXELS_HEIGHT;
     }
 
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
+
     if (!setup_frame(&frame, cur_width, cur_height))
         return NULL;
 
