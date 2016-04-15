@@ -18,7 +18,7 @@ def _get_terminal_size():
             with open(os.ctermid()) as fd:
                 cr = ioctl_GWINSZ(fd)
         except:
-            cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
+            cr = (os.getenv('LINES', 25), os.getenv('COLUMNS', 80))
 
     return int(cr[1]), int(cr[0])
 
