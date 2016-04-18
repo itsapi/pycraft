@@ -100,6 +100,7 @@ def game(server, settings):
 
     old_bk_objects = None
     old_edges = None
+    redraw_all = True
     last_frame = {}
     last_out = time()
     last_inp = time()
@@ -203,9 +204,14 @@ def game(server, settings):
                         sky_colour,
                         day,
                         lights,
-                        settings
+                        settings,
+                        redraw_all
                     )
+                    redraw_all = False
                 else:
+                    if redraw_all:
+                        last_frame = {}
+
                     out, last_frame = render.render_map(
                         server.map_,
                         server.slice_heights,
@@ -364,7 +370,7 @@ def game(server, settings):
             if char in ' \n':
                 server.pos = x, y
                 server.redraw = True
-                last_frame = {}
+                redraw_all = True
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
 

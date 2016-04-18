@@ -465,6 +465,7 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
 static PrintableChar *last_frame;
 static bool resize;
+static bool redraw_all;
 static long width;
 static long height;
 
@@ -472,7 +473,7 @@ int
 terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
 {
     size_t frame_pos = y * width + x;
-    if (!printable_char_eq(last_frame + frame_pos, c) || resize)
+    if (!printable_char_eq(last_frame + frame_pos, c) || resize || redraw_all)
     {
         last_frame[frame_pos] = *c;
 
@@ -604,9 +605,9 @@ render_c_render(PyObject *self, PyObject *args)
          day;
     PyObject *map, *slice_heights, *objects, *bk_objects, *py_sky_colour, *lights, *py_settings;
 
-    if (!PyArg_ParseTuple(args, "O(ll)(ll)OOOOfOO:render", &map,
+    if (!PyArg_ParseTuple(args, "O(ll)(ll)OOOOfOOl:render", &map,
             &left_edge, &right_edge, &top_edge, &bottom_edge,
-            &slice_heights, &objects, &bk_objects, &py_sky_colour, &day, &lights, &py_settings))
+            &slice_heights, &objects, &bk_objects, &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
         return NULL;
 
     Colour sky_colour = PyColour_AsColour(py_sky_colour);
