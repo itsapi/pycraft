@@ -5,8 +5,6 @@ from console import *
 from data import lighting, world_gen, blocks, timings
 from terrain import is_solid
 
-import neopixels
-
 
 sun_y = world_gen['height'] - world_gen['ground_height']
 max_light = max(map(lambda b: b.get('light_radius', 0), blocks.values()))
@@ -76,12 +74,6 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                         except KeyError:
                             # Doesn't exist
                             diff += POS_STR(x, y, pixel)
-
-                    if settings.get('neopixels'):
-                        neopixels.set_pixel(x, y, fg or bg)
-
-    if settings.get('neopixels'):
-        neopixels.render()
 
     return diff, this_frame
 

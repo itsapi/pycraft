@@ -19,37 +19,6 @@
 #include <sys/mman.h>
 #include <signal.h>
 
-#include "rpi_ws281x/ws2811.h"
-
-
-#define NEOPIXELS_WIDTH 36
-#define NEOPIXELS_HEIGHT 32
-
-
-ws2811_t ledstring =
-{
-    .freq = WS2811_TARGET_FREQ,
-    .dmanum = 5,
-    .channel =
-    {
-        [0] =
-        {
-            .gpionum = 18,
-            .count = NEOPIXELS_WIDTH * NEOPIXELS_HEIGHT,
-            .invert = 0,
-            .brightness = 15,
-        },
-        [1] =
-        {
-            .gpionum = 0,
-            .count = 0,
-            .invert = 0,
-            .brightness = 0,
-        },
-    },
-};
-
-
 
 static long world_gen_height = 200;
 
@@ -492,34 +461,6 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 
 
 int
-neopixels_out(PrintableChar *c, long x, long y, Settings *settings)
-{
-    Colour colour;
-    if (c->fg.r > -1)
-        colour = c->fg;
-    else if (c->bg.r > -1)
-        colour = c->bg;
-    else
-        return true;
-
-    y = NEOPIXELS_HEIGHT - y - 1;
-    if (!(y % 2))
-        x = NEOPIXELS_WIDTH - x - 1;
-
-    long pos = y * NEOPIXELS_WIDTH + x;
-
-    if (pos > (18*36))
-        pos -= 1;
-    if (pos > (22*36-1))
-        pos -= 1;
-
-    ws2811_led_t colour32 = ((int)(colour.g*255) << 16) | ((int)(colour.r*255) << 8) | (int)(colour.b*255);
-    ledstring.channel[0].leds[pos] = colour32;
-    return true;
-}
-
-
-int
 setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
     resize = false;
@@ -551,49 +492,6 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 }
 
 
-
-static void ctrl_c_handler(int signum)
-{
-    ws2811_fini(&ledstring);
-}
-
-static void setup_handlers(void)
-{
-    struct sigaction sa =
-    {
-        .sa_handler = ctrl_c_handler,
-    };
-
-    sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
-}
-
-static PyObject *
-render_c_init_neopixels(PyObject *self, PyObject *args)
-{
-    setup_handlers();
-
-    if (ws2811_init(&ledstring))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Neopixels initialisation failed.");
-        return NULL;
-    }
-
-    PyObject *py_ret = Py_BuildValue("(ll)", NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT);
-    Py_XINCREF(py_ret);
-    return py_ret;
-}
-
-
-static PyObject *
-render_c_deinit_neopixels(PyObject *self, PyObject *args)
-{
-    ws2811_fini(&ledstring);
-
-    Py_RETURN_NONE;
-}
-
-
 static PyObject *
 render_c_render(PyObject *self, PyObject *args)
 {
@@ -613,16 +511,9 @@ render_c_render(PyObject *self, PyObject *args)
     Colour sky_colour = PyColour_AsColour(py_sky_colour);
     Settings settings = {
         .terminal_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "terminal_output")),
-        .neopixels_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "neopixels")),
         .fancy_lights = PyLong_AsLong(PyDict_GetItemString(py_settings, "fancy_lights")),
         .colours = PyLong_AsLong(PyDict_GetItemString(py_settings, "colours"))
     };
-
-    if (settings.neopixels_output)
-    {
-        right_edge = left_edge + NEOPIXELS_WIDTH;
-        bottom_edge = top_edge + NEOPIXELS_HEIGHT;
-    }
 
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
@@ -677,12 +568,6 @@ render_c_render(PyObject *self, PyObject *args)
                     if (!terminal_out(&frame, &printable_char, x, y, &settings))
                         return NULL;
                 }
-
-                if (settings.neopixels_output)
-                {
-                    if (!neopixels_out(&printable_char, x, y, &settings))
-                        return NULL;
-                }
             }
 
             ++world_y_l;
@@ -690,15 +575,6 @@ render_c_render(PyObject *self, PyObject *args)
         }
 
         Py_XDECREF(iter);
-    }
-
-    if (settings.neopixels_output)
-    {
-        if (ws2811_render(&ledstring))
-        {
-            ws2811_fini(&ledstring);
-            return NULL;
-        }
     }
 
     if (settings.terminal_output)
@@ -712,8 +588,6 @@ render_c_render(PyObject *self, PyObject *args)
 
 static PyMethodDef render_methods[] = {
     {"render", render_c_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
-    {"init_neopixels", render_c_init_neopixels, METH_VARARGS, PyDoc_STR("init_neopixels() -> Int")},
-    {"deinit_neopixels", render_c_deinit_neopixels, METH_VARARGS, PyDoc_STR("deinit_neopixels() -> None")},
     {NULL, NULL}  /* sentinel */
 };
 

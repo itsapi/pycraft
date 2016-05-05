@@ -12,10 +12,7 @@ from nbinput import NonBlockingInput
 import sys, glob
 if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
 
-import saves, ui, terrain, player, render, server_interface, data, neopixels, render_c
-
-
-NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = 0, 0
+import saves, ui, terrain, player, render, server_interface, data, render_c
 
 
 def main():
@@ -46,11 +43,10 @@ def main():
                 ui.error(server_obj.error)
 
     finally:
-        setdown(settings)
+        setdown()
 
 
 def setup():
-    global NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT;
     log('Start\n')
 
     meta = saves.get_global_meta()
@@ -64,23 +60,11 @@ def setup():
     init_colours(settings)
     saves.check_map_dir()
 
-    if settings.get('neopixels'):
-        if c.getenv_b('PYCRAFT_RENDER_C'):
-            NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = render_c.init_neopixels()
-        else:
-            NEOPIXELS_WIDTH, NEOPIXELS_HEIGHT = neopixels.init()
-
     print(HIDE_CUR + CLS)
     return meta, settings, profile, name, port
 
 
-def setdown(settings):
-    if settings and settings.get('neopixels'):
-        if c.getenv_b('PYCRAFT_RENDER_C'):
-            render_c.deinit_neopixels()
-        else:
-            neopixels.deinit()
-
+def setdown():
     print(SHOW_CUR + CLS)
 
 
@@ -128,12 +112,8 @@ def game(server, settings):
         while server.game:
             x, y = server.pos
 
-            if settings.get('neopixels'):
-                width = NEOPIXELS_WIDTH
-                height = NEOPIXELS_HEIGHT
-            else:
-                width = settings.get('width')
-                height = settings.get('height')
+            width = settings.get('width')
+            height = settings.get('height')
 
             sleep(1/1000)
             # Finds display boundaries
