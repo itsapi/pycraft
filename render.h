@@ -36,7 +36,7 @@ typedef struct
 
 typedef struct
 {
-    char *buffer;
+    wchar_t *buffer;
     size_t size;
     size_t cur_pos;
 } ScreenBuffer;

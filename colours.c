@@ -177,15 +177,23 @@ rgb(Colour *c)
 }
 
 
-#define BG_CODE "\033[48;5;%dm"
-#define FG_CODE "\033[38;5;%dm"
-#define STYLE_CODE "\033[%dm"
-#define COLOUR_END_CODE "%C\033[0m"
+#define S_BG_CODE L"\033[48;5;%dm"
+#define BG_CODE_MAX_LEN (sizeof(S_BG_CODE))
+static wchar_t *BG_CODE = S_BG_CODE;
+#define S_FG_CODE L"\033[38;5;%dm"
+#define FG_CODE_MAX_LEN (sizeof(S_FG_CODE))
+static wchar_t *FG_CODE = S_FG_CODE;
+#define S_STYLE_CODE L"\033[%dm"
+#define STYLE_CODE_MAX_LEN (sizeof(S_STYLE_CODE))
+static wchar_t *STYLE_CODE = S_STYLE_CODE;
+#define S_COLOUR_END_CODE L"%C\033[0m"
+#define COLOUR_END_CODE_MAX_LEN (sizeof(S_COLOUR_END_CODE))
+static wchar_t *COLOUR_END_CODE = S_COLOUR_END_CODE;
 
-int MAX_COLOUR_CODE_LEN = sizeof(BG_CODE)+1 + sizeof(FG_CODE)+1 + sizeof(STYLE_CODE) + sizeof(COLOUR_END_CODE);
+size_t COLOUR_CODE_MAX_LEN = BG_CODE_MAX_LEN + FG_CODE_MAX_LEN + STYLE_CODE_MAX_LEN + COLOUR_END_CODE_MAX_LEN;
 
 int
-colour_str(PrintableChar *c, char *result, Settings *settings)
+colour_str(PrintableChar *c, wchar_t *result, Settings *settings)
 {
     int added = 0;
 
@@ -194,21 +202,21 @@ colour_str(PrintableChar *c, char *result, Settings *settings)
         if (c->bg.r >= 0)
         {
             int bg = rgb(&(c->bg));
-            added += sprintf(result + added, BG_CODE, bg);
+            added += swprintf(result + added, BG_CODE_MAX_LEN, BG_CODE, bg);
         }
 
         if (c->fg.r >= 0)
         {
             int fg = rgb(&(c->fg));
-            added += sprintf(result + added, FG_CODE, fg);
+            added += swprintf(result + added, FG_CODE_MAX_LEN, FG_CODE, fg);
         }
 
         if (c->style >= 0)
         {
-            added += sprintf(result + added, STYLE_CODE, c->style);
+            added += swprintf(result + added, STYLE_CODE_MAX_LEN, STYLE_CODE, c->style);
         }
 
-        added += sprintf(result + added, COLOUR_END_CODE, c->character);
+        added += swprintf(result + added, COLOUR_END_CODE_MAX_LEN, COLOUR_END_CODE, c->character);
     }
     else
     {

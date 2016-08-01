@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wchar.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -23,13 +24,14 @@
 static long world_gen_height = 200;
 
 
-#define POS_STR_FORMAT "\033[%ld;%ldH"
-static long MAX_POS_STR_FORMAT_LEN = sizeof(POS_STR_FORMAT);
+#define S_POS_STR_FORMAT L"\033[%ld;%ldH"
+#define POS_STR_FORMAT_MAX_LEN (sizeof(S_POS_STR_FORMAT))
+static wchar_t *POS_STR_FORMAT = S_POS_STR_FORMAT;
 
 size_t
-pos_str(long x, long y, char *result)
+pos_str(long x, long y, wchar_t *result)
 {
-    return sprintf(result, POS_STR_FORMAT, y+1, x+1);
+    return swprintf(result, POS_STR_FORMAT_MAX_LEN, POS_STR_FORMAT, y+1, x+1);
 }
 
 
@@ -38,7 +40,7 @@ void
 debug(char *str, ...)
 {
     static int debug_y = 0;
-    static char debug_buff[128];
+    static wchar_t debug_buff[128];
 
     fwrite(debug_buff, pos_str(60, debug_y++, debug_buff), 1, stdout);
 
@@ -53,10 +55,10 @@ debug(char *str, ...)
 }
 
 
-char
+wchar_t
 PyString_AsChar(PyObject *str)
 {
-    char result = 0;
+    wchar_t result = 0;
     Py_ssize_t size;
     wchar_t *chars = PyUnicode_AsWideCharString(str, &size);
     if (chars && size > 0)
@@ -67,10 +69,10 @@ PyString_AsChar(PyObject *str)
 }
 
 
-char
+wchar_t
 get_block(long x, long y, PyObject *map)
 {
-    char result = 0;
+    wchar_t result = 0;
 
     PyObject *column = PyDict_GetItem(map, PyLong_FromLong(x));
     if (column)
@@ -328,9 +330,9 @@ sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObje
 wchar_t
 get_char(long x, long y, PyObject *map, BlockData *pixel)
 {
-    char left_block_key = get_block(x-1, y, map);
-    char right_block_key = get_block(x+1, y, map);
-    char below_block_key = get_block(x, y+1, map);
+    wchar_t left_block_key = get_block(x-1, y, map);
+    wchar_t right_block_key = get_block(x+1, y, map);
+    wchar_t below_block_key = get_block(x, y+1, map);
 
     wchar_t character = pixel->character;
 
@@ -361,7 +363,7 @@ printable_char_eq(PrintableChar *a, PrintableChar *b)
 
 
 void
-get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *obj_colour_result)
+get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour *obj_colour_result)
 {
     PyObject *iter = PyObject_GetIter(objects);
     PyObject *object;
@@ -373,7 +375,7 @@ get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *o
 
         if (ox == x && oy == y)
         {
-            char c = PyString_AsChar(PyDict_GetItemString(object, "char"));
+            wchar_t c = PyString_AsChar(PyDict_GetItemString(object, "char"));
             Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
 
             if (rgb.r == -1)
@@ -391,7 +393,7 @@ get_obj_pixel(long x, long y, PyObject *objects, char *obj_key_result, Colour *o
 
 void
 calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
-           PyObject *map, PyObject *slice_heights, char pixel_f_key, PyObject *objects, PyObject *bk_objects,
+           PyObject *map, PyObject *slice_heights, wchar_t pixel_f_key, PyObject *objects, PyObject *bk_objects,
            Colour *sky_colour, float day, PyObject *lights, Settings *settings, PrintableChar *result)
 {
     result->bg.r = -1;
@@ -409,13 +411,13 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     }
 
     // Get any object
-    char obj_key = 0;
+    wchar_t obj_key = 0;
     Colour obj_colour;
     get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
 
     if (obj_key != 0)
     {
-        result->character = (wchar_t) obj_key;
+        result->character = obj_key;
         result->fg = obj_colour;
     }
     else
@@ -477,8 +479,8 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 
     if (resize)
     {
-        frame->size = width * height * (MAX_POS_STR_FORMAT_LEN + MAX_COLOUR_CODE_LEN);
-        frame->buffer = (char *)malloc(frame->size);
+        frame->size = width * height * (POS_STR_FORMAT_MAX_LEN + COLOUR_CODE_MAX_LEN);
+        frame->buffer = (wchar_t *)malloc(frame->size * sizeof(wchar_t));
         if (!frame->buffer)
         {
             printf("Error: Could not allocate frame buffer!\n");
@@ -551,7 +553,7 @@ render_c_render(PyObject *self, PyObject *args)
             {
                 long y = world_y_l - top_edge;
 
-                char pixel = PyString_AsChar(py_pixel);
+                wchar_t pixel = PyString_AsChar(py_pixel);
                 if (!pixel)
                 {
                     printf("Error: Cannot get char from pixel!\n");
@@ -579,7 +581,7 @@ render_c_render(PyObject *self, PyObject *args)
 
     if (settings.terminal_output)
     {
-        fwrite(frame.buffer, frame.cur_pos, 1, stdout);
+        fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout);
     }
 
     Py_RETURN_NONE;
