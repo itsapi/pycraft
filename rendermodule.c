@@ -621,10 +621,9 @@ PyInit_render_c(void)
     // Create the module and add the functions
     m = PyModule_Create(&rendermodule);
     if (m == NULL)
-        goto fail;
+    {
+        Py_XDECREF(m);
+    }
 
     return m;
- fail:
-    Py_XDECREF(m);
-    return NULL;
 }
