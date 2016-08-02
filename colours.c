@@ -178,10 +178,10 @@ rgb(Colour *c)
 
 
 #define S_BG_CODE L"\033[48;5;%dm"
-#define BG_CODE_MAX_LEN (sizeof(S_BG_CODE))
+#define BG_CODE_MAX_LEN (sizeof(S_BG_CODE) + 1)
 static wchar_t *BG_CODE = S_BG_CODE;
 #define S_FG_CODE L"\033[38;5;%dm"
-#define FG_CODE_MAX_LEN (sizeof(S_FG_CODE))
+#define FG_CODE_MAX_LEN (sizeof(S_FG_CODE) + 1)
 static wchar_t *FG_CODE = S_FG_CODE;
 #define S_STYLE_CODE L"\033[%dm"
 #define STYLE_CODE_MAX_LEN (sizeof(S_STYLE_CODE))

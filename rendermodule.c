@@ -448,12 +448,18 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
     {
         last_frame[frame_pos] = *c;
 
+        size_t old_cur_pos = frame->cur_pos;
         frame->cur_pos += pos_str(x, y, frame->buffer + frame->cur_pos);
         frame->cur_pos += colour_str(c, frame->buffer + frame->cur_pos, settings);
 
         if (frame->cur_pos >= frame->size)
         {
             printf("Error: Exceeded frame buffer size in terminal_out!\n");
+            return false;
+        }
+        if (frame->cur_pos - old_cur_pos >= (COLOUR_CODE_MAX_LEN + POS_STR_FORMAT_MAX_LEN))
+        {
+            printf("Error: Block string length exceeded allocated space\n");
             return false;
         }
     }
