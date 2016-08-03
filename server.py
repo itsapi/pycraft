@@ -25,6 +25,19 @@ def log_event_receive(*args, label=''):
     _log_event(*args)
 
 
+def dt(last_tick):
+    dt = 0
+    t = time()
+    tick_period = 1 / timings['tps']
+
+    if t >= tick_period + last_tick:
+        dt = int((t - last_tick) // tick_period)
+
+        last_tick += dt * tick_period
+
+    return dt, last_tick
+
+
 class Server:
     def __init__(self, player, save, port, local_interface):
         self.current_players = {}
@@ -216,15 +229,9 @@ class Game:
     def pause(self, paused):
         pass
 
-    # TODO: Needs rethinking
     def dt(self):
-        if time() >= (1/timings['tps']) + self._last_tick:
-            self._last_tick = time()
-            self.time += 1
-            self._dt = True
-
-        else:
-            self._dt = False
+        self._dt, self._last_tick = dt(self._last_tick)
+        self.time += self._dt
 
         return self._dt, self.time
 

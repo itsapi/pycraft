@@ -12,7 +12,7 @@ CRAFT_TITLE = 'Crafting'
 HAND_STRENGTH = 20
 
 
-def get_pos_delta(char, map_, x, y, jump, flight):
+def get_pos_delta(inp, map_, x, y, jump, flight):
 
     left_slice = map_[x - 1]
     player_slice = map_[x]
@@ -28,7 +28,7 @@ def get_pos_delta(char, map_, x, y, jump, flight):
 
     # Calculate change in x pos for left and right movement
     for test_char, dir_, next_slice in (('a', -1, left_slice), ('d', 1, right_slice)):
-        if ( char in test_char
+        if ( test_char in inp
              and not is_solid( next_slice[head_y] )):
 
             if is_solid( next_slice[feet_y] ):
@@ -41,16 +41,16 @@ def get_pos_delta(char, map_, x, y, jump, flight):
                 dx = dir_
 
     # Jumps if up pressed, block below, no block above
-    if ( char in 'w' and y > 1
+    if ( 'w' in inp and y > 1
          and (not is_solid( player_slice[above_y] )
               and ( is_solid( player_slice[below_y] )
                     or player_slice[feet_y] == '=' )
               or flight)):
 
         dy = -1
-        jump = 5
+        jump = 6
 
-    if (flight and char in 's' and head_y < world_gen['height']
+    if (flight and 's' in inp and head_y < world_gen['height']
          and (not is_solid(player_slice[below_y]))):
         dy = 1
 
@@ -86,7 +86,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
 
     slices = {}
 
-    if inp in 'k' and block_y >= 0 and block_y < world_gen['height']:
+    if 'k' in inp and block_y >= 0 and block_y < world_gen['height']:
 
         # If pressing k and block is air and can place
         if (block == ' ' and len(inv) and
@@ -119,11 +119,21 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
 
 
 def move_cursor(inp):
-    return {'j': -1, 'l': 1}.get(inp, 0)
+    if 'j' in inp:
+        return -1
+    elif 'l' in inp:
+        return 1
+    else:
+        return 0
 
 
 def move_sel(inp):
-    return {'u': -1, 'o': 1}.get(inp, 0)
+    if 'u' in inp:
+        return -1
+    elif 'o' in inp:
+        return 1
+    else:
+        return 0
 
 
 def can_strength_break(block_target, strength):
@@ -218,8 +228,8 @@ def get_crafting(inv, crafting_list, crafting_sel, reset=False):
 def craft_num(inp, inv, crafting_list, crafting_sel):
     dcraft = False
 
-    if inp in '-=':
-        dn = '-='.find(inp)*2 - 1
+    if '-' in inp or '=' in inp:
+        dn = 1 if '=' in inp else -1
 
         inv = dict(map(lambda a: (a['block'], a['num']), inv))
 
@@ -242,7 +252,7 @@ def crafting(inp, inv, inv_sel, crafting_list, crafting_sel):
 
     dcraft = False
 
-    if inp in 'i' and len(crafting_list):
+    if 'i' in inp and len(crafting_list):
         dcraft = True
         craft = crafting_list[crafting_sel]
 

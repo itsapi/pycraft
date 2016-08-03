@@ -2,7 +2,7 @@ from threading import Thread, Event
 from math import radians, floor, ceil
 from time import time
 
-from server import Server, log_event_send, log_event_receive
+from server import Server, log_event_send, log_event_receive, dt
 from console import log
 from data import timings
 
@@ -181,12 +181,8 @@ class RemoteInterface:
         self._event_logout()
 
     def dt(self):
-        if time() >= (1/timings['tps']) + self._last_tick:
-            self._last_tick = time()
-            self.time += 1
-            self._dt = True
-        else:
-            self._dt = False
+        self._dt, self._last_tick = dt(self._last_tick)
+        self.time += self._dt
 
         return self._dt
 
