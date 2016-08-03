@@ -1,4 +1,4 @@
-import cProfile
+import cProfile, pdb, os
 
 from time import time, sleep
 from math import radians
@@ -13,7 +13,7 @@ import saves, ui, terrain, player, render, server_interface, data
 
 def main():
     try:
-        meta, settings, profile, name, port = setup()
+        meta, settings, profile, debug, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -31,6 +31,8 @@ def main():
             if not server_obj.error:
                 if profile:
                     cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
+                elif debug:
+                    pdb.run('game(server_obj, settings)', globals(), locals())
                 else:
                     game(server_obj, settings)
 
@@ -49,6 +51,13 @@ def setup():
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
 
+    # For internal PDB debugging
+    debug = c.getenv_b('PYCRAFT_DEBUG')
+
+    # For externally connecting GDB
+    with open('.pid', 'w') as f:
+        print(os.getpid(), file=f)
+
     name = c.getenv('PYCRAFT_NAME') or settings.get('name') or ui.name(settings)
     port = c.getenv('PYCRAFT_PORT') or meta.get('port') or 0
 
@@ -56,7 +65,7 @@ def setup():
     saves.check_map_dir()
 
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, name, port
+    return meta, settings, profile, debug, name, port
 
 
 def setdown():
