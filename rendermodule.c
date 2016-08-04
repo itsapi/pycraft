@@ -587,7 +587,12 @@ render_c_render(PyObject *self, PyObject *args)
 
     if (settings.terminal_output > 0)
     {
-        fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout);
+        if (fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout) != frame.cur_pos)
+        {
+            printf("Error: fwrite messed up!\n");
+            return NULL;
+        }
+        fflush(stdout);
     }
 
     Py_RETURN_NONE;
