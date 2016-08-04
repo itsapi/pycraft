@@ -192,7 +192,7 @@ get_block_light(long x, long y, long world_x, PyObject *map, PyObject *slice_hei
                 PyObject *lights, float day, Colour *block_colour, Settings *settings)
 {
     Colour result = *block_colour;
-    if (settings->fancy_lights)
+    if (settings->fancy_lights > 0)
     {
         float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
         float d_ground_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x))) - (world_gen_height - y);
@@ -218,7 +218,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
         result.r = .1f;
         result.g = .1f;
         result.b = .1f;
-        if (settings->fancy_lights)
+        if (settings->fancy_lights > 0)
         {
             float block_lightness = get_block_lightness(x, y, world_x, map, slice_heights, lights);
             result.r = (result.r + block_lightness) * .5f;
@@ -228,7 +228,7 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
     }
     else
     {
-        if (settings->fancy_lights)
+        if (settings->fancy_lights > 0)
         {
             bool bitmap[PyList_Size(lights)];
             get_block_lights(x, y, lights, bitmap);
@@ -571,7 +571,7 @@ render_c_render(PyObject *self, PyObject *args)
                     map, slice_heights, pixel, objects, bk_objects,
                     &sky_colour, day, lights, &settings, &printable_char);
 
-                if (settings.terminal_output)
+                if (settings.terminal_output > 0)
                 {
                     if (!terminal_out(&frame, &printable_char, x, y, &settings))
                         return NULL;
@@ -585,7 +585,7 @@ render_c_render(PyObject *self, PyObject *args)
         Py_XDECREF(iter);
     }
 
-    if (settings.terminal_output)
+    if (settings.terminal_output > 0)
     {
         fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout);
     }
