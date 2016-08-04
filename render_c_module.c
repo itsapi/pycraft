@@ -21,6 +21,8 @@
 #include <signal.h>
 
 
+PyObject *C_RENDERER_EXCEPTION;
+
 static long world_gen_height = 200;
 
 
@@ -440,7 +442,7 @@ static bool redraw_all;
 static long width;
 static long height;
 
-int
+bool
 terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
 {
     size_t frame_pos = y * width + x;
@@ -454,12 +456,12 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 
         if (frame->cur_pos >= frame->size)
         {
-            printf("Error: Exceeded frame buffer size in terminal_out!\n");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Exceeded frame buffer size in terminal_out!");
             return false;
         }
         if (frame->cur_pos - old_cur_pos >= (COLOUR_CODE_MAX_LEN + POS_STR_FORMAT_MAX_LEN))
         {
-            printf("Error: Block string length exceeded allocated space\n");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Block string length exceeded allocated space!");
             return false;
         }
     }
@@ -468,7 +470,7 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 }
 
 
-int
+bool
 setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
     resize = false;
@@ -489,7 +491,7 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
         frame->buffer = (wchar_t *)malloc(frame->size * sizeof(wchar_t));
         if (!frame->buffer)
         {
-            printf("Error: Could not allocate frame buffer!\n");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate frame buffer!");
             return false;
         }
         last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
@@ -514,7 +516,10 @@ render_map(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
             &left_edge, &right_edge, &top_edge, &bottom_edge,
             &objects, &bk_objects, &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
+    {
+        PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
+    }
 
     Colour sky_colour = PyColour_AsColour(py_sky_colour);
     Settings settings = {
@@ -530,7 +535,10 @@ render_map(PyObject *self, PyObject *args)
         return NULL;
 
     if (!PyDict_Check(map))
+    {
+        PyErr_SetString(C_RENDERER_EXCEPTION, "Map is not a dict!");
         return NULL;
+    }
 
     Py_ssize_t i = 0;
     PyObject *world_x, *column;
@@ -543,7 +551,7 @@ render_map(PyObject *self, PyObject *args)
 
         if (!PyList_Check(column))
         {
-            printf("Error: Column is not a list!\n");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Column is not a list!");
             return NULL;
         }
 
@@ -562,7 +570,7 @@ render_map(PyObject *self, PyObject *args)
                 wchar_t pixel = PyString_AsChar(py_pixel);
                 if (!pixel)
                 {
-                    printf("Error: Cannot get char from pixel!\n");
+                    PyErr_SetString(C_RENDERER_EXCEPTION, "Cannot get char from pixel!");
                     return NULL;
                 }
 
@@ -589,7 +597,7 @@ render_map(PyObject *self, PyObject *args)
     {
         if (fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout) != frame.cur_pos)
         {
-            printf("Error: fwrite messed up!\n");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "fwrite messed up!");
             return NULL;
         }
         fflush(stdout);
@@ -629,6 +637,8 @@ PyInit_render_c(void)
     {
         Py_XDECREF(m);
     }
+
+    C_RENDERER_EXCEPTION = PyErr_NewException("render_c.RendererException", NULL, NULL);
 
     return m;
 }
