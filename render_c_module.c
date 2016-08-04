@@ -42,7 +42,7 @@ debug(char *str, ...)
     static int debug_y = 0;
     static wchar_t debug_buff[128];
 
-    fwrite(debug_buff, pos_str(60, debug_y++, debug_buff), 1, stdout);
+    fwrite(debug_buff, pos_str(70, debug_y++, debug_buff), 1, stdout);
 
     va_list aptr;
     va_start(aptr, str);
@@ -501,7 +501,7 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 
 
 static PyObject *
-render_c_render(PyObject *self, PyObject *args)
+render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
     long left_edge,
@@ -599,19 +599,19 @@ render_c_render(PyObject *self, PyObject *args)
 }
 
 
-static PyMethodDef render_methods[] = {
-    {"render", render_c_render, METH_VARARGS, PyDoc_STR("render(map) -> None")},
+static PyMethodDef render_c_methods[] = {
+    {"render_map", render_map, METH_VARARGS, PyDoc_STR("render_map(map, edges, edges_y, slice_heights, objects, bk_objects, sky_colour, day, lights, settings, redraw_all) -> None")},
     {NULL, NULL}  /* sentinel */
 };
 
 PyDoc_STRVAR(module_doc, "The super-duper-fast renderer");
 
-static struct PyModuleDef rendermodule = {
+static struct PyModuleDef render_c_module = {
     PyModuleDef_HEAD_INIT,
     "render",
     module_doc,
     -1,
-    render_methods,
+    render_c_methods,
     NULL,
     NULL,
     NULL,
@@ -624,7 +624,7 @@ PyInit_render_c(void)
     PyObject *m = NULL;
 
     // Create the module and add the functions
-    m = PyModule_Create(&rendermodule);
+    m = PyModule_Create(&render_c_module);
     if (m == NULL)
     {
         Py_XDECREF(m);

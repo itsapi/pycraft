@@ -306,7 +306,7 @@ def game(server, settings):
 
                 out = ''
                 if c.getenv_b('PYCRAFT_RENDER_C'):
-                    render_c.render(
+                    render_c.render_map(
                         server.map_,
                         edges,
                         edges_y,
