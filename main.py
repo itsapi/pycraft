@@ -83,7 +83,7 @@ def game(server, settings):
     dinv = False  # Inventory
     dcraft = False  # Crafting
     FPS = 15  # Max
-    MPS = 10  # Movement
+    MPS = 15  # Movement
 
     old_bk_objects = None
     old_edges = None
