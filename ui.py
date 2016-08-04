@@ -62,7 +62,7 @@ def menu(name, options, selection=0):
                 if char in 'Ss'+DOWN:
                     selection += 1
                     break
-        print(CLS, end='')
+        print(CLS)
     # Execute function of selection
     return options[print_map[selection]][1](), selection
 
