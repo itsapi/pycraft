@@ -44,7 +44,7 @@ debug(char *str, ...)
     static int debug_y = 0;
     static wchar_t debug_buff[128];
 
-    fwrite(debug_buff, pos_str(70, debug_y++, debug_buff), 1, stdout);
+    fwrite(debug_buff, sizeof(wchar_t), pos_str(0, 50 + debug_y++, debug_buff), stdout);
 
     va_list aptr;
     va_start(aptr, str);
@@ -52,7 +52,7 @@ debug(char *str, ...)
     va_end(aptr);
     puts("\033[0K");
 
-    if (debug_y > 30)
+    if (debug_y > 20)
         debug_y = 0;
 }
 
