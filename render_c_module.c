@@ -511,9 +511,9 @@ render_map(PyObject *self, PyObject *args)
          day;
     PyObject *map, *slice_heights, *objects, *bk_objects, *py_sky_colour, *lights, *py_settings;
 
-    if (!PyArg_ParseTuple(args, "O(ll)(ll)OOOOfOOl:render", &map,
+    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
             &left_edge, &right_edge, &top_edge, &bottom_edge,
-            &slice_heights, &objects, &bk_objects, &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
+            &objects, &bk_objects, &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
         return NULL;
 
     Colour sky_colour = PyColour_AsColour(py_sky_colour);

@@ -308,9 +308,9 @@ def game(server, settings):
                 if c.getenv_b('PYCRAFT_RENDER_C'):
                     render_c.render_map(
                         server.map_,
+                        server.slice_heights,
                         edges,
                         edges_y,
-                        server.slice_heights,
                         objects,
                         bk_objects,
                         sky_colour,
