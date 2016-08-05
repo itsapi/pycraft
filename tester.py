@@ -2,7 +2,7 @@ import main as pycraft
 
 
 def main():
-    _, settings, _, _, _ = pycraft.setup()
+    _, settings, _, _, _, _ = pycraft.setup()
     save = pycraft.saves.new_save({'name': 'test', 'seed': 'This is a test!'})
 
     try:
