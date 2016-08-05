@@ -79,12 +79,11 @@ def setdown():
 
 def game(server, settings):
     x, y = server.pos
-    dx = 0
-    dy = 0
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
     ds = 0  # Selector
+    dpos = False
     dinv = False  # Inventory
     dcraft = False  # Crafting
     FPS = 15  # Max
@@ -133,28 +132,6 @@ def game(server, settings):
                     if char in 'wasdkjliuoc-=\n ':
                         inp.append(char)
 
-            move_period = 1 / MPS
-            while frame_start >= move_period + last_move:
-                # Update player position
-                dx, dy, jump = player.get_pos_delta(
-                    inp, server.map_, x, y, jump, settings.get('flight'))
-                y += dy
-                x += dx
-                server.pos = x, y
-
-                last_move += move_period
-
-                if x in server.map_ and not settings.get('flight'):
-                    # Player falls when no solid block below it
-                    jump -= dt
-                    if jump <= 0:
-                        jump = 0
-                        if not terrain.is_solid(server.map_[x][y+1]):
-                            # Fall
-                            y += 1
-                            server.pos = x, y
-                            server.redraw = True
-
             # Hard pause
             if DEBUG and '\n' in inp:
                 input()
@@ -162,16 +139,37 @@ def game(server, settings):
 
             # Pause game
             if ' ' in inp or '\n' in inp:
-                server.pos = x, y
+                # server.pos = x, y
                 server.redraw = True
                 redraw_all = True
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
 
-            ## Update Map
+            # Update player position
+            move_period = 1 / MPS
+            while frame_start >= move_period + last_move:
 
-            x, y = server.pos
+                dx, dy, jump = player.get_pos_delta(
+                    inp, server.map_, x, y, jump, settings.get('flight'))
+                if dx or dy:
+                    dpos = True
+                    x += dx
+                    y += dy
+
+                if x in server.map_ and not settings.get('flight'):
+                    # Player falls when no solid block below it and not jumping
+                    jump -= dt
+                    if jump <= 0:
+                        jump = 0
+                        if not terrain.is_solid(server.map_[x][y + 1]):
+                            # Fall
+                            y += 1
+                            dpos = True
+
+                last_move += move_period
+
+            ## Update Map
 
             width = settings.get('width')
             height = settings.get('height')
@@ -250,9 +248,11 @@ def game(server, settings):
                 inv_sel = ((inv_sel + ds) % len(server.inv)
                               if len(server.inv) else 0)
 
-            if any((dx, dy, dc, ds, dinv, dcraft)):
+            if any((dpos, dc, ds, dinv, dcraft)):
                 server.redraw = True
-            if dx or dy:
+            if dpos:
+                dpos = False
+                server.pos = x, y
                 cursor_hidden = True
             if dc:
                 cursor_hidden = False
