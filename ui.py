@@ -309,9 +309,9 @@ def help_():
 
     out = REDRAW + title('Help')
 
-    max_len = max(len(item[0]) for section in help_data.values() for item in section)
+    max_len = max(len(item[0]) for (label, section) in help_data for item in section)
 
-    for label, section in help_data.items():
+    for (label, section) in help_data:
         out += label + '\n'
         for name, key in section:
             out += '   {name:{max_len}} - {key}\n'.format(

@@ -3,6 +3,7 @@ import json
 import random
 
 from shutil import rmtree
+from collections import OrderedDict
 
 from terrain import world_gen
 from console import log
@@ -208,7 +209,7 @@ def get_global_meta():
 
 
 def get_settings():
-    return load_meta('settings.json', default_settings)
+    return OrderedDict(sorted(load_meta('settings.json', default_settings).items()))
 
 
 def get_meta(save):
