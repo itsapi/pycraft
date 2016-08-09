@@ -595,9 +595,12 @@ render_map(PyObject *self, PyObject *args)
 
     if (settings.terminal_output > 0)
     {
-        if (fwrite(frame.buffer, sizeof(wchar_t), frame.cur_pos, stdout) != frame.cur_pos)
+        frame.buffer[frame.cur_pos] = L'\0';
+        int n_wprintf_written = wprintf(frame.buffer);
+
+        if (n_wprintf_written != frame.cur_pos)
         {
-            PyErr_SetString(C_RENDERER_EXCEPTION, "fwrite messed up!");
+            PyErr_SetString(C_RENDERER_EXCEPTION, "wfprint messed up!");
             return NULL;
         }
         fflush(stdout);
