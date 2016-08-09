@@ -37,18 +37,21 @@ pos_str(long x, long y, wchar_t *result)
 }
 
 
-#define debug_colour(c) debug("%f, %f, %f", (c).r, (c).g, (c).b)
+#define debug_colour(c) debug(L"%f, %f, %f\n", (c).r, (c).g, (c).b)
 void
-debug(char *str, ...)
+debug(wchar_t *str, ...)
 {
     static int debug_y = 0;
     static wchar_t debug_buff[128];
+    size_t pos = pos_str(0, 50 + debug_y++, debug_buff);
+    debug_buff[pos] = L'\0';
 
-    fwrite(debug_buff, sizeof(wchar_t), pos_str(0, 50 + debug_y++, debug_buff), stdout);
+    wprintf(debug_buff);
+    wprintf(L"\033[0K");
 
     va_list aptr;
     va_start(aptr, str);
-    vprintf(str, aptr);
+    vwprintf(str, aptr);
     va_end(aptr);
     puts("\033[0K");
 
