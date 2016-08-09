@@ -35,9 +35,10 @@ enum
 bool
 colour_eq(Colour *a, Colour *b)
 {
-    return (a->r == b->r &&
-            a->g == b->g &&
-            a->b == b->b);
+    float error = 0.001;
+    return (abs(a->r - b->r) <= error &&
+            abs(a->g - b->g) <= error &&
+            abs(a->b - b->b) <= error);
 }
 
 
