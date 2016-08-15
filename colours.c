@@ -36,9 +36,9 @@ bool
 colour_eq(Colour *a, Colour *b)
 {
     float error = 0.001;
-    return (abs(a->r - b->r) <= error &&
-            abs(a->g - b->g) <= error &&
-            abs(a->b - b->b) <= error);
+    return (fabs(a->r - b->r) <= error &&
+            fabs(a->g - b->g) <= error &&
+            fabs(a->b - b->b) <= error);
 }
 
 
