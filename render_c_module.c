@@ -512,8 +512,8 @@ render_map(PyObject *self, PyObject *args)
     long left_edge,
          right_edge,
          top_edge,
-         bottom_edge,
-         day;
+         bottom_edge;
+    float day;
     PyObject *map, *slice_heights, *objects, *bk_objects, *py_sky_colour, *lights, *py_settings;
 
     if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
