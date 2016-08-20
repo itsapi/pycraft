@@ -86,7 +86,7 @@ def game(server, settings):
     dpos = False
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    FPS = 15  # Max
+    FPS = 30  # Max
     MPS = 15  # Movement
 
     old_bk_objects = None
