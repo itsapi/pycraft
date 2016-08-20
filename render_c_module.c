@@ -128,22 +128,6 @@ lit(long x, long y, PyObject *light)
 }
 
 
-void
-get_block_lights(long x, long y, PyObject *lights, bool *bitmap)
-{
-    // Get all lights which affect this pixel
-    long i = 0;
-    PyObject *iter = PyObject_GetIter(lights);
-    PyObject *pixel;
-
-    while ((pixel = PyIter_Next(iter)))
-    {
-        bitmap[i] = lit(x, y, pixel) < 1;
-        ++i;
-    }
-}
-
-
 Colour
 PyColour_AsColour(PyObject *py_colour)
 {
@@ -163,9 +147,6 @@ PyColour_AsColour(PyObject *py_colour)
 float
 get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights)
 {
-    bool bitmap[PyList_Size(lights)];
-    get_block_lights(x, y, lights, bitmap);
-
     float min = 1.0f;
     int i = 0;
     PyObject *iter = PyObject_GetIter(lights);
@@ -179,10 +160,10 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
         long z = PyLong_AsLong(PyDict_GetItemString(light, "z"));
         Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
 
-        bitmap[i] = bitmap[i] || z >= light_mask(world_x + lx, ly, map, slice_heights);
-
+        bool is_lit = lit(x, y, light) < 1 || z >= light_mask(world_x + lx, ly, map, slice_heights);
         float block_lightness = lit(x, y, light) * lightness(&rgb);
-        if (bitmap[i] && block_lightness < min)
+
+        if (is_lit && block_lightness < min)
             min = block_lightness;
 
         ++i;
@@ -235,9 +216,6 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
     {
         if (settings->fancy_lights > 0)
         {
-            bool bitmap[PyList_Size(lights)];
-            get_block_lights(x, y, lights, bitmap);
-
             // Calculate light level for each light source
             int i = 0;
             PyObject *iter = PyObject_GetIter(lights);
@@ -247,10 +225,9 @@ get_light_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_he
 
             while ((light = PyIter_Next(iter)))
             {
-                if (bitmap[i])
+                float light_distance = lit(x, y, light);
+                if (light_distance < 1)
                 {
-                    float light_distance = PyFloat_AsDouble(PyDict_GetItemString(light, "distance"));
-
                     Colour light_colour_rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
                     Colour light_colour_hsv = rgb_to_hsv(&light_colour_rgb);
 
