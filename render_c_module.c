@@ -160,8 +160,9 @@ get_block_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice
         long z = PyLong_AsLong(PyDict_GetItemString(light, "z"));
         Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
 
-        bool is_lit = lit(x, y, light) < 1 || z >= light_mask(world_x + lx, ly, map, slice_heights);
-        float block_lightness = lit(x, y, light) * lightness(&rgb);
+        float light_radius = lit(x, y, light);
+        bool is_lit = light_radius < 1 && z >= light_mask(world_x + lx, ly, map, slice_heights);
+        float block_lightness = light_radius * lightness(&rgb);
 
         if (is_lit && block_lightness < min)
             min = block_lightness;
