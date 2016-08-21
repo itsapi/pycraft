@@ -9,16 +9,25 @@ from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 
-import sys, glob
-if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
+import saves, ui, terrain, player, render, server_interface, data
 
-import saves, ui, terrain, player, render, server_interface, data, render_c
+
+def setup_render_c(settings):
+    global render_c
+
+    import sys, glob
+    if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
+
+    try: import render_c
+    except ImportError: settings['render_c'] = False
 
 
 def main():
     settings = None
     try:
         meta, settings, profile, debug, name, port = setup()
+
+        setup_render_c(settings)
 
         while True:
             data = ui.main(meta, settings)
@@ -305,7 +314,7 @@ def game(server, settings):
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 out = ''
-                if c.getenv_b('PYCRAFT_RENDER_C'):
+                if settings.get('render_c'):
                     render_c.render_map(
                         server.map_,
                         server.slice_heights,

@@ -24,6 +24,7 @@ default_settings = {
     'colours': True,
     'fancy_lights': True,
     'terminal_output': True,
+    'render_c': False,
     'gravity': False,
     'flight': False,
     'width': 40,
