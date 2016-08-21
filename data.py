@@ -508,7 +508,7 @@ timings = {}
 
 timings['day_length'] = 10 * 60
 timings['tps'] = 10
-timings['tick'] = timings['day_length'] * timings['tps']  / 4
+timings['tick'] = timings['day_length'] * timings['tps'] / 4
 
 
 help_data = {
