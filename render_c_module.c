@@ -468,13 +468,18 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
     if (resize)
     {
         frame->size = width * height * (POS_STR_FORMAT_MAX_LEN + COLOUR_CODE_MAX_LEN);
-        frame->buffer = (wchar_t *)malloc(frame->size * sizeof(wchar_t));
+        frame->buffer = (wchar_t *)realloc(frame->buffer, frame->size * sizeof(wchar_t));
         if (!frame->buffer)
         {
             PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate frame buffer!");
             return false;
         }
-        last_frame = (PrintableChar *)malloc(width * height * sizeof(PrintableChar));
+        last_frame = (PrintableChar *)realloc(last_frame, width * height * sizeof(PrintableChar));
+        if (!last_frame)
+        {
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate last frame buffer!");
+            return false;
+        }
     }
 
     frame->cur_pos = 0;
