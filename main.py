@@ -45,6 +45,7 @@ def main():
 
 def setup():
     log('Start\n')
+    print(CLS)
 
     meta = saves.get_global_meta()
     settings = saves.get_settings()
