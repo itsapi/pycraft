@@ -300,30 +300,46 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
-    for x in range(chunk_pos - 1, chunk_pos + world_gen['chunk_size'] + 1):
 
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
+    if features.get(chunk_pos) is None:
+        # Init to empty, so 'no features' is cached.
+        features[chunk_pos] = {}
 
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
+    # If it is not None, it has all ready been generated.
+    if features[chunk_pos].get('cave') is None:
 
-        # If it is not None, it has all ready been generated.
-        if features[x].get('cave_seed') is None:
+        random.seed(str(meta['seed']) + str(chunk_pos) + 'cave')
+        air_points = set()
 
-            random.seed(str(meta['seed']) + str(x) + 'cave_seed')
+        # Generate initial random air points
+        for x in range(chunk_pos, chunk_pos + world_gen['chunk_size'] + 1):
+            for y in range(ground_heights[x] - 2):
+                world_y = world_gen['height'] - y - 2
 
-            attrs = {}
-            attrs['seeds'] = []
+                if random.random() < world_gen['cave_chance']:
+                    air_points.add((x, world_y))
 
-            for dy in range(ground_heights[x]):
-                if random.random() < world_gen['cave_seed_chance']:
-                    attrs['seeds'].append(world_gen['height'] - ground_heights[x] + dy + 1)
+        # Perform cellular automata
+        for i in range(4):
+            old_air_points = set(p for p in air_points)
 
-            if len(attrs['seeds']):
-                features[x]['cave_seed'] = attrs
+            for x in range(chunk_pos, chunk_pos + world_gen['chunk_size'] + 1):
+                for y in range(ground_heights[x] - 2):
+                    world_y = world_gen['height'] - y - 2
 
+                    n_neighbours = 0
+                    for dx in range(-1, 2):
+                        for dy in range(-1, 2):
+                            if (x + dx, world_y + dy) in old_air_points:
+                                n_neighbours += 1
+
+                    if n_neighbours >= 5:
+                        air_points.discard((x, world_y))
+                    else:
+                        air_points.add((x, world_y))
+
+        if air_points:
+            features[chunk_pos]['cave'] = air_points
 
 def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
     """ Adds a tree feature at x to the chunk. """
@@ -387,22 +403,9 @@ def build_ore(chunk, chunk_pos, x, ore_feature, ore, ground_heights):
 def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
     """ Adds caves at x to the chunk. """
 
-    if in_chunk(x, chunk_pos):
-
-        for y in range(ground_heights[x] - 2):
-            world_y = world_gen['height'] - y - 2
-
-            n_neighbors = 0
-
-            for dx in range(-2, 3):
-                x_cave_features = features[x + dx].get('cave_seed')
-                if x_cave_features:
-                    for dy in range(-1, 2):
-                        if x_cave_features['seeds'].count(world_y + dy):
-                            n_neighbors += 1
-
-            if n_neighbors < 7:
-                chunk[x][world_y] = ' '
+    for (world_x, y) in cave_feature:
+        if in_chunk(world_x, chunk_pos):
+            chunk[world_x][y] = ' '
 
 
 def gen_chunk(chunk_n, meta):
@@ -493,7 +496,7 @@ def gen_chunk(chunk_n, meta):
             elif feature_name == 'grass':
                 build_grass(chunk, chunk_pos, feature_x, feature, ground_heights)
 
-            elif feature_name == 'cave_seed':
+            elif feature_name == 'cave':
                 build_cave(chunk, chunk_pos, feature_x, feature, ground_heights)
 
             else:
