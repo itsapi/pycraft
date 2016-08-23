@@ -245,7 +245,7 @@ def gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta):
             features[x] = {}
 
         # Ores
-        # NOTE: Ores seem to be the way to model the generalisation of the
+        # NOTE: Ores seem to be the way to model the generalization of the
         #         rest of the features after
         for name, ore in world_gen['ores'].items():
             feature_name = name + '_ore_root'
@@ -300,35 +300,7 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
-
-    def gen_segments(x, y, old_w, old_d):
-        new_segments = []
-        d = old_d % 360
-
-        target = (90, 270)[d > 180]
-        upper = target - d
-        lower = random.randint(-10, 10)
-        if lower > upper:
-            lower, upper = upper, lower
-        d += random.randint(lower, upper)
-
-        dx = int(10*sin(radians(d)))
-        dy = int(10*cos(radians(d)))
-        width = min(3, max(1, old_w + random.randint(-1, 1)))
-        log(d, dx, dy, m='cave')
-
-        if (x+dx in range(chunk_pos - world_gen['max_cave_radius'],
-                          chunk_pos + world_gen['max_cave_radius'] + world_gen['chunk_size']) and
-           0 < y+dy < ground_heights[x+dx]):
-
-            new_segments.append(((x, y), (dx, dy), width))
-            new_segments += gen_segments(x + dx, y + dy, width, d)
-            if random.random() < 0.1:
-                new_segments += gen_segments(x + dx, y + dy, width, random.choice([-90, 90]) + d)
-
-        return new_segments
-
-    for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
+    for x in range(chunk_pos - 1, chunk_pos + world_gen['chunk_size'] + 1):
 
         # TODO: Each of these `if` blocks should be abstracted into a function
         #         which just returns the `attrs` object.
@@ -338,18 +310,19 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
             features[x] = {}
 
         # If it is not None, it has all ready been generated.
-        if features[x].get('cave') is None:
+        if features[x].get('cave_seed') is None:
 
-            random.seed(str(meta['seed']) + str(x) + 'cave')
-            if random.random() <= world_gen['cave_chance']:
+            random.seed(str(meta['seed']) + str(x) + 'cave_seed')
 
-                attrs = {}
-                attrs['y'] = random.randint(0, ground_heights[x] + 1)
+            attrs = {}
+            attrs['seeds'] = []
 
-                attrs['segments'] = gen_segments(x, attrs['y'], 2, 180)
+            for dy in range(ground_heights[x]):
+                if random.random() < world_gen['cave_seed_chance']:
+                    attrs['seeds'].append(world_gen['height'] - ground_heights[x] + dy + 1)
 
-                features[x]['cave'] = attrs
-                log('got a cave', features[x]['cave'], m='cave')
+            if len(attrs['seeds']):
+                features[x]['cave_seed'] = attrs
 
 
 def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
@@ -414,46 +387,22 @@ def build_ore(chunk, chunk_pos, x, ore_feature, ore, ground_heights):
 def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
     """ Adds caves at x to the chunk. """
 
-    for segment in cave_feature['segments']:
-        (sx, sy), (dx, dy), r = segment
+    if in_chunk(x, chunk_pos):
 
-        x_quad = abs(dx) >= abs(dy)
-        r -= (r/2) * abs(cos(atan2(dy, dx)))
-        log(r, x_quad, m='cave')
+        for y in range(ground_heights[x] - 2):
+            world_y = world_gen['height'] - y - 2
 
-        if x_quad:
-            if dx < 0:
-                sx = sx + dx
-                dx *= -1
-                sy = sy + dy
-                dy *= -1
+            n_neighbors = 0
 
-            ry = int(r * cos(atan2(dy, dx)))
-            for u in range(sx, sx + dx):
-                if in_chunk(u, chunk_pos):
-                    y_intercept = int(world_gen['height'] - (sy + dy * (u - sx) / dx))
+            for dx in range(-2, 3):
+                x_cave_features = features[x + dx].get('cave_seed')
+                if x_cave_features:
+                    for dy in range(-1, 2):
+                        if x_cave_features['seeds'].count(world_y + dy):
+                            n_neighbors += 1
 
-                    for zy in range(y_intercept-ry, y_intercept+ry+1):
-                        if zy < world_gen['height'] and chunk[u][zy] is not '_':
-                            chunk[u][zy] = ' '
-
-        else:
-            if dy < 0:
-                sy = sy + dy
-                dy *= -1
-                sx = sx + dx
-                dx *= -1
-
-            rx = int(r * cos(atan2(dx, dy)))
-            for v in range(sy, sy + dy):
-                x_intercept = int((sx + dx * (v - sy) / dy))
-
-                world_y = world_gen['height'] - v
-                if world_y < world_gen['height']:
-
-                    for zx in range(x_intercept-rx, x_intercept+rx):
-                        if in_chunk(zx, chunk_pos) and chunk[zx][world_y] is not '_':
-                            chunk[zx][world_y] = ' '
+            if n_neighbors < 7:
+                chunk[x][world_y] = ' '
 
 
 def gen_chunk(chunk_n, meta):
@@ -544,7 +493,7 @@ def gen_chunk(chunk_n, meta):
             elif feature_name == 'grass':
                 build_grass(chunk, chunk_pos, feature_x, feature, ground_heights)
 
-            elif feature_name == 'cave':
+            elif feature_name == 'cave_seed':
                 build_cave(chunk, chunk_pos, feature_x, feature, ground_heights)
 
             else:
