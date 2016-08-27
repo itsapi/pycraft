@@ -22,7 +22,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, last_frame, fancy_lights):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame):
     """
         Prints out a frame of the game.
 
@@ -38,7 +38,7 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
         - last_frame: dictionary of all blocks displayed in the last frame
-        - fancy_lights: bool
+        - settings: the settings dictionary
     """
 
     diff = ''
@@ -54,20 +54,26 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
                     y = world_y - edges_y[0]
 
-                    pixel_out = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects, bk_objects, sky_colour, day, lights, fancy_lights)
+                    fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects,
+                        bk_objects, sky_colour, day, lights, settings.get('fancy_lights'))
 
-                    if DEBUG and y == 1 and world_x % world_gen['chunk_size'] == 0:
-                        pixel_out = colour_str('*', bg=TERM_RED, fg=TERM_YELLOW)
+                    if settings.get('terminal_output'):
+                        pixel = colour_str(
+                            char,
+                            bg = rgb(*bg) if bg is not None else None,
+                            fg = rgb(*fg) if fg is not None else None,
+                            style = style
+                        )
 
-                    this_frame[x, y] = pixel_out
+                        this_frame[x, y] = pixel
 
-                    try:
-                        if not last_frame[x, y] == pixel_out:
-                            # Changed
-                            diff += POS_STR(x, y, pixel_out)
-                    except KeyError:
-                        # Doesn't exist
-                        diff += POS_STR(x, y, pixel_out)
+                        try:
+                            if not last_frame[x, y] == pixel:
+                                # Changed
+                                diff += POS_STR(x, y, pixel)
+                        except KeyError:
+                            # Doesn't exist
+                            diff += POS_STR(x, y, pixel)
 
     return diff, this_frame
 
@@ -107,15 +113,7 @@ def calc_pixel(x, y, world_x, world_y, world_screen_x, map_, slice_heights, pixe
         else:
             fg = None
 
-    fg_colour = rgb(*fg) if fg is not None else None
-    bg_colour = rgb(*bg) if bg is not None else None
-
-    return colour_str(
-        char,
-        bg = bg_colour,
-        fg = fg_colour,
-        style = blocks[pixel_f]['colours']['style']
-    )
+    return fg, bg, char, blocks[pixel_f]['colours']['style']
 
 
 def get_block(x, y, map_):
@@ -265,8 +263,6 @@ def get_block_light(x, y, world_x, map_, slice_heights, lights, day, block_colou
 
 def sky(x, y, world_x, map_, slice_heights, bk_objects, sky_colour, lights, fancy_lights):
     """ Returns the sky colour. """
-
-    bk_objects = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_, slice_heights), bk_objects)
 
     for obj in bk_objects:
         if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):

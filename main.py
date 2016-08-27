@@ -8,12 +8,26 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
+
 import saves, ui, terrain, player, render, server_interface, data
 
 
+def setup_render_c(settings):
+    global render_c
+
+    import sys, glob
+    if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
+
+    try: import render_c
+    except ImportError: settings['render_c'] = False
+
+
 def main():
+    settings = None
     try:
         meta, settings, profile, debug, name, port = setup()
+
+        setup_render_c(settings)
 
         while True:
             data = ui.main(meta, settings)
@@ -82,11 +96,12 @@ def game(server, settings):
     dpos = False
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    FPS = 15  # Max
+    FPS = 30  # Max
     MPS = 15  # Movement
 
     old_bk_objects = None
     old_edges = None
+    redraw_all = True
     last_frame = {}
     last_out = time()
     last_move = time()
@@ -136,7 +151,7 @@ def game(server, settings):
             if ' ' in inp or '\n' in inp:
                 # server.pos = x, y
                 server.redraw = True
-                last_frame = {}
+                redraw_all = True
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
@@ -299,19 +314,39 @@ def game(server, settings):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                out, last_frame = render.render_map(
-                    server.map_,
-                    server.slice_heights,
-                    edges,
-                    edges_y,
-                    objects,
-                    bk_objects,
-                    sky_colour,
-                    day,
-                    lights,
-                    last_frame,
-                    settings.get('fancy_lights')
-                )
+                out = ''
+                if settings.get('render_c'):
+                    render_c.render_map(
+                        server.map_,
+                        server.slice_heights,
+                        edges,
+                        edges_y,
+                        objects,
+                        bk_objects,
+                        sky_colour,
+                        day,
+                        lights,
+                        settings,
+                        redraw_all
+                    )
+                else:
+                    if redraw_all:
+                        last_frame = {}
+
+                    out, last_frame = render.render_map(
+                        server.map_,
+                        server.slice_heights,
+                        edges,
+                        edges_y,
+                        objects,
+                        bk_objects,
+                        sky_colour,
+                        day,
+                        lights,
+                        settings,
+                        last_frame
+                    )
+                redraw_all = False
 
                 crafting_grid = render.render_grid(
                     player.CRAFT_TITLE, crafting, crafting_list,
