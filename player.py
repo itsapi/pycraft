@@ -166,22 +166,29 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
 def assemble_players(players, x, y, offset, edges):
     objects = []
 
-    for player in players.values():
+    for player in players:
         player_x = player['player_x']
         player_y = player['player_y']
         x_offset = player_x - x + offset
 
         if player_x in range(*edges):
-            objects.append({
+            head = {
                 'x': x_offset,
                 'y': player_y - 1,
-                'char': '*'
-            })
-            objects.append({
+                'char': '*',
+            }
+            feet = {
                 'x': x_offset,
                 'y': player_y,
-                'char': '^'
-            })
+                'char': '^',
+            }
+
+            if player.get('type') == 'mob':
+                head['colour'] = YELLOW
+                feet['colour'] = YELLOW
+
+            objects.append(head)
+            objects.append(feet)
 
     return objects
 

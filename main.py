@@ -1,8 +1,7 @@
-import cProfile, pdb, os
+import cProfile, pdb, os, random
 
 from time import time, sleep
 from math import radians
-from random import random
 
 import console as c
 from colours import init_colours
@@ -96,15 +95,18 @@ def game(server, settings):
     dpos = False
     dinv = False  # Inventory
     dcraft = False  # Crafting
+    dmobs = False
     FPS = 30  # Max
     MPS = 15  # Movement
+    mob_rate = 0.2
+    mob_limit = 10
 
     old_bk_objects = None
     old_edges = None
     redraw_all = True
     last_frame = {}
-    last_out = time()
     last_move = time()
+    last_mob_check = time()
     inp = None
     jump = 0
     cursor = 0
@@ -116,6 +118,7 @@ def game(server, settings):
     new_blocks = {}
     alive = True
     events = []
+    mobs = []
 
     crafting_list, crafting_sel = player.get_crafting(
         server.inv,
@@ -176,6 +179,23 @@ def game(server, settings):
                             # Fall
                             y += 1
                             dpos = True
+
+                for mob in mobs:
+                    px, py = mob['player_x'], mob['player_y']
+                    mob_inp = random.choice('ad') if random.random() < 0.1 else ''
+                    dx, dy, _ = player.get_pos_delta(mob_inp, server.map_, px, py, None, None)
+                    px, py = px + dx, py + dy
+
+                    if not terrain.is_solid(server.map_[px][py + 1]):
+                        # Fall
+                        py += 1
+                        dpos = True
+
+                    mob['player_x'] = px
+                    mob['player_y'] = py
+
+                    if px not in range(*edges) or py not in range(*edges_y):
+                        mobs.remove(mob)
 
                 last_move += move_period
 
@@ -258,7 +278,25 @@ def game(server, settings):
                 inv_sel = ((inv_sel + ds) % len(server.inv)
                               if len(server.inv) else 0)
 
-            if any((dpos, dc, ds, dinv, dcraft)):
+
+            # Add some mobs
+            dmobs = False
+            if frame_start >= 1 / mob_rate + last_mob_check:
+                if len(mobs) < mob_limit:
+                    spot_found = False
+                    while not spot_found:
+                        px = random.randrange(*edges)
+                        py = random.randrange(*edges_y)
+                        spot_found = (not terrain.is_solid(server.map_[px][py]) and
+                                      not terrain.is_solid(server.map_[px][py - 1]))
+
+                    mobs.append({'player_x': px, 'player_y': py, 'type': 'mob'})
+                    dmobs = True
+
+                last_mob_check = frame_start
+
+
+            if any((dpos, dc, ds, dinv, dcraft, dmobs)):
                 server.redraw = True
             if dpos:
                 dpos = False
@@ -299,8 +337,10 @@ def game(server, settings):
             if server.redraw:
                 server.redraw = False
 
+                players = list(server.current_players.values()) + mobs
+
                 objects = player.assemble_players(
-                    server.current_players, x, y, int(width / 2), edges
+                    players, x, y, int(width / 2), edges
                 )
 
                 if not cursor_hidden:
@@ -397,7 +437,7 @@ def process_events(events, map_):
                             player.can_strength_break(map_[tx][ty], blast_strength)):
 
                         if not render.in_circle(tx, ty, ex, ey, radius - 1):
-                            if random() < .5:
+                            if random.random() < .5:
                                 new_blocks[tx][ty] = ' '
                         else:
                             new_blocks[tx][ty] = ' '
