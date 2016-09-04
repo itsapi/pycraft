@@ -87,7 +87,6 @@ def setdown():
 
 
 def game(server, settings):
-    x, y = server.pos
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -129,6 +128,7 @@ def game(server, settings):
     # Game loop
     with NonBlockingInput() as nbi:
         while server.game:
+            x, y = server.pos
             dt = server.dt()
             frame_start = time()
 
@@ -152,7 +152,6 @@ def game(server, settings):
 
             # Pause game
             if ' ' in inp or '\n' in inp:
-                # server.pos = x, y
                 server.redraw = True
                 redraw_all = True
                 if ui.pause(server, settings) == 'exit':
@@ -182,7 +181,7 @@ def game(server, settings):
 
                 for mob in mobs:
                     px, py = mob['player_x'], mob['player_y']
-                    mob_inp = random.choice('ad') if random.random() < 0.1 else ''
+                    mob_inp = 'ad'[px - x < 0] if random.random() < 0.1 else ''
                     dx, dy, _ = player.get_pos_delta(mob_inp, server.map_, px, py, None, None)
                     px, py = px + dx, py + dy
 
@@ -196,6 +195,9 @@ def game(server, settings):
 
                     if px not in range(*edges) or py not in range(*edges_y):
                         mobs.remove(mob)
+
+                    if px == x and py == y:
+                        alive = False
 
                 last_move += move_period
 
