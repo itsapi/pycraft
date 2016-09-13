@@ -88,7 +88,6 @@ def setdown():
 
 
 def game(server, settings):
-    x, y = server.pos
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -126,6 +125,7 @@ def game(server, settings):
     # Game loop
     with NonBlockingInput() as nbi:
         while server.game:
+            x, y = server.pos
             dt = server.dt()
             frame_start = time()
 
@@ -149,7 +149,6 @@ def game(server, settings):
 
             # Pause game
             if ' ' in inp or '\n' in inp:
-                # server.pos = x, y
                 server.redraw = True
                 redraw_all = True
                 if ui.pause(server, settings) == 'exit':
