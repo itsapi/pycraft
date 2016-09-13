@@ -302,7 +302,7 @@ def game(server, settings):
                 entities = list(server.current_players.values()) + list(server.mobs.values())
 
                 objects = player.assemble_players(
-                    entities], x, y, int(width / 2), edges
+                    entities, x, y, int(width / 2), edges
                 )
 
                 if not cursor_hidden:
