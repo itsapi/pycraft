@@ -12,33 +12,17 @@ CRAFT_TITLE = 'Crafting'
 HAND_STRENGTH = 20
 
 
-def get_pos_delta(inp, map_, x, y, jump, flight):
-
-    left_slice = map_[x - 1]
+def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
     player_slice = map_[x]
-    right_slice = map_[x + 1]
 
     feet_y = y
     head_y = y - 1
     below_y = y + 1
     above_y = y - 2
 
-    dy = 0
-    dx = 0
+    dx = -1 * ('a' in inp) + 1 * ('d' in inp)
 
-    # Calculate change in x pos for left and right movement
-    for test_char, dir_, next_slice in (('a', -1, left_slice), ('d', 1, right_slice)):
-        if ( test_char in inp
-             and not is_solid( next_slice[head_y] )):
-
-            if is_solid( next_slice[feet_y] ):
-                if ( not is_solid( next_slice[above_y] )
-                     and not is_solid( player_slice[above_y] )):
-
-                    dy = -1
-                    dx = dir_
-            else:
-                dx = dir_
+    dx, dy = get_pos_delta(dx, x, y, map_)
 
     # Jumps if up pressed, block below, no block above
     if ( 'w' in inp and y > 1
@@ -55,6 +39,32 @@ def get_pos_delta(inp, map_, x, y, jump, flight):
         dy = 1
 
     return dx, dy, jump
+
+
+def get_pos_delta(dx, x, y, map_):
+
+    player_slice = map_[x]
+
+    feet_y = y
+    head_y = y - 1
+    below_y = y + 1
+    above_y = y - 2
+
+    dy = 0
+
+    next_slice = map_[x + dx]
+    checked_dx = 0
+    if not is_solid(next_slice[head_y]):
+        if is_solid( next_slice[feet_y] ):
+            if ( not is_solid( next_slice[above_y] )
+                 and not is_solid( player_slice[above_y] )):
+
+                dy = -1
+                checked_dx = dx
+        else:
+            checked_dx = dx
+
+    return checked_dx, dy
 
 
 def can_place(map_, block_x, block_y, inv_block):
@@ -167,8 +177,8 @@ def assemble_players(players, x, y, offset, edges):
     objects = []
 
     for player in players:
-        player_x = player['player_x']
-        player_y = player['player_y']
+        player_x = player['x']
+        player_y = player['y']
         x_offset = player_x - x + offset
 
         if player_x in range(*edges):

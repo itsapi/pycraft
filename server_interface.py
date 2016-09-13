@@ -22,6 +22,7 @@ class RemoteInterface:
         self.map_ = {}
         self.slice_heights = {}
         self.current_players = {}
+        self.mobs = {}
         self.game = True
         self.error = None
         self._name = name
@@ -71,6 +72,7 @@ class RemoteInterface:
         self._chunks_requested = set()
 
         self._send('get_players')
+        self._send('get_mobs')
         self._send('get_time')
 
         self.redraw = False
@@ -94,6 +96,7 @@ class RemoteInterface:
              'set_chunks': self._event_set_chunks,
              'set_players': self._event_set_players,
              'remove_player': self._event_remove_player,
+             'set_mobs': self._event_set_mobs,
              'set_time': self._event_set_time,
              'logout': self._event_logout,
              'error': self._event_error
@@ -126,6 +129,15 @@ class RemoteInterface:
 
     def _event_remove_player(self, name):
         self.current_players.pop(name)
+        self.redraw = True
+
+    def _event_set_mobs(self, mobs):
+        self.mobs.update(mobs['updated'])
+
+        for mob_id in mobs['removed']:
+            self.mobs.pop(mobs_id)
+
+        # if any_on_screen_mobs_updated:
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -186,12 +198,16 @@ class RemoteInterface:
 
         return self._dt
 
+    def update_mobs(self):
+        # The client does nothing
+        pass
+
     def respawn(self):
         self._send('respawn', [self._name])
 
     @property
     def pos(self):
-        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
+        return self.current_players[self._name]['x'], self.current_players[self._name]['y']
 
     @property
     def inv(self):
@@ -199,7 +215,7 @@ class RemoteInterface:
 
     @pos.setter
     def pos(self, pos):
-        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self.current_players[self._name]['x'], self.current_players[self._name]['y'] = pos
         self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
@@ -240,6 +256,7 @@ class LocalInterface:
          'set_chunks': self._event_view_change,
          'set_players': self._event_set_players,
          'remove_player': self._event_remove_player,
+         'set_mobs': self._event_set_mobs,
          'set_time': self._event_set_time,
          'logout': self._event_logout,
          'error': self._event_error
@@ -257,6 +274,11 @@ class LocalInterface:
     def _event_remove_player(self, name):
         self.current_players.pop(name)
         self.redraw = True
+
+    def _event_set_mobs(self, mobs):
+        # if mobs_on_screen:
+        self.redraw = True
+        pass
 
     def _event_set_time(self, time):
         self.time = time
@@ -307,12 +329,15 @@ class LocalInterface:
         dt, self.time = self._server.local_interface_dt()
         return dt
 
+    def update_mobs(self):
+        self._server.local_interface_update_mobs()
+
     def respawn(self):
         self._send('respawn', [self._name])
 
     @property
     def pos(self):
-        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
+        return self.current_players[self._name]['x'], self.current_players[self._name]['y']
 
     @property
     def inv(self):
@@ -320,7 +345,7 @@ class LocalInterface:
 
     @pos.setter
     def pos(self, pos):
-        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self.current_players[self._name]['x'], self.current_players[self._name]['y'] = pos
         self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
@@ -338,6 +363,10 @@ class LocalInterface:
     @property
     def port(self):
         return self._server.port
+
+    @property
+    def mobs(self):
+        return self._server.local_interface_mobs()
 
     # TODO: do the pause stuff
     def pause(self, paused):

@@ -3,7 +3,7 @@ from math import radians, floor, ceil
 from threading import Thread
 from colours import colour_str, TERM_YELLOW
 
-import terrain, saves, network
+import terrain, saves, network, mobs
 
 from console import log
 from data import timings
@@ -69,6 +69,7 @@ class Server:
             {'get_chunks': self.event_get_chunks,
              'set_player': self.event_set_player,
              'get_players': self.event_get_players,
+             'get_mobs': self.event_get_mobs,
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
              'respawn': self.event_respawn,
@@ -122,6 +123,9 @@ class Server:
     def event_get_players(self):
         return {'event': 'set_players', 'args': [self.game.get_players(self._player_list())]}
 
+    def event_get_mobs(self):
+        return {'event': 'set_mobs', 'args': [self.game.mobs]}
+
     def event_unload_slices(self, edges):
         # TODO: Unload slices outside of edges if not loaded by other players
         pass
@@ -131,7 +135,7 @@ class Server:
 
     def event_respawn(self, name):
         player = self.game.get_player(name)
-        player['player_x'], player['player_y'] = self.game.spawn
+        player['x'], player['y'] = self.game.spawn
         self._update_clients({'event': 'set_players', 'args': [{name: player}]})
 
     # Methods for local interface only:
@@ -168,11 +172,18 @@ class Server:
     def local_interface_slice_heights(self):
         return self.game._slice_heights
 
+    def local_interface_mobs(self):
+        return self.game.mobs
+
     def local_interface_dt(self):
         dt, time = self.game.dt()
         if dt and time % 100 == 0:
             self._update_clients({'event': 'set_time', 'args': [time]})
         return dt, time
+
+    def local_interface_update_mobs(self):
+        updated_mobs, removed_mobs = self.game.update_mobs()
+        self._update_clients({'event': 'set_mobs', 'args': [{'updated': updated_mobs, 'removed': removed_mobs}]})
 
 
 class Game:
@@ -238,6 +249,20 @@ class Game:
     # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
     def unload_slices(self):
         pass
+
+    def unload_mobs(self):
+        pass
+
+    def spawn_mobs(self):
+        pass
+
+    def update_mobs(self):
+        self._meta['mobs'], updated_mobs, removed_mobs = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
+        return updated_mobs, removed_mobs
+
+    @property
+    def mobs(self):
+        return self._meta['mobs']
 
     @property
     def spawn(self):

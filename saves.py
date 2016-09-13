@@ -15,7 +15,8 @@ default_meta = {
     'seed': lambda: hash(random.random()),
     'spawn': 0,
     'tick': timings['tick'],
-    'players': {}
+    'players': {},
+    'mobs': {}
 }
 
 default_global_meta = {}
@@ -33,8 +34,8 @@ default_settings = {
 }
 
 default_player = {
-    'player_x': int(os.getenv('PYCRAFT_START_X') or 0),
-    'player_y': 1,
+    'x': int(os.getenv('PYCRAFT_START_X') or 0),
+    'y': 1,
     'inv': []
 }
 
