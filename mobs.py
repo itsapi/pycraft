@@ -5,6 +5,7 @@ from console import log
 
 mob_limit = 100
 new_mob_id = 0
+mob_rate = 0.1
 
 def update(mobs, players, map_):
     updated_mobs = spawn(mobs, map_)
@@ -13,7 +14,7 @@ def update(mobs, players, map_):
     for mob_id, mob in mobs.items():
         mx, my = mob['x'], mob['y']
 
-        dx = random.randint(-1, 1)
+        dx = random.randint(-1, 1) if random.random() < mob_rate else 0
         if (mx + dx - 1 not in map_.keys() or
                 mx + dx not in map_.keys() or
                 mx + dx + 1 not in map_.keys()):
@@ -39,7 +40,8 @@ def update(mobs, players, map_):
 
 
 def spawn(mobs, map_):
-    n_mobs_to_spawn = random.randint(0, 1)
+    global new_mob_id
+    n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
     for i in range(n_mobs_to_spawn):
@@ -49,10 +51,10 @@ def spawn(mobs, map_):
                 mx = random.choice(list(map_.keys()))
                 my = random.randint(0, len(map_[mx]) - 2)
                 spot_found = (not terrain.is_solid(map_[mx][my]) and
-                              not terrain.is_solid(map_[mx][my - 1]))
+                              not terrain.is_solid(map_[mx][my - 1]) and
+                              terrain.is_solid(map_[mx][my + 1]))
 
-                global new_mob_id
-                new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
-                new_mob_id += 1
+            new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
+            new_mob_id += 1
 
     return new_mobs
