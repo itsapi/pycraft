@@ -89,3 +89,7 @@ Each tier of pickaxe allows you to break more blocks than the previous tier.
 The C renderer is likely to be faster than the Python renderer, but to use it you must compile it first. To do this run the command: `python3 setup.py build` in the root of the repository. Then run the game as normal, and go in to the settings to swich the renderer.
 
 Please report any bugs in the C renderer, or differences between the Python renderer and the C renderer, in the issues.
+
+## Contributing
+
+We welcome pull requests or issues for bug reports/fixes or new feature ideas! Help us make the game more fun :D
