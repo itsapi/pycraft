@@ -79,16 +79,24 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
 
 def obj_pixel(x, y, objects):
+    pixel, colour = None, None
 
     for object_ in objects:
-        if object_['x'] == x and object_['y'] == y:
+        model = object_['model']
+        width = len(model)
+        height = len(model[0])
 
-            # Objects can override their block colour
-            colour = object_.get('colour', blocks[object_['char']]['colours']['fg'])
+        if ((x >= object_['x'] and x < object_['x'] + width) and
+            (y > object_['y'] - height and y <= object_['y'])):
 
-            return object_['char'], colour
+            dx = x - object_['x']
+            dy = (height - 1) - (object_['y'] - y)
 
-    return None, None
+            pixel = model[dx][dy]
+            colour = object_.get('colour', blocks[pixel]['colours']['fg'])
+            break
+
+    return pixel, colour
 
 
 def calc_pixel(x, y, world_x, world_y, world_screen_x, map_, slice_heights, pixel_f, objects, bk_objects, sky_colour, day, lights, fancy_lights):

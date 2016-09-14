@@ -182,23 +182,16 @@ def assemble_players(players, x, y, offset, edges):
         x_offset = player_x - x + offset
 
         if player_x in range(*edges):
-            head = {
-                'x': x_offset,
-                'y': player_y - 1,
-                'char': '*',
-            }
-            feet = {
+            object_ = {
                 'x': x_offset,
                 'y': player_y,
-                'char': '^',
+                'model': ['*^']
             }
 
             if player.get('type') == 'mob':
-                head['colour'] = YELLOW
-                feet['colour'] = YELLOW
+                object_['colour'] = YELLOW
 
-            objects.append(head)
-            objects.append(feet)
+            objects.append(object_)
 
     return objects
 
@@ -207,7 +200,7 @@ def assemble_cursor(x, y, cursor, colour):
     return {
         'x': x + cursor_x[cursor],
         'y': y + cursor_y[cursor],
-        'char': 'X',
+        'model': ['X'],
         'colour': colour
     }
 
