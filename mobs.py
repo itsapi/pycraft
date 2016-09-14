@@ -51,7 +51,8 @@ def spawn(mobs, map_):
                 mx = random.choice(list(map_.keys()))
                 my = random.randint(0, len(map_[mx]) - 2)
                 spot_found = (not terrain.is_solid(map_[mx][my]) and
-                              not terrain.is_solid(map_[mx][my - 1]))
+                              not terrain.is_solid(map_[mx][my - 1]) and
+                              terrain.is_solid(map_[mx][my + 1]))
 
             new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
             new_mob_id += 1
