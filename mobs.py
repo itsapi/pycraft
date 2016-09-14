@@ -5,6 +5,7 @@ from console import log
 
 mob_limit = 100
 new_mob_id = 0
+mob_rate = 0.1
 
 def update(mobs, players, map_):
     updated_mobs = spawn(mobs, map_)
@@ -13,7 +14,7 @@ def update(mobs, players, map_):
     for mob_id, mob in mobs.items():
         mx, my = mob['x'], mob['y']
 
-        dx = random.randint(-1, 1)
+        dx = random.randint(-1, 1) if random.random() < mob_rate else 0
         if (mx + dx - 1 not in map_.keys() or
                 mx + dx not in map_.keys() or
                 mx + dx + 1 not in map_.keys()):
@@ -40,7 +41,7 @@ def update(mobs, players, map_):
 
 def spawn(mobs, map_):
     global new_mob_id
-    n_mobs_to_spawn = random.randint(0, 1)
+    n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
     for i in range(n_mobs_to_spawn):
