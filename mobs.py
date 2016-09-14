@@ -39,6 +39,7 @@ def update(mobs, players, map_):
 
 
 def spawn(mobs, map_):
+    global new_mob_id
     n_mobs_to_spawn = random.randint(0, 1)
     new_mobs = {}
 
@@ -51,8 +52,7 @@ def spawn(mobs, map_):
                 spot_found = (not terrain.is_solid(map_[mx][my]) and
                               not terrain.is_solid(map_[mx][my - 1]))
 
-                global new_mob_id
-                new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
-                new_mob_id += 1
+            new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
+            new_mob_id += 1
 
     return new_mobs
