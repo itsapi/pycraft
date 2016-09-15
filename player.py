@@ -186,14 +186,10 @@ def assemble_entities(entities, x, y, offset, edges):
             ey = entity['y']
 
             if ex in range(*edges):
-                object_ = {
-                    'x': ex - x + offset,
-                    'y': ey,
-                    'model': entity_data['model']
-                }
+                object_ = entity_data.copy()
 
-                if entity_data.get('colour'):
-                    object_['colour'] = entity_data['colour']
+                object_['x'] = ex - x + offset
+                object_['y'] = ey
 
                 objects.append(object_)
 

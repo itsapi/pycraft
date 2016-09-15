@@ -506,14 +506,17 @@ world_gen = {
 
 entities = {
     'player': {
-        'model': ['*^']
+        'model': ['*^'],
+        'heirarchy': 100
     },
     'zombie': {
         'model': ['*^'],
-        'colour': YELLOW
+        'colour': YELLOW,
+        'heirarchy': 50
     },
     'cursor': {
-        'model': ['X']
+        'model': ['X'],
+        'heirarchy': 110
     }
 }
 
