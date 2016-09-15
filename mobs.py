@@ -12,9 +12,14 @@ def update(mobs, players, map_):
     removed_mobs = []
 
     for mob_id, mob in mobs.items():
-        mx, my = mob['x'], mob['y']
+        mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
 
-        dx = random.randint(-1, 1) if random.random() < mob_rate else 0
+        x_vel += random.randint(-100, 100) / 100
+        if abs(x_vel) > 1:
+            x_vel = x_vel / abs(x_vel)
+
+        dx = round(x_vel)
+
         if (mx + dx - 1 not in map_.keys() or
                 mx + dx not in map_.keys() or
                 mx + dx + 1 not in map_.keys()):
@@ -29,6 +34,7 @@ def update(mobs, players, map_):
 
             mob['x'] = mx
             mob['y'] = my
+            mob['x_vel'] = x_vel
 
             updated_mobs[mob_id] = mob
 
@@ -54,7 +60,12 @@ def spawn(mobs, map_):
                               not terrain.is_solid(map_[mx][my - 1]) and
                               terrain.is_solid(map_[mx][my + 1]))
 
-            new_mobs[new_mob_id] = {'x': mx, 'y': my, 'type': 'mob'}
+            new_mobs[new_mob_id] = {
+                'x': mx,
+                'y': my,
+                'x_vel': 0,
+                'type': 'mob'
+            }
             new_mob_id += 1
 
     return new_mobs
