@@ -504,6 +504,20 @@ world_gen = {
 }
 
 
+entities = {
+    'player': {
+        'model': ['*^']
+    },
+    'zombie': {
+        'model': ['*^'],
+        'colour': YELLOW
+    },
+    'cursor': {
+        'model': ['X']
+    }
+}
+
+
 timings = {}
 
 timings['day_length'] = 10 * 60

@@ -299,9 +299,12 @@ def game(server, settings):
             if server.redraw:
                 server.redraw = False
 
-                entities = list(server.current_players.values()) + list(server.mobs.values())
+                entities = {
+                    'player': list(server.current_players.values()),
+                    'zombie': list(server.mobs.values())
+                }
 
-                objects = player.assemble_players(
+                objects = player.assemble_entities(
                     entities, x, y, int(width / 2), edges
                 )
 

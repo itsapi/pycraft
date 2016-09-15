@@ -2,6 +2,8 @@ from colours import *
 from render import blocks
 from terrain import is_solid, world_gen
 
+import data
+
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
@@ -173,36 +175,39 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     return colour
 
 
-def assemble_players(players, x, y, offset, edges):
+def assemble_entities(entities, x, y, offset, edges):
     objects = []
 
-    for player in players:
-        player_x = player['x']
-        player_y = player['y']
-        x_offset = player_x - x + offset
+    for entity_type, entities_of_type in entities.items():
+        entity_data = data.entities[entity_type]
 
-        if player_x in range(*edges):
-            object_ = {
-                'x': x_offset,
-                'y': player_y,
-                'model': ['*^']
-            }
+        for entity in entities_of_type:
+            ex = entity['x']
+            ey = entity['y']
 
-            if player.get('type') == 'mob':
-                object_['colour'] = YELLOW
+            if ex in range(*edges):
+                object_ = {
+                    'x': ex - x + offset,
+                    'y': ey,
+                    'model': entity_data['model']
+                }
 
-            objects.append(object_)
+                if entity_data.get('colour'):
+                    object_['colour'] = entity_data['colour']
+
+                objects.append(object_)
 
     return objects
 
 
 def assemble_cursor(x, y, cursor, colour):
-    return {
-        'x': x + cursor_x[cursor],
-        'y': y + cursor_y[cursor],
-        'model': ['X'],
-        'colour': colour
-    }
+    object_ = data.entities['cursor'].copy()
+
+    object_['x'] = x + cursor_x[cursor]
+    object_['y'] = y + cursor_y[cursor]
+    object_['colour'] = colour
+
+    return object_
 
 
 def get_crafting(inv, crafting_list, crafting_sel, reset=False):
