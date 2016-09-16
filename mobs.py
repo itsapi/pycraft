@@ -53,12 +53,15 @@ def spawn(mobs, map_):
     for i in range(n_mobs_to_spawn):
         if len(mobs) + len(new_mobs) < mob_limit:
             spot_found = False
-            while not spot_found:
+            max_attempts = 100
+            attempts = 0
+            while not spot_found and attempts < max_attempts:
                 mx = random.choice(list(map_.keys()))
                 my = random.randint(0, len(map_[mx]) - 2)
                 spot_found = (not terrain.is_solid(map_[mx][my]) and
                               not terrain.is_solid(map_[mx][my - 1]) and
                               terrain.is_solid(map_[mx][my + 1]))
+                attempts += 1
 
             new_mobs[new_mob_id] = {
                 'x': mx,
