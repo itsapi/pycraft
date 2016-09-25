@@ -250,12 +250,6 @@ class Game:
     def unload_slices(self):
         pass
 
-    def unload_mobs(self):
-        pass
-
-    def spawn_mobs(self):
-        pass
-
     def update_mobs(self):
         self._meta['mobs'], updated_mobs, removed_mobs = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
         return updated_mobs, removed_mobs
