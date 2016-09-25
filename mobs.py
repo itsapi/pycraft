@@ -13,8 +13,9 @@ def update(mobs, players, map_):
 
     for mob_id, mob in mobs.items():
         mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
+        closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
 
-        x_vel += random.randint(-100, 100) / 100
+        x_vel += (closest_player['x'] - mx) / 100
         if abs(x_vel) > 1:
             x_vel = x_vel / abs(x_vel)
 
