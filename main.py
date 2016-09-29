@@ -177,8 +177,8 @@ def game(server, settings):
                 server.update_mobs()
 
                 # Kill player if collides with a mob
-                # if any(m['x'] == x and m['y'] == y for m in server.mobs.values()):
-                #     alive = False
+                if any(m['x'] == x and m['y'] == y for m in server.mobs.values()):
+                    alive = False
 
                 last_move += move_period
 
