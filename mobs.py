@@ -43,7 +43,7 @@ def update(mobs, players, map_):
         mobs.pop(mob_id)
 
     mobs.update(updated_mobs)
-    return mobs, updated_mobs, removed_mobs
+    return mobs
 
 
 def spawn(mobs, map_):

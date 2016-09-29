@@ -94,7 +94,7 @@ def game(server, settings):
     dpos = False
     dinv = False  # Inventory
     dcraft = False  # Crafting
-    FPS = 30  # Max
+    FPS = 15  # Max
     MPS = 15  # Movement
 
     old_bk_objects = None
@@ -155,7 +155,7 @@ def game(server, settings):
 
             # Update player position
             move_period = 1 / MPS
-            while frame_start >= move_period + last_move:
+            while frame_start >= move_period + last_move and x in server.map_:
 
                 dx, dy, jump = player.get_pos_delta_on_input(
                     inp, server.map_, x, y, jump, settings.get('flight'))

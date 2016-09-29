@@ -132,12 +132,7 @@ class RemoteInterface:
         self.redraw = True
 
     def _event_set_mobs(self, mobs):
-        self.mobs.update(mobs['updated'])
-
-        for mob_id in mobs['removed']:
-            self.mobs.pop(mobs_id)
-
-        # if any_on_screen_mobs_updated:
+        self.mobs = mobs
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -182,7 +177,7 @@ class RemoteInterface:
         self.slice_heights = {x: h for x, h in self.slice_heights.items() if x in range(*edges)}
 
         # TODO: Figure out if we always need to send this...
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])
@@ -276,9 +271,7 @@ class LocalInterface:
         self.redraw = True
 
     def _event_set_mobs(self, mobs):
-        # if mobs_on_screen:
         self.redraw = True
-        pass
 
     def _event_set_time(self, time):
         self.time = time
@@ -307,7 +300,7 @@ class LocalInterface:
     def unload_slices(self, edges):
         edges = [chunk_size * floor(edges[0] / chunk_size),
                  chunk_size * ceil(edges[1] / chunk_size)]
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])
