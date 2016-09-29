@@ -276,7 +276,10 @@ def sky(x, y, world_x, map_, slice_heights, bk_objects, sky_colour, lights, fanc
     """ Returns the sky colour. """
 
     for obj in bk_objects:
-        if obj['x'] in range(x, x+obj['width']) and obj['y'] in range(y, y+obj['height']):
+        if (obj['x'] in range(x, x+obj['width']) and
+            obj['y'] in range(y, y+obj['height']) and
+            (world_gen['height'] - y) > slice_heights[world_x + x]):
+
             return obj['colour']
 
     return get_light_colour(x, y, world_x, map_, slice_heights, lights, sky_colour, fancy_lights)

@@ -299,7 +299,8 @@ sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObje
         long o_height= PyLong_AsLong(PyDict_GetItemString(object, "height"));
 
         if (x <= ox && ox < (x + o_width) &&
-            y <= oy && oy < (y + o_height))
+            y <= oy && oy < (y + o_height) &&
+            (world_gen_height - y) > PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x))))
         {
             result = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
             break;
