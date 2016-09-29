@@ -182,7 +182,7 @@ class RemoteInterface:
         self.slice_heights = {x: h for x, h in self.slice_heights.items() if x in range(*edges)}
 
         # TODO: Figure out if we always need to send this...
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])
@@ -307,7 +307,7 @@ class LocalInterface:
     def unload_slices(self, edges):
         edges = [chunk_size * floor(edges[0] / chunk_size),
                  chunk_size * ceil(edges[1] / chunk_size)]
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])

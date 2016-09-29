@@ -126,9 +126,11 @@ class Server:
     def event_get_mobs(self):
         return {'event': 'set_mobs', 'args': [self.game.mobs]}
 
-    def event_unload_slices(self, edges):
-        # TODO: Unload slices outside of edges if not loaded by other players
-        pass
+    def event_unload_slices(self, name, edges):
+        player = self.game.get_player(name)
+        player['edges'] = edges
+        self.game.set_player(name, player)
+        self.game.reload_slices()
 
     def event_get_time(self):
         return {'event': 'set_time', 'args': [self.game.time]}
@@ -246,9 +248,12 @@ class Game:
 
         return self._dt, self.time
 
-    # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
-    def unload_slices(self):
-        pass
+    def reload_slices(self):
+        new_map = {}
+        for x, slice_ in self._map.items():
+            if any(x in range(*player['edges']) for player in self._meta['players'].values() if player.get('edges')):
+                new_map[x] = slice_
+        self._map = new_map
 
     def unload_mobs(self):
         pass
