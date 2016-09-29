@@ -184,8 +184,8 @@ class Server:
         return dt, time
 
     def local_interface_update_mobs(self):
-        updated_mobs, removed_mobs = self.game.update_mobs()
-        self._update_clients({'event': 'set_mobs', 'args': [{'updated': updated_mobs, 'removed': removed_mobs}]})
+        self.game.update_mobs()
+        self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
 
 
 class Game:
@@ -255,15 +255,8 @@ class Game:
                 new_map[x] = slice_
         self._map = new_map
 
-    def unload_mobs(self):
-        pass
-
-    def spawn_mobs(self):
-        pass
-
     def update_mobs(self):
-        self._meta['mobs'], updated_mobs, removed_mobs = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
-        return updated_mobs, removed_mobs
+        self._meta['mobs'] = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
 
     @property
     def mobs(self):

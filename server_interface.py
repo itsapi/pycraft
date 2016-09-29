@@ -132,12 +132,7 @@ class RemoteInterface:
         self.redraw = True
 
     def _event_set_mobs(self, mobs):
-        self.mobs.update(mobs['updated'])
-
-        for mob_id in mobs['removed']:
-            self.mobs.pop(mobs_id)
-
-        # if any_on_screen_mobs_updated:
+        self.mobs = mobs
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -276,9 +271,7 @@ class LocalInterface:
         self.redraw = True
 
     def _event_set_mobs(self, mobs):
-        # if mobs_on_screen:
         self.redraw = True
-        pass
 
     def _event_set_time(self, time):
         self.time = time

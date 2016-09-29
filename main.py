@@ -155,7 +155,7 @@ def game(server, settings):
 
             # Update player position
             move_period = 1 / MPS
-            while frame_start >= move_period + last_move:
+            while frame_start >= move_period + last_move and x in server.map_:
 
                 dx, dy, jump = player.get_pos_delta_on_input(
                     inp, server.map_, x, y, jump, settings.get('flight'))
