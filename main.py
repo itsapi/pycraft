@@ -373,10 +373,13 @@ def game(server, settings):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
+                health = 'Health: {}/{}'.format(round(server.health), player.MAX_PLAYER_HEALTH)
+
                 out += render.render_grids(
                     [
                         [inv_grid, crafting_grid],
-                        [[label]]
+                        [[label]],
+                        [[health]]
                     ],
                     width, height
                 )
