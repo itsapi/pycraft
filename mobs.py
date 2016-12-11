@@ -32,7 +32,7 @@ def update(mobs, players, map_):
         mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
         closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
 
-        closest_player_dist = closest_player['x'] - mx
+        closest_player_dist = abs(closest_player['x'] - mx)
 
         t = time()
         if closest_player_dist < attack_radius and\
