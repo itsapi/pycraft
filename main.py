@@ -180,7 +180,7 @@ def game(server, settings):
                 server.update_mobs()
 
                 if server.health <= 0:
-                    server.respawn()
+                    alive = False
 
                 last_move += move_period
 
