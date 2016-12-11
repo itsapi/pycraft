@@ -66,7 +66,7 @@ def setup():
     profile = c.getenv_b('PYCRAFT_PROFILE')
 
     # For internal PDB debugging
-    debug = c.getenv_b('PYCRAFT_DEBUG')
+    debug = c.getenv_b('PYCRAFT_PDB')
 
     # For externally connecting GDB
     with open('.pid', 'w') as f:
