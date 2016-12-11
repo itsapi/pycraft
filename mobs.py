@@ -1,49 +1,77 @@
 import random
-import player, terrain
+
+from math import sqrt
+from time import time
+
 from console import log
+
+import player, terrain
 
 
 mob_limit = 100
 new_mob_id = 0
 mob_rate = 0.1
 
+max_mob_health = 10
+attack_strength = 10
+attack_radius = 5
+mob_attack_rate = 1
+
+
 def update(mobs, players, map_):
+    updated_players = {}
     updated_mobs = spawn(mobs, map_)
     removed_mobs = []
 
     for mob_id, mob in mobs.items():
+
+        if mob['health'] <= 0:
+            removed_mobs.append(mob_id)
+            break
+
         mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
         closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
 
-        x_vel += (closest_player['x'] - mx) / 100
-        if abs(x_vel) > 1:
-            x_vel = x_vel / abs(x_vel)
+        closest_player_dist = closest_player['x'] - mx
 
-        dx = round(x_vel)
-
-        if (mx + dx - 1 not in map_.keys() or
-                mx + dx not in map_.keys() or
-                mx + dx + 1 not in map_.keys()):
-            removed_mobs.append(mob_id)
+        t = time()
+        if closest_player_dist < attack_radius and\
+                mob['last_attack'] + (1/mob_attack_rate) <= t:
+            updated_players.update(calculate_mob_attack(mx, my, attack_radius, attack_strength, players))
+            mob['last_attack'] = t
 
         else:
-            dx, dy = player.get_pos_delta(dx, mx, my, map_)
-            mx, my = mx + dx, my + dy
 
-            if not terrain.is_solid(map_[mx][my + 1]):
-                my += 1
+            x_vel += closest_player_dist / 100
+            if abs(x_vel) > 1:
+                x_vel = x_vel / abs(x_vel)
 
-            mob['x'] = mx
-            mob['y'] = my
-            mob['x_vel'] = x_vel
+            dx = round(x_vel)
 
-            updated_mobs[mob_id] = mob
+            if (mx + dx - 1 not in map_.keys() or
+                    mx + dx not in map_.keys() or
+                    mx + dx + 1 not in map_.keys()):
+                removed_mobs.append(mob_id)
+
+            else:
+                dx, dy = player.get_pos_delta(dx, mx, my, map_)
+                mx, my = mx + dx, my + dy
+
+                if not terrain.is_solid(map_[mx][my + 1]):
+                    my += 1
+
+                mob['x'] = mx
+                mob['y'] = my
+                mob['x_vel'] = x_vel
+
+                updated_mobs[mob_id] = mob
 
     for mob_id in removed_mobs:
         mobs.pop(mob_id)
 
     mobs.update(updated_mobs)
-    return mobs
+
+    return updated_players
 
 
 def spawn(mobs, map_):
@@ -68,8 +96,52 @@ def spawn(mobs, map_):
                 'x': mx,
                 'y': my,
                 'x_vel': 0,
-                'type': 'mob'
+                'health': max_mob_health,
+                'type': 'mob',
+                'last_attack': 0
             }
             new_mob_id += 1
 
     return new_mobs
+
+
+def calculate_attack(entity, ax, ay, radius, strength):
+    dist_from_attack_sq = (ax - entity['x'])**2 + (ay - entity['y'])**2
+    success = False
+
+    if dist_from_attack_sq <= radius**2:
+        dist_from_attack = sqrt(dist_from_attack_sq)
+
+        affected_strength = (1 - (dist_from_attack / radius)) * strength
+        log(dist_from_attack, affected_strength, m='mobs')
+
+        entity['health'] -= affected_strength
+
+        success = True
+    return success
+
+
+def calculate_player_attack(name, ax, ay, radius, strength, players, mobs):
+    updated_players = {}
+    updated_mobs = {}
+
+    for test_name, player in players.items():
+        if not name == test_name:
+            if calculate_attack(player, ax, ay, radius, strength):
+                updated_players[test_name] = player
+
+    for mob_id, mob in mobs.items():
+        if calculate_attack(mob, ax, ay, radius, strength):
+            updated_mobs[mob_id] = mob
+
+    return updated_players, updated_mobs
+
+
+def calculate_mob_attack(ax, ay, radius, strength, players):
+    updated_players = {}
+
+    for test_name, player in players.items():
+        if calculate_attack(player, ax, ay, radius, strength):
+            updated_players[test_name] = player
+
+    return updated_players

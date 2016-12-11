@@ -7,6 +7,7 @@ import terrain, saves, network, mobs
 
 from console import log
 from data import timings
+from player import MAX_PLAYER_HEALTH
 
 
 def _log_event(event, args):
@@ -72,6 +73,7 @@ class Server:
              'get_mobs': self.event_get_mobs,
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
+             'player_attack': self.event_player_attack,
              'respawn': self.event_respawn,
              'logout': lambda: self.event_logout(sock),
              'login': lambda name: self.event_login(name, sock),
@@ -138,7 +140,13 @@ class Server:
     def event_respawn(self, name):
         player = self.game.get_player(name)
         player['x'], player['y'] = self.game.spawn
+        player['health'] = MAX_PLAYER_HEALTH
         self._update_clients({'event': 'set_players', 'args': [{name: player}]})
+
+    def event_player_attack(self, name, x, y, radius, strength):
+        updated_players, updated_mobs = self.game.player_attack(name, x, y, radius, strength)
+        self._update_clients({'event': 'set_players', 'args': [updated_players]})
+        self._update_clients({'event': 'set_mobs', 'args': [updated_mobs]})
 
     # Methods for local interface only:
 
@@ -184,8 +192,9 @@ class Server:
         return dt, time
 
     def local_interface_update_mobs(self):
-        self.game.update_mobs()
+        updated_players = self.game.update_mobs()
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
+        self._update_clients({'event': 'set_players', 'args': [updated_players]})
 
 
 class Game:
@@ -255,8 +264,12 @@ class Game:
                 new_map[x] = slice_
         self._map = new_map
 
+    def player_attack(self, name, ax, ay, radius, strength):
+        return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
+
     def update_mobs(self):
-        self._meta['mobs'] = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
+        updated_players = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
+        return updated_players
 
     @property
     def mobs(self):

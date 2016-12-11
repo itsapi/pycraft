@@ -197,6 +197,10 @@ class RemoteInterface:
         # The client does nothing
         pass
 
+    def player_attack(self, raduis, strength):
+        x, y = self.pos
+        self._send('player_attack', [self._name, x, y, raduis, strength])
+
     def respawn(self):
         self._send('respawn', [self._name])
 
@@ -207,6 +211,10 @@ class RemoteInterface:
     @property
     def inv(self):
         return self.current_players[self._name]['inv']
+
+    @property
+    def health(self):
+        return self.current_players[self._name]['health']
 
     @pos.setter
     def pos(self, pos):
@@ -325,6 +333,10 @@ class LocalInterface:
     def update_mobs(self):
         self._server.local_interface_update_mobs()
 
+    def player_attack(self, radius, strength):
+        x, y = self.pos
+        self._send('player_attack', [self._name, x, y, radius, strength])
+
     def respawn(self):
         self._send('respawn', [self._name])
 
@@ -344,6 +356,10 @@ class LocalInterface:
     @inv.setter
     def inv(self, inv):
         self.current_players[self._name]['inv'] = inv
+
+    @property
+    def health(self):
+        return self.current_players[self._name]['health']
 
     @property
     def map_(self):

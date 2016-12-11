@@ -137,7 +137,7 @@ def game(server, settings):
                 if char:
                     char = str(char).lower()
 
-                    if char in 'wasdkjliuoc-=\n ':
+                    if char in 'wasdkjliuoc-=\n# ':
                         inp.append(char)
 
             # Hard pause
@@ -174,11 +174,13 @@ def game(server, settings):
                             y += 1
                             dpos = True
 
+                if '#' in inp:
+                    server.player_attack(5, 10)
+
                 server.update_mobs()
 
-                # Kill player if collides with a mob
-                if any(m['x'] == x and m['y'] == y for m in server.mobs.values()):
-                    alive = False
+                if server.health <= 0:
+                    server.respawn()
 
                 last_move += move_period
 

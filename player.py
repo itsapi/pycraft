@@ -12,6 +12,7 @@ INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
 HAND_STRENGTH = 20
+MAX_PLAYER_HEALTH = 10
 
 
 def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
