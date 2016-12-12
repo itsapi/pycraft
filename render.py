@@ -22,7 +22,7 @@ def circle_dist(test_x, test_y, x, y, r):
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame, redraw_all):
     """
         Prints out a frame of the game.
 
@@ -43,6 +43,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
     diff = ''
     this_frame = {}
+
+    if redraw_all:
+        last_frame = {}
 
     for world_x, column in map_.items():
         if world_x in range(*edges):

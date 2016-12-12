@@ -313,38 +313,23 @@ def game(server, settings):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                out = ''
-                if settings.get('render_c'):
-                    render_c.render_map(
-                        server.map_,
-                        server.slice_heights,
-                        edges,
-                        edges_y,
-                        objects,
-                        bk_objects,
-                        sky_colour,
-                        day,
-                        lights,
-                        settings,
-                        redraw_all
-                    )
-                else:
-                    if redraw_all:
-                        last_frame = {}
+                render_map = render_c.render_map if settings.get('render_c') else render.render_map
 
-                    out, last_frame = render.render_map(
-                        server.map_,
-                        server.slice_heights,
-                        edges,
-                        edges_y,
-                        objects,
-                        bk_objects,
-                        sky_colour,
-                        day,
-                        lights,
-                        settings,
-                        last_frame
-                    )
+                out, last_frame = render_map(
+                    server.map_,
+                    server.slice_heights,
+                    edges,
+                    edges_y,
+                    objects,
+                    bk_objects,
+                    sky_colour,
+                    day,
+                    lights,
+                    settings,
+                    last_frame,
+                    redraw_all
+                )
+
                 redraw_all = False
 
                 crafting_grid = render.render_grid(
