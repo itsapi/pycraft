@@ -521,20 +521,20 @@ world_gen = {
 entities = {
     'player': {
         'model': ['*^'],
-        'heirarchy': 100
+        'hierarchy': 100
     },
     'zombie': {
         'model': ['*^'],
         'colour': YELLOW,
-        'heirarchy': 50
+        'hierarchy': 50
     },
     'cursor': {
         'model': ['X'],
-        'heirarchy': 110
+        'hierarchy': 110
     },
     'meat': {
         'model': ['&'],
-        'heirarchy': 45
+        'hierarchy': 45
     }
 }
 

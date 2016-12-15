@@ -79,11 +79,11 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
 
 def obj_pixel(x, y, objects):
-    current_pixel_heirarchy = 0
+    current_pixel_hierarchy = 0
     pixel, colour = None, None
 
     for object_ in objects:
-        if object_['heirarchy'] > current_pixel_heirarchy:
+        if object_['hierarchy'] > current_pixel_hierarchy:
             model = object_['model']
             width = len(model)
             height = len(model[0])
@@ -97,7 +97,7 @@ def obj_pixel(x, y, objects):
                 pixel = model[dx][dy]
                 colour = object_.get('colour', blocks[pixel]['colours']['fg'])
 
-                current_pixel_heirarchy = object_['heirarchy']
+                current_pixel_hierarchy = object_['hierarchy']
 
     return pixel, colour
 
