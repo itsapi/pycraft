@@ -177,7 +177,7 @@ def game(server, settings):
                 if '#' in inp:
                     server.player_attack(5, 10)
 
-                server.despawn_items()
+                server.update_items()
                 server.update_mobs()
 
                 if server.health <= 0:

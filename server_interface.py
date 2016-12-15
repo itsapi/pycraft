@@ -366,8 +366,8 @@ class LocalInterface:
     def update_mobs(self):
         self._server.local_interface_update_mobs()
 
-    def despawn_items(self):
-        self._server.local_interface_despawn_items()
+    def update_items(self):
+        self._server.local_interface_update_items()
 
     def player_attack(self, radius, strength):
         x, y = self.pos

@@ -201,8 +201,8 @@ class Server:
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
         self._update_clients({'event': 'add_items', 'args': [new_items]})
 
-    def local_interface_despawn_items(self):
-        removed_items = self.game.despawn_items()
+    def local_interface_update_items(self):
+        removed_items = self.game.update_items()
         self._update_clients({'event': 'remove_items', 'args': [removed_items]})
 
     def local_interface_items(self):
@@ -284,8 +284,9 @@ class Game:
         self._meta['items'].update(new_items)
         return updated_players, new_items
 
-    def despawn_items(self):
-        removed_items = items.despawn_items(self._meta['items'], self._last_tick)
+    def update_items(self):
+        removed_items = items.pickup_items(self._meta['items'], self._meta['players'])
+        removed_items += items.despawn_items(self._meta['items'], self._last_tick)
         return removed_items
 
     @property
