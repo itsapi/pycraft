@@ -1,4 +1,4 @@
-import cProfile, pdb, os
+import cProfile, pdb, os, sys, glob
 
 from time import time, sleep
 from math import radians
@@ -73,6 +73,22 @@ def setup():
 
 def setdown():
     print(SHOW_CUR + CLS)
+
+
+def render_c_imported():
+    imported = True
+
+    try:
+        import render_c
+    except ImportError:
+        sys.path += glob.glob('build/lib.*')
+        try:
+            import render_c
+        except ImportError:
+            log('Cannot import C renderer: disabling option.', m='warning')
+            imported = False
+
+    return imported
 
 
 def game(server, settings):

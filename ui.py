@@ -1,10 +1,9 @@
-import sys, glob
-
 from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
 from colours import *
 from console import *
 from data import help_data
+from main import render_c_imported
 
 import saves
 
@@ -244,22 +243,6 @@ def set_setting(settings, setting, value):
             settings[setting] = new
 
         print(CLS, end='')
-
-
-def render_c_imported():
-    imported = True
-
-    try:
-        import render_c
-    except ImportError:
-        sys.path += glob.glob('build/lib.*')
-        try:
-            import render_c
-        except ImportError:
-            log('Cannot import C renderer: disabling option.', m='warning')
-            imported = False
-
-    return imported
 
 
 def edit_settings(settings):
