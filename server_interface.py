@@ -23,6 +23,7 @@ class RemoteInterface:
         self.slice_heights = {}
         self.current_players = {}
         self.mobs = {}
+        self.items = {}
         self.game = True
         self.error = None
         self._name = name
@@ -73,6 +74,7 @@ class RemoteInterface:
 
         self._send('get_players')
         self._send('get_mobs')
+        self._send('get_items')
         self._send('get_time')
 
         self.redraw = False
@@ -97,6 +99,9 @@ class RemoteInterface:
              'set_players': self._event_set_players,
              'remove_player': self._event_remove_player,
              'set_mobs': self._event_set_mobs,
+             'set_items': self._event_set_items,
+             'add_items': self._event_add_items,
+             'remove_items': self._event_remove_items,
              'set_time': self._event_set_time,
              'logout': self._event_logout,
              'error': self._event_error
@@ -133,6 +138,18 @@ class RemoteInterface:
 
     def _event_set_mobs(self, mobs):
         self.mobs = mobs
+        self.redraw = True
+
+    def _event_set_items(self, items):
+        self.items = items
+        self.redraw = True
+
+    def _event_add_items(self, new_items):
+        self.items.update(new_items)
+        self.redraw = True
+
+    def _event_remove_items(self, removed_items):
+        self.items = {id_: item for id_, item in self.items.items() if id_ not in removed_items}
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -194,6 +211,10 @@ class RemoteInterface:
         return self._dt
 
     def update_mobs(self):
+        # The client does nothing
+        pass
+
+    def despawn_items(self):
         # The client does nothing
         pass
 
@@ -260,6 +281,9 @@ class LocalInterface:
          'set_players': self._event_set_players,
          'remove_player': self._event_remove_player,
          'set_mobs': self._event_set_mobs,
+         'set_items': self._event_set_items,
+         'add_items': self._event_add_items,
+         'remove_items': self._event_remove_items,
          'set_time': self._event_set_time,
          'logout': self._event_logout,
          'error': self._event_error
@@ -279,6 +303,15 @@ class LocalInterface:
         self.redraw = True
 
     def _event_set_mobs(self, mobs):
+        self.redraw = True
+
+    def _event_set_items(self, items):
+        self.redraw = True
+
+    def _event_add_items(self, new_items):
+        self.redraw = True
+
+    def _event_remove_items(self, remove_items):
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -333,6 +366,9 @@ class LocalInterface:
     def update_mobs(self):
         self._server.local_interface_update_mobs()
 
+    def despawn_items(self):
+        self._server.local_interface_despawn_items()
+
     def player_attack(self, radius, strength):
         x, y = self.pos
         self._send('player_attack', [self._name, x, y, radius, strength])
@@ -376,6 +412,10 @@ class LocalInterface:
     @property
     def mobs(self):
         return self._server.local_interface_mobs()
+
+    @property
+    def items(self):
+        return self._server.local_interface_items()
 
     # TODO: do the pause stuff
     def pause(self, paused):

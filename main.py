@@ -177,6 +177,7 @@ def game(server, settings):
                 if '#' in inp:
                     server.player_attack(5, 10)
 
+                server.despawn_items()
                 server.update_mobs()
 
                 if server.health <= 0:
@@ -309,6 +310,12 @@ def game(server, settings):
                     'player': list(server.current_players.values()),
                     'zombie': list(server.mobs.values())
                 }
+
+                for item in server.items.values():
+                    try:
+                        entities[item['type']].append(item)
+                    except KeyError:
+                        entities[item['type']] = [item]
 
                 objects = player.assemble_entities(
                     entities, x, y, int(width / 2), edges

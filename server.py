@@ -1,10 +1,10 @@
 from time import time
 from math import radians, floor, ceil
 from threading import Thread
+
+import terrain, saves, network, mobs, items
+
 from colours import colour_str, TERM_YELLOW
-
-import terrain, saves, network, mobs
-
 from console import log
 from data import timings
 from player import MAX_PLAYER_HEALTH
@@ -71,6 +71,7 @@ class Server:
              'set_player': self.event_set_player,
              'get_players': self.event_get_players,
              'get_mobs': self.event_get_mobs,
+             'get_items': self.event_get_items,
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
              'player_attack': self.event_player_attack,
@@ -127,6 +128,9 @@ class Server:
 
     def event_get_mobs(self):
         return {'event': 'set_mobs', 'args': [self.game.mobs]}
+
+    def event_get_items(self):
+        return {'event': 'add_items', 'args': [self.game.items]}
 
     def event_unload_slices(self, name, edges):
         player = self.game.get_player(name)
@@ -192,9 +196,17 @@ class Server:
         return dt, time
 
     def local_interface_update_mobs(self):
-        updated_players = self.game.update_mobs()
-        self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
+        updated_players, new_items = self.game.update_mobs()
         self._update_clients({'event': 'set_players', 'args': [updated_players]})
+        self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
+        self._update_clients({'event': 'add_items', 'args': [new_items]})
+
+    def local_interface_despawn_items(self):
+        removed_items = self.game.despawn_items()
+        self._update_clients({'event': 'remove_items', 'args': [removed_items]})
+
+    def local_interface_items(self):
+        return self.game.items
 
 
 class Game:
@@ -268,12 +280,21 @@ class Game:
         return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
 
     def update_mobs(self):
-        updated_players = mobs.update(self._meta['mobs'], self._meta['players'], self._map)
-        return updated_players
+        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick)
+        self._meta['items'].update(new_items)
+        return updated_players, new_items
+
+    def despawn_items(self):
+        removed_items = items.despawn_items(self._meta['items'], self._last_tick)
+        return removed_items
 
     @property
     def mobs(self):
         return self._meta['mobs']
+
+    @property
+    def items(self):
+        return self._meta['items']
 
     @property
     def spawn(self):

@@ -1,11 +1,10 @@
 import random
 
 from math import sqrt
-from time import time
 
 from console import log
 
-import player, terrain
+import player, terrain, items
 
 
 mob_limit = 100
@@ -13,65 +12,69 @@ new_mob_id = 0
 mob_rate = 0.1
 
 max_mob_health = 10
-attack_strength = 10
-attack_radius = 5
+attack_strength = 3
+attack_radius = 4
 mob_attack_rate = 1
 
+meat_time_to_live = 10
 
-def update(mobs, players, map_):
+
+def update(mobs, players, map_, last_tick):
     updated_players = {}
     updated_mobs = spawn(mobs, map_)
     removed_mobs = []
+    new_items = {}
 
     for mob_id, mob in mobs.items():
+        mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
 
         if mob['health'] <= 0:
             removed_mobs.append(mob_id)
-            break
-
-        mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
-        closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
-
-        closest_player_dist = closest_player['x'] - mx
-
-        t = time()
-        if abs(closest_player_dist) < attack_radius and\
-                mob['last_attack'] + (1/mob_attack_rate) <= t:
-            updated_players.update(calculate_mob_attack(mx, my, attack_radius, attack_strength, players))
-            mob['last_attack'] = t
+            new_items.update(items.new_item(mx, my, 'meat', last_tick))
 
         else:
 
-            x_vel += closest_player_dist / 100
-            if abs(x_vel) > 1:
-                x_vel = x_vel / abs(x_vel)
+            closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
 
-            dx = round(x_vel)
+            closest_player_dist = closest_player['x'] - mx
 
-            if (mx + dx - 1 not in map_.keys() or
-                    mx + dx not in map_.keys() or
-                    mx + dx + 1 not in map_.keys()):
-                removed_mobs.append(mob_id)
+            if abs(closest_player_dist) < attack_radius and \
+                    mob['last_attack'] + (1/mob_attack_rate) <= last_tick:
+                updated_players.update(calculate_mob_attack(mx, my, attack_radius, attack_strength, players))
+                mob['last_attack'] = last_tick
 
             else:
-                dx, dy = player.get_pos_delta(dx, mx, my, map_)
-                mx, my = mx + dx, my + dy
 
-                if not terrain.is_solid(map_[mx][my + 1]):
-                    my += 1
+                x_vel += closest_player_dist / 100
+                if abs(x_vel) > 1:
+                    x_vel = x_vel / abs(x_vel)
 
-                mob['x'] = mx
-                mob['y'] = my
-                mob['x_vel'] = x_vel
+                dx = round(x_vel)
 
-                updated_mobs[mob_id] = mob
+                if (mx + dx - 1 not in map_.keys() or
+                        mx + dx not in map_.keys() or
+                        mx + dx + 1 not in map_.keys()):
+                    removed_mobs.append(mob_id)
+
+                else:
+                    dx, dy = player.get_pos_delta(dx, mx, my, map_)
+                    mx, my = mx + dx, my + dy
+
+                    if not terrain.is_solid(map_[mx][my + 1]):
+                        my += 1
+
+                    mob['x'] = mx
+                    mob['y'] = my
+                    mob['x_vel'] = x_vel
+
+                    updated_mobs[mob_id] = mob
 
     for mob_id in removed_mobs:
         mobs.pop(mob_id)
 
     mobs.update(updated_mobs)
 
-    return updated_players
+    return updated_players, new_items
 
 
 def spawn(mobs, map_):

@@ -231,7 +231,19 @@ blocks = {
             '|': 2,
             ':': 1,
             'x': 6
-        }
+        },
+    },
+    '&': {
+        'char': '&',
+        'name': 'Meat',
+        'colours': {
+            'fg': (2/3, 1/3, 1/9),
+            'bg': None,
+            'style': None
+        },
+        'solid': False,
+        'breakable': False,
+        'hierarchy': 50
     },
     '*': {
         'char': '*',
@@ -517,6 +529,10 @@ entities = {
     'cursor': {
         'model': ['X'],
         'heirarchy': 110
+    },
+    'meat': {
+        'model': ['&'],
+        'heirarchy': 45
     }
 }
 

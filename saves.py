@@ -17,7 +17,8 @@ default_meta = {
     'spawn': 0,
     'tick': timings['tick'],
     'players': {},
-    'mobs': {}
+    'mobs': {},
+    'items': {}
 }
 
 default_global_meta = {}
