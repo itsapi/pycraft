@@ -12,22 +12,10 @@ from nbinput import NonBlockingInput
 import saves, ui, terrain, player, render, server_interface, data
 
 
-def setup_render_c(settings):
-    global render_c
-
-    import sys, glob
-    if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
-
-    try: import render_c
-    except ImportError: settings['render_c'] = False
-
-
 def main():
     settings = None
     try:
         meta, settings, profile, debug, name, port = setup()
-
-        setup_render_c(settings)
 
         while True:
             data = ui.main(meta, settings)

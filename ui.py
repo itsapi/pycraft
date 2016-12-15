@@ -1,9 +1,12 @@
+import sys, glob
+
 from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
 from colours import *
+from console import *
+from data import help_data
 
 import saves
-from data import help_data
 
 
 back = ('Back...', lambda: False)
@@ -242,15 +245,37 @@ def set_setting(settings, setting, value):
 
         print(CLS, end='')
 
-    saves.save_settings(settings)
+
+def render_c_imported():
+    imported = True
+
+    try:
+        import render_c
+    except ImportError:
+        sys.path += glob.glob('build/lib.*')
+        try:
+            import render_c
+        except ImportError:
+            log('Cannot import C renderer: disabling option.', m='warning')
+            imported = False
+
+    return imported
 
 
 def edit_settings(settings):
-    return loop_menu('Settings', lambda: (
+    result = loop_menu('Settings', lambda: (
         [('{}: {}'.format(title_case(setting), value),
           lambda_gen(set_setting, settings, setting, value)) for setting, value in settings.items()] +
         [back])
     )
+
+    if settings['render_c'] == True:
+        if not render_c_imported():
+            settings['render_c'] = False
+
+    saves.save_settings(settings)
+
+    return result
 
 
 def delete_server(meta):
