@@ -137,7 +137,7 @@ def game(server, settings):
                 if char:
                     char = str(char).lower()
 
-                    if char in 'wasdkjliuoc-=\n# ':
+                    if char in 'wasdhkjliuoc-=\n ':
                         inp.append(char)
 
             # Hard pause
@@ -174,7 +174,7 @@ def game(server, settings):
                             y += 1
                             dpos = True
 
-                if '#' in inp:
+                if 'h' in inp:
                     server.player_attack(5, 10)
 
                 server.update_items()

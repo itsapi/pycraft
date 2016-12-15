@@ -550,7 +550,8 @@ help_data = [
     ('Movement:', [
         ('Move left', 'A'),
         ('Move right', 'D'),
-        ('Jump', 'W')
+        ('Jump', 'W'),
+        ('Attack', 'H')
      ]),
     ('Blocks:', [
         ('Break/place block', 'K'),
