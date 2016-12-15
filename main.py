@@ -274,10 +274,14 @@ def game(server, settings):
             if dc:
                 cursor_hidden = False
 
-            new_blocks, server.inv, inv_sel, new_events, dinv = \
+            p_hungry = server.health < player.MAX_PLAYER_HEALTH
+
+            new_blocks, server.inv, inv_sel, new_events, dhealth, dinv = \
                 player.cursor_func(
-                    inp, server.map_, x, y, cursor, inv_sel, server.inv
+                    inp, server.map_, x, y, cursor, inv_sel, server.inv, p_hungry
                 )
+
+            server.add_health(dhealth)
 
             if new_blocks:
                 server.set_blocks(new_blocks)

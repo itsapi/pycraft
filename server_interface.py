@@ -5,6 +5,7 @@ from time import time
 from server import Server, log_event_send, log_event_receive, dt
 from console import log
 from data import timings
+from player import MAX_PLAYER_HEALTH
 
 import saves, terrain, network
 
@@ -225,6 +226,12 @@ class RemoteInterface:
     def respawn(self):
         self._send('respawn', [self._name])
 
+    def add_health(self, dhealth):
+        new_health = self.current_players[self._name]['health'] + dhealth
+        self.current_players[self._name]['health'] = min(MAX_PLAYER_HEALTH, new_health)
+
+        self._send('set_player', [self._name, self.current_players[self._name]])
+
     @property
     def pos(self):
         return self.current_players[self._name]['x'], self.current_players[self._name]['y']
@@ -375,6 +382,12 @@ class LocalInterface:
 
     def respawn(self):
         self._send('respawn', [self._name])
+
+    def add_health(self, dhealth):
+        new_health = self.current_players[self._name]['health'] + dhealth
+        self.current_players[self._name]['health'] = min(MAX_PLAYER_HEALTH, new_health)
+
+        self._send('set_player', [self._name, self.current_players[self._name]])
 
     @property
     def pos(self):

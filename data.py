@@ -243,6 +243,8 @@ blocks = {
         },
         'solid': False,
         'breakable': False,
+        'edible': True,
+        'health': 1,
         'hierarchy': 50
     },
     '*': {

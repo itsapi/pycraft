@@ -89,46 +89,60 @@ def can_place(map_, block_x, block_y, inv_block):
     return can_place
 
 
-def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
-    block_x = x + cursor_x[cursor]
-    block_y = y + cursor_y[cursor]
-    block = map_[block_x][block_y]
-    inv_block = inv[inv_sel]['block'] if len(inv) else None
+def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, hungry):
     dinv = False
+    dhealth = 0
     events = []
 
     slices = {}
 
-    if 'k' in inp and block_y >= 0 and block_y < world_gen['height']:
+    inv_block = inv[inv_sel]['block'] if len(inv) else None
 
-        # If pressing k and block is air and can place
-        if (block == ' ' and len(inv) and
-                blocks[inv_block]['breakable'] and
-                can_place(map_, block_x, block_y, inv_block)):
+    if 'k' in inp:
+        if blocks[inv_block].get('edible', False) and hungry:
+            # Eat it!
 
-            # Place block in world from selected inv slot
-            slices[block_x] = {}
-            slices[block_x][block_y] = inv_block
             inv, inv_sel = rem_inv(inv, inv_sel)
+            dhealth += blocks[inv_block]['health']
             dinv = True
 
-            if inv_block == '?':
-                events.append({
-                    'pos': (block_x, block_y),
-                    'time_remaining': 10
-                })
+        else:
+            # Try to place it!
 
-        # If pressing k and block is not air and breakable
-        elif can_inv_tool_break(block, inv, inv_sel):
-
-            # Destroy block
+            block_x = x + cursor_x[cursor]
+            block_y = y + cursor_y[cursor]
             block = map_[block_x][block_y]
-            slices[block_x] = {}
-            slices[block_x][block_y] = ' '
-            inv = add_inv(inv, block)
-            dinv = True
 
-    return slices, inv, inv_sel, events, dinv
+            if block_y >= 0 and block_y < world_gen['height']:
+
+                # If pressing k and block is air and can place
+                if (block == ' ' and len(inv) and
+                        blocks[inv_block]['breakable'] and
+                        can_place(map_, block_x, block_y, inv_block)):
+
+                    # Place block in world from selected inv slot
+                    slices[block_x] = {}
+                    slices[block_x][block_y] = inv_block
+                    inv, inv_sel = rem_inv(inv, inv_sel)
+                    dinv = True
+
+                    if inv_block == '?':
+                        events.append({
+                            'pos': (block_x, block_y),
+                            'time_remaining': 10
+                        })
+
+                # If pressing k and block is not air and breakable
+                elif can_inv_tool_break(block, inv, inv_sel):
+
+                    # Destroy block
+                    block = map_[block_x][block_y]
+                    slices[block_x] = {}
+                    slices[block_x][block_y] = ' '
+                    inv = add_inv(inv, block)
+                    dinv = True
+
+    return slices, inv, inv_sel, events, dhealth, dinv
 
 
 def move_cursor(inp):
