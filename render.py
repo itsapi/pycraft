@@ -44,6 +44,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
     diff = ''
     this_frame = {}
 
+    objects = list(filter(lambda o: (o['x'] >= 0 and o['x'] <= (edges[1] - edges[0])) and
+                                    (o['y'] >= edges_y[0] and o['y'] <= edges_y[1]), objects))
+
     for world_x, column in map_.items():
         if world_x in range(*edges):
 
@@ -82,22 +85,23 @@ def obj_pixel(x, y, objects):
     current_pixel_hierarchy = 0
     pixel, colour = None, None
 
-    for object_ in objects:
-        if object_['hierarchy'] > current_pixel_hierarchy:
-            model = object_['model']
-            width = len(model)
-            height = len(model[0])
+    objects = filter(lambda o: (x >= o['x']                      and x <  o['x'] + len(o['model'])) and
+                               (y >  o['y'] - len(o['model'][0]) and y <= o['y']                  ), objects)
 
-            if ((x >= object_['x'] and x < object_['x'] + width) and
-                (y > object_['y'] - height and y <= object_['y'])):
+    object_ = max(objects, key=lambda o: o['hierarchy'], default=None)
 
-                dx = x - object_['x']
-                dy = (height - 1) - (object_['y'] - y)
+    if object_:
+        model = object_['model']
+        width = len(model)
+        height = len(model[0])
 
-                pixel = model[dx][dy]
-                colour = object_.get('colour', blocks[pixel]['colours']['fg'])
+        dx = x - object_['x']
+        dy = (height - 1) - (object_['y'] - y)
 
-                current_pixel_hierarchy = object_['hierarchy']
+        pixel = model[dx][dy]
+        colour = object_.get('colour', blocks[pixel]['colours']['fg'])
+
+        current_pixel_hierarchy = object_['hierarchy']
 
     return pixel, colour
 
