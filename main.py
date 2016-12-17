@@ -302,6 +302,11 @@ def game(server, settings):
 
             # Respawn player if dead
             if not alive:
+                if ui.respawn() == 'exit':
+                    server.logout()
+                    continue
+                server.redraw = True
+                redraw_all = True
                 alive = True
                 server.respawn()
 
