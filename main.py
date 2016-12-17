@@ -31,12 +31,13 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
+                render_c = import_render_c(settings)
                 if profile:
-                    cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, render_c)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings)', globals(), locals())
+                    pdb.run('game(server_obj, settings, render_c)', globals(), locals())
                 else:
-                    game(server_obj, settings)
+                    game(server_obj, settings, render_c)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -75,23 +76,22 @@ def setdown():
     print(SHOW_CUR + CLS)
 
 
-def render_c_imported():
-    imported = True
+def import_render_c(settings):
+    render_c = None
 
+    sys.path += glob.glob('build/lib.*')
     try:
         import render_c
     except ImportError:
-        sys.path += glob.glob('build/lib.*')
-        try:
-            import render_c
-        except ImportError:
-            log('Cannot import C renderer: disabling option.', m='warning')
-            imported = False
+        log('Cannot import C renderer: disabling option.', m='warning')
+        settings['render_c'] = False
 
-    return imported
+    saves.save_settings(settings)
+
+    return render_c
 
 
-def game(server, settings):
+def game(server, settings, render_c):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -158,6 +158,7 @@ def game(server, settings):
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
+                render_c = import_render_c(settings)
 
             # Update player position
             move_period = 1 / MPS

@@ -3,7 +3,6 @@ from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
 from colours import *
 from console import *
 from data import help_data
-from main import render_c_imported
 
 import saves
 
@@ -251,12 +250,6 @@ def edit_settings(settings):
           lambda_gen(set_setting, settings, setting, value)) for setting, value in settings.items()] +
         [back])
     )
-
-    if settings['render_c'] == True:
-        if not render_c_imported():
-            settings['render_c'] = False
-
-    saves.save_settings(settings)
 
     return result
 
