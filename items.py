@@ -44,7 +44,7 @@ def pickup_items(items, players):
                 picked_up_items.append(id_)
 
                 for block in item['blocks']:
-                    add_inv(player['inv'], block)
+                    add_inv(player['inv'], block['block'], n=block['num'])
 
                 break
 

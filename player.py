@@ -99,7 +99,7 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, hungry):
     inv_block = inv[inv_sel]['block'] if len(inv) else None
 
     if 'k' in inp:
-        if blocks[inv_block].get('edible', False) and hungry:
+        if inv_block is not None and blocks[inv_block].get('edible', False) and hungry:
             # Eat it!
 
             inv, inv_sel = rem_inv(inv, inv_sel)

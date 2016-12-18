@@ -143,8 +143,13 @@ class Server:
 
     def event_respawn(self, name):
         player = self.game.get_player(name)
+
+        self.game._meta['items'].update(
+            items.new_item(player['x'], player['y'], player['inv'], self.game._last_tick))
+        player['inv'] = []
         player['x'], player['y'] = self.game.spawn
         player['health'] = MAX_PLAYER_HEALTH
+
         self._update_clients({'event': 'set_players', 'args': [{name: player}]})
 
     def event_player_attack(self, name, x, y, radius, strength):

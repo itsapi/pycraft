@@ -30,7 +30,7 @@ def update(mobs, players, map_, last_tick):
 
         if mob['health'] <= 0:
             removed_mobs.append(mob_id)
-            new_items.update(items.new_item(mx, my, ['&'], last_tick))
+            new_items.update(items.new_item(mx, my, [{'block': '&', 'num': 1}], last_tick))
 
         else:
 
