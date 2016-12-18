@@ -190,18 +190,18 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     return colour
 
 
-def assemble_entities(entities, x, y, offset, edges):
+def entities_to_render_objects(entities, x, offset, edges):
     objects = []
 
     for entity_type, entities_of_type in entities.items():
-        entity_data = data.entities[entity_type]
+        render_object_data = data.render_objects[entity_type]
 
         for entity in entities_of_type:
             ex = entity['x']
             ey = entity['y']
 
             if ex in range(*edges):
-                object_ = entity_data.copy()
+                object_ = render_object_data.copy()
 
                 object_['x'] = ex - x + offset
                 object_['y'] = ey
@@ -212,7 +212,7 @@ def assemble_entities(entities, x, y, offset, edges):
 
 
 def assemble_cursor(x, y, cursor, colour):
-    object_ = data.entities['cursor'].copy()
+    object_ = data.render_objects['cursor'].copy()
 
     object_['x'] = x + cursor_x[cursor]
     object_['y'] = y + cursor_y[cursor]

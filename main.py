@@ -7,6 +7,7 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
+from items import items_to_render_objects
 
 import saves, ui, terrain, player, render, server_interface, data
 
@@ -320,15 +321,11 @@ def game(server, settings):
                     'zombie': list(server.mobs.values())
                 }
 
-                for item in server.items.values():
-                    try:
-                        entities[item['type']].append(item)
-                    except KeyError:
-                        entities[item['type']] = [item]
-
-                objects = player.assemble_entities(
-                    entities, x, y, int(width / 2), edges
+                objects = player.entities_to_render_objects(
+                    entities, x, int(width / 2), edges
                 )
+
+                objects += items_to_render_objects(server.items, x, int(width / 2))
 
                 if not cursor_hidden:
                     cursor_colour = player.cursor_colour(

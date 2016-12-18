@@ -2,24 +2,18 @@ from player import add_inv
 
 from uuid import uuid4
 
+import data
 
-ttls = {
-    'meat': 10
-}
-
-items_to_blocks = {
-    'meat': '&'
-}
+item_ttl = 10
 
 
-def new_item(x, y, type_, t):
+def new_item(x, y, blocks, t):
     return {
         str(uuid4()): {
             'x': x,
             'y': y,
-            'type': type_,
-            't0': t,
-            'ttl': ttls[type_]
+            'blocks': blocks,
+            't0': t
         }
     }
 
@@ -28,7 +22,7 @@ def despawn_items(items, last_tick):
     removed_items = []
 
     for id_, item in items.items():
-        if item['t0'] + item['ttl'] <= last_tick:
+        if item['t0'] + item_ttl <= last_tick:
             removed_items.append(id_)
 
     for id_ in removed_items:
@@ -48,7 +42,9 @@ def pickup_items(items, players):
 
             if ix == px and iy in [py, py-1]:
                 picked_up_items.append(id_)
-                add_inv(player['inv'], items_to_blocks[item['type']])
+
+                for block in item['blocks']:
+                    add_inv(player['inv'], block)
 
                 break
 
@@ -56,3 +52,17 @@ def pickup_items(items, players):
         del items[id_]
 
     return picked_up_items
+
+
+def items_to_render_objects(items, x, offset):
+    objects = []
+
+    for item in items.values():
+        object_ = data.render_objects['items'].copy()
+
+        object_['x'] = item['x'] - x + offset
+        object_['y'] = item['y']
+
+        objects.append(object_)
+
+    return objects

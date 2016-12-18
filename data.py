@@ -233,6 +233,18 @@ blocks = {
             'x': 6
         },
     },
+    '%': {
+        'char': '•%',
+        'name': 'Item box',
+        'colours': {
+            'fg': (2/3, 1/3, 1/9),
+            'bg': None,
+            'style': None
+        },
+        'solid': False,
+        'breakable': False,
+        'hierarchy': 50
+    },
     '&': {
         'char': '&',
         'name': 'Meat',
@@ -518,7 +530,7 @@ world_gen = {
 }
 
 
-entities = {
+render_objects = {
     'player': {
         'model': ['*^'],
         'hierarchy': 100
@@ -532,8 +544,8 @@ entities = {
         'model': ['X'],
         'hierarchy': 110
     },
-    'meat': {
-        'model': ['&'],
+    'items': {
+        'model': ['%'],
         'hierarchy': 45
     }
 }
