@@ -145,7 +145,7 @@ class Server:
         player = self.game.get_player(name)
 
         self.game._meta['items'].update(
-            items.new_item(player['x'], player['y'], player['inv'], self.game._last_tick))
+            items.new_item(player['x'], player['y'], player['inv'], self.game._last_tick, ttl=5*60))
         player['inv'] = []
         player['x'], player['y'] = self.game.spawn
         player['health'] = MAX_PLAYER_HEALTH

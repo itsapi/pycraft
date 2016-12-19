@@ -7,13 +7,14 @@ import data
 item_ttl = 10
 
 
-def new_item(x, y, blocks, t):
+def new_item(x, y, blocks, t, ttl=item_ttl):
     return {
         str(uuid4()): {
             'x': x,
             'y': y,
             'blocks': blocks,
-            't0': t
+            't0': t,
+            'ttl': ttl
         }
     }
 
@@ -22,7 +23,7 @@ def despawn_items(items, last_tick):
     removed_items = []
 
     for id_, item in items.items():
-        if item['t0'] + item_ttl <= last_tick:
+        if item['t0'] + item['ttl'] <= last_tick:
             removed_items.append(id_)
 
     for id_ in removed_items:
