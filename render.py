@@ -82,7 +82,6 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
 
 def obj_pixel(x, y, objects):
-    current_pixel_hierarchy = 0
     pixel, colour = None, None
 
     objects = filter(lambda o: (x >= o['x']                      and x <  o['x'] + len(o['model'])) and
@@ -100,8 +99,6 @@ def obj_pixel(x, y, objects):
 
         pixel = model[dx][dy]
         colour = object_.get('colour', blocks[pixel]['colours']['fg'])
-
-        current_pixel_hierarchy = object_['hierarchy']
 
     return pixel, colour
 

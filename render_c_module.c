@@ -357,26 +357,44 @@ get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour
     PyObject *iter = PyObject_GetIter(objects);
     PyObject *object;
 
+    long current_pixel_hierarchy = 0;
+
     while ((object = PyIter_Next(iter)))
     {
-        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
-        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
+        long o_hierarchy = PyLong_AsLong(PyDict_GetItemString(object, "hierarchy"));
 
-        if (ox == x && oy == y)
+        if (o_hierarchy > current_pixel_hierarchy)
         {
-            wchar_t c = PyString_AsChar(PyDict_GetItemString(object, "char"));
-            Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+            long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
+            long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
 
-            if (rgb.r == -1)
+            PyObject *model = PyDict_GetItemString(object, "model");
+            long width = PySequence_Length(model);
+            long height = PySequence_Length(PySequence_GetItem(model, 0));
+
+            if ((x >= ox && x < ox + width) &&
+                (y > oy - height && y <= oy))
             {
-                rgb = get_block_data(c)->colours.fg;
-            }
+                long dx = x - ox;
+                long dy = (height - 1) - (oy - y);
 
-            *obj_key_result = c;
-            *obj_colour_result = rgb;
-            return;
+                wchar_t c = PyString_AsChar(PySequence_GetItem(PySequence_GetItem(model, dx), dy));
+                Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+
+                if (rgb.r == -1)
+                {
+                    rgb = get_block_data(c)->colours.fg;
+                }
+
+                current_pixel_hierarchy = o_hierarchy;
+
+                *obj_key_result = c;
+                *obj_colour_result = rgb;
+            }
         }
     }
+
+    return;
 }
 
 

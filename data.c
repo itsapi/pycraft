@@ -22,6 +22,22 @@ static BlockData stone_block_data = {
     .solid = true,
 };
 
+static BlockData item_box_block_data = {
+    .character = L'•',
+    .colours.fg = (Colour){{0.6666666666666666, 0.3333333333333333, 0.1111111111111111}},
+    .colours.bg.r = -1,
+    .colours.style = -1,
+    .solid = false,
+};
+
+static BlockData meat_block_data = {
+    .character = L'&',
+    .colours.fg = (Colour){{0.6666666666666666, 0.3333333333333333, 0.1111111111111111}},
+    .colours.bg.r = -1,
+    .colours.style = -1,
+    .solid = false,
+};
+
 static BlockData player_head_block_data = {
     .character = L'*',
     .colours.fg = (Colour){{1, 1, 1}},
@@ -207,6 +223,12 @@ get_block_data(char block_key)
             break;
         case '#':
             result = &stone_block_data;
+            break;
+        case '%':
+            result = &item_box_block_data;
+            break;
+        case '&':
+            result = &meat_block_data;
             break;
         case '*':
             result = &player_head_block_data;
