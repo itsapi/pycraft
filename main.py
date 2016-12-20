@@ -1,4 +1,4 @@
-import cProfile, pdb, os, sys, glob
+import cProfile, pdb, os, sys, glob, timeit
 
 from time import time, sleep
 from math import radians
@@ -15,7 +15,7 @@ import saves, ui, terrain, player, render, server_interface, data
 def main():
     settings = None
     try:
-        meta, settings, profile, debug, name, port = setup()
+        meta, settings, profile, debug, benchmarks, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -33,11 +33,11 @@ def main():
             if not server_obj.error:
                 render_c = import_render_c(settings)
                 if profile:
-                    cProfile.runctx('game(server_obj, settings, render_c)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, render_c, benchmarks)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings, render_c)', globals(), locals())
+                    pdb.run('game(server_obj, settings, render_c, benchmarks)', globals(), locals())
                 else:
-                    game(server_obj, settings, render_c)
+                    game(server_obj, settings, render_c, benchmarks)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -55,6 +55,18 @@ def setup():
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
 
+    benchmarks = c.getenv_b('PYCRAFT_BENCHMARKS')
+    if benchmarks:
+        # Monkey patch so timeit returns function result as well as time.
+        timeit.template = """def inner(_it, _timer{init}):
+                                 {setup}
+                                 _t0 = _timer()
+                                 for _i in _it:
+                                     retval = {stmt}
+                                 _t1 = _timer()
+                                 return _t1 - _t0, retval
+                             """
+
     # For internal PDB debugging
     debug = c.getenv_b('PYCRAFT_DEBUG')
 
@@ -69,7 +81,7 @@ def setup():
     saves.check_map_dir()
 
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, debug, name, port
+    return meta, settings, profile, debug, benchmarks, name, port
 
 
 def setdown():
@@ -91,7 +103,7 @@ def import_render_c(settings):
     return render_c
 
 
-def game(server, settings, render_c):
+def game(server, settings, render_c, benchmarks):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -318,8 +330,7 @@ def game(server, settings, render_c):
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 render_map = render_c.render_map if settings.get('render_c') else render.render_map
-
-                out = render_map(
+                render_args = [
                     server.map_,
                     server.slice_heights,
                     edges,
@@ -331,7 +342,17 @@ def game(server, settings, render_c):
                     lights,
                     settings,
                     redraw_all
-                ) or ''
+                ]
+
+                if benchmarks:
+                    timer = timeit.Timer(lambda: render_map(*render_args))
+                    t, out = timer.timeit(1)
+                    log('Render call time = {}'.format(t), m="benchmarks")
+                else:
+                    out = render_map(*render_args)
+
+                if out is None:
+                    out = ''
 
                 redraw_all = False
 
