@@ -105,7 +105,6 @@ def game(server, settings, render_c):
     old_bk_objects = None
     old_edges = None
     redraw_all = True
-    last_frame = {}
     last_out = time()
     last_move = time()
     inp = None
@@ -320,7 +319,7 @@ def game(server, settings, render_c):
 
                 render_map = render_c.render_map if settings.get('render_c') else render.render_map
 
-                out, last_frame = render_map(
+                out = render_map(
                     server.map_,
                     server.slice_heights,
                     edges,
@@ -331,9 +330,8 @@ def game(server, settings, render_c):
                     day,
                     lights,
                     settings,
-                    last_frame,
                     redraw_all
-                )
+                ) or ''
 
                 redraw_all = False
 

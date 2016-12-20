@@ -20,9 +20,10 @@ def circle_dist(test_x, test_y, x, y, r):
 
 
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
+last_frame = {}
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame, redraw_all):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, redraw_all):
     """
         Prints out a frame of the game.
 
@@ -40,6 +41,8 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
         - last_frame: dictionary of all blocks displayed in the last frame
         - settings: the settings dictionary
     """
+
+    global last_frame
 
     diff = ''
     this_frame = {}
@@ -78,7 +81,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                             # Doesn't exist
                             diff += POS_STR(x, y, pixel)
 
-    return diff, this_frame
+    last_frame = this_frame
+
+    return diff
 
 
 def obj_pixel(x, y, objects):
