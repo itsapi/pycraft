@@ -351,47 +351,42 @@ printable_char_eq(PrintableChar *a, PrintableChar *b)
 }
 
 
-void
-get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour *obj_colour_result)
+int
+objects_hash_func(long x, long y)
 {
-    PyObject *iter = PyObject_GetIter(objects);
-    PyObject *object;
+    int result = (((x + y) * (x + y + 1) / 2) + y) % OBJECTS_MAP_SIZE;
+    return result;
+}
 
+
+static int frame_id = 1;
+
+
+void
+get_obj_pixel(long x, long y, ObjectsMap *objects_map, Object *result)
+{
     long current_pixel_hierarchy = 0;
+    Object *object = NULL;
 
-    while ((object = PyIter_Next(iter)))
+    int map_hash = objects_hash_func(x, y);
+    Object *test_obj = objects_map->objects + map_hash;
+
+    do
     {
-        long o_hierarchy = PyLong_AsLong(PyDict_GetItemString(object, "hierarchy"));
-
-        if (o_hierarchy > current_pixel_hierarchy)
+        if (test_obj->from_frame == frame_id &&
+            test_obj->hierarchy > current_pixel_hierarchy &&
+            x == test_obj->x && y == test_obj->y)
         {
-            long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
-            long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
-
-            PyObject *model = PyDict_GetItemString(object, "model");
-            long width = PySequence_Length(model);
-            long height = PySequence_Length(PySequence_GetItem(model, 0));
-
-            if ((x >= ox && x < ox + width) &&
-                (y > oy - height && y <= oy))
-            {
-                long dx = x - ox;
-                long dy = (height - 1) - (oy - y);
-
-                wchar_t c = PyString_AsChar(PySequence_GetItem(PySequence_GetItem(model, dx), dy));
-                Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
-
-                if (rgb.r == -1)
-                {
-                    rgb = get_block_data(c)->colours.fg;
-                }
-
-                current_pixel_hierarchy = o_hierarchy;
-
-                *obj_key_result = c;
-                *obj_colour_result = rgb;
-            }
+            current_pixel_hierarchy = test_obj->hierarchy;
+            object = test_obj;
         }
+        test_obj = test_obj->next;
+    }
+    while (test_obj != NULL);
+
+    if (object != NULL)
+    {
+        *result = *object;
     }
 
     return;
@@ -400,7 +395,7 @@ get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour
 
 void
 calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
-           PyObject *map, PyObject *slice_heights, wchar_t pixel_f_key, PyObject *objects, PyObject *bk_objects,
+           PyObject *map, PyObject *slice_heights, wchar_t pixel_f_key, ObjectsMap *objects_map, PyObject *bk_objects,
            Colour *sky_colour, float day, PyObject *lights, Settings *settings, PrintableChar *result)
 {
     result->bg.r = -1;
@@ -418,14 +413,13 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     }
 
     // Get any object
-    wchar_t obj_key = 0;
-    Colour obj_colour;
-    get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
+    Object object = {.key = 0};
+    get_obj_pixel(x, world_y, objects_map, &object);
 
-    if (obj_key != 0)
+    if (object.key != 0)
     {
-        result->character = obj_key;
-        result->fg = obj_colour;
+        result->character = object.key;
+        result->fg = object.rgb;
     }
     else
     {
@@ -438,6 +432,67 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
     }
 
     result->style = pixel_f->colours.style;
+}
+
+
+void
+filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long right_edge, long top_edge, long bottom_edge)
+{
+    ++frame_id;
+
+    static Object zero_obj = {0};
+
+    PyObject *iter = PyObject_GetIter(objects);
+    PyObject *object;
+
+    while ((object = PyIter_Next(iter)))
+    {
+        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
+        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
+
+        PyObject *model = PyDict_GetItemString(object, "model");
+        long width = PySequence_Length(model);
+        long height = PySequence_Length(PySequence_GetItem(model, 0));
+
+        for (int dx = 0; dx < width; ++dx)
+        {
+            for (int dy = 0; dy < height; ++dy)
+            {
+                long mx = ox + dx;
+                long my = oy - dy;
+
+                if ((mx >= 0 && mx <= (right_edge - left_edge)) &&
+                    (my >= top_edge && my <= bottom_edge))
+                {
+
+                    int map_hash = objects_hash_func(mx, my);
+                    Object *map_obj = objects_map->objects + map_hash;
+
+                    while (map_obj->from_frame == frame_id)
+                    {
+                        if (map_obj->next == NULL)
+                        {
+                            map_obj->next = (Object *)malloc(sizeof(Object));
+                            *(map_obj->next) = zero_obj;
+                        }
+                        map_obj = map_obj->next;
+                    }
+
+                    map_obj->from_frame = frame_id;
+                    map_obj->x = mx;
+                    map_obj->y = my;
+                    map_obj->hierarchy = PyLong_AsLong(PyDict_GetItemString(object, "hierarchy"));
+
+                    map_obj->key = PyString_AsChar(PySequence_GetItem(PySequence_GetItem(model, dx), height - 1 - dy));
+                    map_obj->rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+                    if (map_obj->rgb.r == -1)
+                    {
+                        map_obj->rgb = get_block_data(map_obj->key)->colours.fg;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -516,6 +571,8 @@ static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
+    static ObjectsMap objects_map = {0};
+
     long left_edge,
          right_edge,
          top_edge,
@@ -549,6 +606,8 @@ render_map(PyObject *self, PyObject *args)
         PyErr_SetString(C_RENDERER_EXCEPTION, "Map is not a dict!");
         return NULL;
     }
+
+    filter_objects(objects, &objects_map, left_edge, right_edge, top_edge, bottom_edge);
 
     Py_ssize_t i = 0;
     PyObject *world_x, *column;
@@ -586,7 +645,7 @@ render_map(PyObject *self, PyObject *args)
 
                 PrintableChar printable_char;
                 calc_pixel(x, y, world_x_l, world_y_l, left_edge,
-                    map, slice_heights, pixel, objects, bk_objects,
+                    map, slice_heights, pixel, &objects_map, bk_objects,
                     &sky_colour, day, lights, &settings, &printable_char);
 
                 if (settings.terminal_output > 0)

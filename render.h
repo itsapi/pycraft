@@ -55,3 +55,27 @@ typedef struct
     } colours;
     bool solid;
 } BlockData;
+
+
+typedef struct Object
+{
+    int from_frame;
+
+    long x;
+    long y;
+    long hierarchy;
+    wchar_t key;
+    Colour rgb;
+    PyObject *model;
+
+    struct Object *next;
+} Object;
+
+
+#define OBJECTS_MAP_SIZE 512
+
+typedef struct
+{
+    Object objects[OBJECTS_MAP_SIZE];
+} ObjectsMap;
+
