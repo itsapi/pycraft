@@ -67,6 +67,18 @@ def setup():
                                  return _t1 - _t0, retval
                              """
 
+        def _template_func(setup, func):
+            def inner(_it, _timer, _func=func):
+                setup()
+                _t0 = _timer()
+                for _i in _it:
+                    retval = _func()
+                _t1 = _timer()
+                return _t1 - _t0, retval
+            return inner
+
+        timeit._template_func = _template_func
+
     # For internal PDB debugging
     debug = c.getenv_b('PYCRAFT_DEBUG')
 
