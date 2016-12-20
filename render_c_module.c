@@ -454,9 +454,10 @@ filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long 
         long width = PySequence_Length(model);
         long height = PySequence_Length(PySequence_GetItem(model, 0));
 
-        for (int dx = 0; dx < width; ++dx)
+        int dx, dy;
+        for (dx = 0; dx < width; ++dx)
         {
-            for (int dy = 0; dy < height; ++dy)
+            for (dy = 0; dy < height; ++dy)
             {
                 long mx = ox + dx;
                 long my = oy - dy;
@@ -571,7 +572,7 @@ static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
-    static ObjectsMap objects_map = {0};
+    static ObjectsMap objects_map;
 
     long left_edge,
          right_edge,
