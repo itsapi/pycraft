@@ -1,7 +1,8 @@
-import cProfile, pdb, os, random
+import cProfile, pdb, timeit, os, sys, glob
 
 from time import time, sleep
 from math import radians
+from random import random
 
 import console as c
 from colours import init_colours
@@ -12,22 +13,10 @@ from items import items_to_render_objects
 import saves, ui, terrain, player, render, server_interface, data
 
 
-def setup_render_c(settings):
-    global render_c
-
-    import sys, glob
-    if len(glob.glob('build/lib.*')): sys.path.append(glob.glob('build/lib.*')[0])
-
-    try: import render_c
-    except ImportError: settings['render_c'] = False
-
-
 def main():
     settings = None
     try:
-        meta, settings, profile, debug, name, port = setup()
-
-        setup_render_c(settings)
+        meta, settings, profile, debug, benchmarks, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -43,12 +32,13 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
+                render_c = import_render_c(settings)
                 if profile:
-                    cProfile.runctx('game(server_obj, settings)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, render_c, benchmarks)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings)', globals(), locals())
+                    pdb.run('game(server_obj, settings, render_c, benchmarks)', globals(), locals())
                 else:
-                    game(server_obj, settings)
+                    game(server_obj, settings, render_c, benchmarks)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -66,6 +56,18 @@ def setup():
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
 
+    benchmarks = c.getenv_b('PYCRAFT_BENCHMARKS')
+    if benchmarks:
+        # Monkey patch so timeit returns function result as well as time.
+        timeit.template = """def inner(_it, _timer{init}):
+                                 {setup}
+                                 _t0 = _timer()
+                                 for _i in _it:
+                                     retval = {stmt}
+                                 _t1 = _timer()
+                                 return _t1 - _t0, retval
+                             """
+
     # For internal PDB debugging
     debug = c.getenv_b('PYCRAFT_PDB')
 
@@ -80,14 +82,29 @@ def setup():
     saves.check_map_dir()
 
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, debug, name, port
+    return meta, settings, profile, debug, benchmarks, name, port
 
 
 def setdown():
     print(SHOW_CUR + CLS)
 
 
-def game(server, settings):
+def import_render_c(settings):
+    render_c = None
+
+    sys.path += glob.glob('build/lib.*')
+    try:
+        import render_c
+    except ImportError:
+        log('Cannot import C renderer: disabling option.', m='warning')
+        settings['render_c'] = False
+
+    saves.save_settings(settings)
+
+    return render_c
+
+
+def game(server, settings, render_c, benchmarks):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -101,7 +118,6 @@ def game(server, settings):
     old_bk_objects = None
     old_edges = None
     redraw_all = True
-    last_frame = {}
     last_move = time()
     inp = None
     jump = 0
@@ -153,6 +169,7 @@ def game(server, settings):
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
+                render_c = import_render_c(settings)
 
             # Update player position
             move_period = 1 / MPS
@@ -338,38 +355,31 @@ def game(server, settings):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                out = ''
-                if settings.get('render_c'):
-                    render_c.render_map(
-                        server.map_,
-                        server.slice_heights,
-                        edges,
-                        edges_y,
-                        objects,
-                        bk_objects,
-                        sky_colour,
-                        day,
-                        lights,
-                        settings,
-                        redraw_all
-                    )
-                else:
-                    if redraw_all:
-                        last_frame = {}
+                render_map = render_c.render_map if settings.get('render_c') else render.render_map
+                render_args = [
+                    server.map_,
+                    server.slice_heights,
+                    edges,
+                    edges_y,
+                    objects,
+                    bk_objects,
+                    sky_colour,
+                    day,
+                    lights,
+                    settings,
+                    redraw_all
+                ]
 
-                    out, last_frame = render.render_map(
-                        server.map_,
-                        server.slice_heights,
-                        edges,
-                        edges_y,
-                        objects,
-                        bk_objects,
-                        sky_colour,
-                        day,
-                        lights,
-                        settings,
-                        last_frame
-                    )
+                if benchmarks:
+                    timer = timeit.Timer(lambda: render_map(*render_args))
+                    t, out = timer.timeit(1)
+                    log('Render call time = {}'.format(t), m="benchmarks")
+                else:
+                    out = render_map(*render_args)
+
+                if out is None:
+                    out = ''
+
                 redraw_all = False
 
                 crafting_grid = render.render_grid(
@@ -424,7 +434,7 @@ def process_events(events, map_):
                             player.can_strength_break(map_[tx][ty], blast_strength)):
 
                         if not render.in_circle(tx, ty, ex, ey, radius - 1):
-                            if random.random() < .5:
+                            if random() < .5:
                                 new_blocks[tx][ty] = ' '
                         else:
                             new_blocks[tx][ty] = ' '

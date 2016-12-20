@@ -20,29 +20,37 @@ def circle_dist(test_x, test_y, x, y, r):
 
 
 lit = lambda x, y, p: min(circle_dist(x, y, p['x'], p['y'], p['radius']), 1)
+last_frame = {}
 
 
-def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, last_frame):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, redraw_all):
     """
         Prints out a frame of the game.
 
         Takes:
-        - map_: a 2D list of blocks.
-        - edges: the range to display
+        - map_: a dictionary of slices (list of blocks) for each x pos
+        - slice_heights: a dictionary of ground heights for each x pos
+        - edges: the range to display in the x axis
+        - edges_y: the range to display in the y axis
         - objects: a list of dictionaries:
             {'x': int, 'y': int, 'char': block}
-        - blocks: the main dictionary describing the blocks in the game.
         - bk_objects: list of objects to be displayed in the background:
             {'x': int, 'y': int, 'colour': tuple[3], 'light_colour': tuple[3], 'light_radius': tuple[3]}
         - sky_colour: the colour of the sky
+        - day: a value between 0 and 1 (night = 0, day = 1)
         - lights: a list of light sources:
             {'x': int, 'y': int, 'radius': int, 'colour': tuple[3]}
-        - last_frame: dictionary of all blocks displayed in the last frame
-        - settings: the settings dictionary
+        - settings: a dictionary of game settings
+        - redraw_all: whether to redraw the entire frame
     """
+
+    global last_frame
 
     diff = ''
     this_frame = {}
+
+    if redraw_all:
+        last_frame = {}
 
     objects = list(filter(lambda o: (o['x'] >= 0 and o['x'] <= (edges[1] - edges[0])) and
                                     (o['y'] >= edges_y[0] and o['y'] <= edges_y[1]), objects))
@@ -78,7 +86,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                             # Doesn't exist
                             diff += POS_STR(x, y, pixel)
 
-    return diff, this_frame
+    last_frame = this_frame
+
+    return diff
 
 
 def obj_pixel(x, y, objects):
