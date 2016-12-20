@@ -572,13 +572,15 @@ static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
-    static ObjectsMap objects_map;
+    static ObjectsMap objects_map = {{{0}}};
 
     long left_edge,
          right_edge,
          top_edge,
          bottom_edge;
+
     float day;
+
     PyObject *map, *slice_heights, *objects, *bk_objects, *py_sky_colour, *lights, *py_settings;
 
     if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
