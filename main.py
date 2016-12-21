@@ -54,32 +54,7 @@ def setup():
     settings = saves.get_settings()
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
-
     benchmarks = c.getenv_b('PYCRAFT_BENCHMARKS')
-    if benchmarks:
-        # Monkey patch so timeit returns function result as well as time.
-        timeit.template = """def inner(_it, _timer{init}):
-                                 {setup}
-                                 _t0 = _timer()
-                                 for _i in _it:
-                                     retval = {stmt}
-                                 _t1 = _timer()
-                                 return _t1 - _t0, retval
-                             """
-
-        def _template_func(setup, func):
-            def inner(_it, _timer, _func=func):
-                setup()
-                _t0 = _timer()
-                for _i in _it:
-                    retval = _func()
-                _t1 = _timer()
-                return _t1 - _t0, retval
-            return inner
-
-        timeit._template_func = _template_func
-
-    # For internal PDB debugging
     debug = c.getenv_b('PYCRAFT_DEBUG')
 
     # For externally connecting GDB
@@ -358,13 +333,10 @@ def game(server, settings, render_c, benchmarks):
 
                 if benchmarks:
                     timer = timeit.Timer(lambda: render_map(*render_args))
-                    t, out = timer.timeit(1)
+                    t = timer.timeit(1)
                     log('Render call time = {}'.format(t), m="benchmarks")
                 else:
-                    out = render_map(*render_args)
-
-                if out is None:
-                    out = ''
+                    render_map(*render_args)
 
                 redraw_all = False
 
@@ -382,7 +354,7 @@ def game(server, settings, render_c, benchmarks):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
-                out += render.render_grids(
+                render.render_grids(
                     [
                         [inv_grid, crafting_grid],
                         [[label]]
@@ -390,7 +362,6 @@ def game(server, settings, render_c, benchmarks):
                     width, height
                 )
 
-                print(out)
                 in_game_log('({}, {})'.format(x, y), 0, 0)
 
             d_frame = time() - frame_start
