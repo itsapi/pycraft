@@ -88,7 +88,7 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
     last_frame = this_frame
 
-    return diff
+    print(diff)
 
 
 def obj_pixel(x, y, objects):
@@ -478,7 +478,7 @@ def render_grids(grids, x, max_height):
 
     merged_grids.extend('' for _ in range(max_height - len(merged_grids)))
 
-    return ''.join(
+    print(''.join(
         POS_STR(x, y, ' ' + row + CLS_END_LN)
             for y, row in enumerate(merged_grids)
-    )
+    ))

@@ -29,6 +29,7 @@ default_settings = {
     'fancy_lights': True,
     'terminal_output': True,
     'render_c': False,
+    'neopixels': False,
     'gravity': False,
     'flight': False,
     'width': 40,
