@@ -67,4 +67,4 @@ _rpi_ws281x.py
 .pid
 
 *.swp
-tags
+.tags
