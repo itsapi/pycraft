@@ -114,7 +114,7 @@ circle_dist(long test_x, long test_y, long x, long y, long r)
 
 
 int
-light_mask(long x, long y, PyObject *map, PyObject *slice_heights)
+get_z_at_pos(long x, long y, PyObject *map, PyObject *slice_heights)
 {
     PyObject *px = PyLong_FromLong(x);
     long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, px));
@@ -170,7 +170,7 @@ get_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heigh
         Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
 
         float light_radius = lit(x, y, light);
-        bool is_lit = light_radius < 1 && z >= light_mask(world_x + lx, ly, map, slice_heights);
+        bool is_lit = light_radius < 1 && z >= get_z_at_pos(world_x + lx, ly, map, slice_heights);
         float block_lightness = light_radius * lightness(&rgb);
 
         if (is_lit && block_lightness < min)
