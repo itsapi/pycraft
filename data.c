@@ -276,3 +276,5 @@ get_block_data(char block_key)
     return result;
 }
 
+
+static long world_gen_height = 200;

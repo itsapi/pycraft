@@ -23,7 +23,6 @@
 
 PyObject *C_RENDERER_EXCEPTION;
 
-static long world_gen_height = 200;
 
 
 #define S_POS_STR_FORMAT L"\033[%ld;%ldH"

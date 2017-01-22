@@ -60,6 +60,9 @@ get_block_data(char block_key)
 """
 
     out += switch
+
+    out += "\n\nstatic long world_gen_height = {};".format(data.world_gen['height'])
+
     return out
 
 
