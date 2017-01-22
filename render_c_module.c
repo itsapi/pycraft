@@ -122,13 +122,9 @@ get_z_at_pos(long x, long y, PyObject *map, PyObject *slice_heights)
 
 
 float
-lit(long x, long y, PyObject *light)
+lit(long x, long y, long lx, long ly, long l_radius)
 {
-    PyObject *lx = PyDict_GetItemString(light, "x"),
-             *ly = PyDict_GetItemString(light, "y"),
-             *radius = PyDict_GetItemString(light, "radius");
-
-    return fmin(circle_dist(x, y, PyLong_AsLong(lx), PyLong_AsLong(ly), PyLong_AsLong(radius)), 1.0f);
+    return fmin(circle_dist(x, y, lx, ly, l_radius), 1.0f);
 }
 
 
@@ -166,9 +162,10 @@ get_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heigh
         long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
         long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
         long z = PyLong_AsLong(PyDict_GetItemString(light, "z"));
+        long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
         Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
 
-        float light_radius = lit(x, y, light);
+        float light_radius = lit(x, y, lx, ly, l_radius);
         bool is_lit = light_radius < 1 && z >= get_z_at_pos(world_x + lx, ly, map, slice_heights);
         float block_lightness = light_radius * lightness(&rgb);
 
@@ -240,7 +237,10 @@ get_sky_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heig
 
             while ((light = PyIter_Next(iter)))
             {
-                float light_distance = lit(x, y, light);
+                long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
+                long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
+                long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
+                float light_distance = lit(x, y, lx, ly, l_radius);
                 if (light_distance < 1)
                 {
                     Colour light_colour_rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
@@ -278,7 +278,10 @@ get_sky_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heig
 
             while ((light = PyIter_Next(iter)))
             {
-                if (lit(x, y, light) < 1)
+                long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
+                long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
+                long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
+                if (lit(x, y, lx, ly, l_radius) < 1)
                 {
                     result = CYAN;
                     break;
