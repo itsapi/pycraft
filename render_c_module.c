@@ -200,27 +200,6 @@ get_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heigh
 
 
 Colour
-apply_block_lightness(long x, long y, long world_x, Colour *block_colour, float lightness, PyObject *slice_heights, float day, Settings *settings)
-{
-    /*
-       Applies a 0-1 lightness to a block colour
-    */
-    Colour result = *block_colour;
-    if (settings->fancy_lights > 0)
-    {
-        float d_ground_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x+x))) - (world_gen_height - y);
-        float surface_fade = fmin(1.0f, fmax(0.0f, d_ground_height / 3.0f));
-        float surface_fade_to_day = lerp(day, surface_fade, 0.0f);
-
-        Colour hsv = rgb_to_hsv(block_colour);
-        hsv.v = lerp(0.0f, fmax(surface_fade_to_day, lightness), hsv.v);
-        result = hsv_to_rgb(&hsv);
-    }
-    return result;
-}
-
-
-Colour
 get_sky_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights, Colour *colour_behind, Settings *settings)
 {
     Colour result;
@@ -351,6 +330,8 @@ sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObje
 wchar_t
 get_char(long x, long y, PyObject *map, BlockData *pixel)
 {
+    // TODO: Impement a cache in get_block?
+
     wchar_t left_block_key = get_block(x-1, y, map);
     wchar_t right_block_key = get_block(x+1, y, map);
     wchar_t below_block_key = get_block(x, y+1, map);
@@ -413,34 +394,52 @@ get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour
 
 
 void
-calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
-           PyObject *map, PyObject *slice_heights, wchar_t pixel_f_key, PyObject *objects, PyObject *bk_objects,
-           Colour *sky_colour, float day, PyObject *lights, Settings *settings, PrintableChar *result)
+apply_block_lightness(Colour *result, float lightness)
+{
+    /*
+       Applies a 0-1 lightness to a block colour
+    */
+    Colour hsv = rgb_to_hsv(result);
+    hsv.v *= lightness;
+    *result = hsv_to_rgb(&hsv);
+}
+
+
+void
+get_lighting_buffer_pixel(LightingBuffer *lighting_buffer, int x, int y, struct PixelLighting **result)
+{
+    *result = lighting_buffer->screen + y * width + x;
+}
+
+
+void
+create_lit_block(long x, long y, long world_x, long world_y, PyObject *map,
+                 wchar_t pixel_f_key, PyObject *objects, LightingBuffer *lighting_buffer,
+                 Settings *settings, PrintableChar *result)
 {
     result->bg.r = -1;
     result->fg.r = -1;
 
-    // If the front block has a bg
+    bool light_bg = false;
+    bool light_fg = false;
+
+    // Add block bg if not clear
     BlockData *pixel_f = get_block_data(pixel_f_key);
     if (pixel_f->colours.bg.r >= 0)
     {
-        float bg_lightness = get_lightness(x, world_y, world_screen_x, map, slice_heights, lights);
-        result->bg = apply_block_lightness(x, world_y, world_screen_x, &(pixel_f->colours.bg), bg_lightness, slice_heights, day, settings);
-    }
-    else
-    {
-        result->bg = sky(x, world_y, world_screen_x, map, slice_heights, bk_objects, sky_colour, lights, settings);
+        result->bg = pixel_f->colours.bg;
+        light_bg = true;
     }
 
-    // Get any object
+    // Add object fg if object, else block fg
     wchar_t obj_key = 0;
     Colour obj_colour;
     get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
-
     if (obj_key != 0)
     {
         result->character = obj_key;
         result->fg = obj_colour;
+        light_fg = false;
     }
     else
     {
@@ -448,8 +447,25 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 
         if (pixel_f->colours.fg.r >= 0)
         {
-            float fg_lightness = get_lightness(x, world_y, world_screen_x, map, slice_heights, lights);
-            result->fg = apply_block_lightness(x, world_y, world_screen_x, &(pixel_f->colours.fg), fg_lightness, slice_heights, day, settings);
+            result->fg = pixel_f->colours.fg;
+            light_fg = true;
+        }
+    }
+
+    if ((settings->fancy_lights > 0) &&
+        (light_bg || light_fg))
+    {
+        struct PixelLighting *lighting_pixel;
+        get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
+
+        float lightness = lighting_pixel->lightness;
+        if (light_bg)
+        {
+            apply_block_lightness(&result->bg, lightness);
+        }
+        if (light_fg)
+        {
+            apply_block_lightness(&result->fg, lightness);
         }
     }
 
@@ -560,7 +576,8 @@ add_lights_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights,
                         float light_distance = lit(x, y, lx, buffer_ly, l_radius);
                         if (light_distance < 1)
                         {
-                            struct PixelLighting *pixel = lighting_buffer->screen + (y * width + x);
+                            struct PixelLighting *pixel;
+                            get_lighting_buffer_pixel(lighting_buffer, x, y, &pixel);
 
                             // TODO: Figure out whether this would be better before (old version) or after inverting the distance?
                             // light_distance *= lightness(&rgb);
@@ -619,13 +636,17 @@ add_day_light_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *ligh
                 lightness = 0;
             }
 
-            struct PixelLighting *pixel = lighting_buffer->screen + (y * width + x);
+            struct PixelLighting *pixel;
+            get_lighting_buffer_pixel(lighting_buffer, x, y, &pixel);
 
             if (pixel->lightness < lightness ||
                 pixel->set_on_frame != lighting_buffer->current_frame)
             {
                 pixel->lightness = lightness;
+                pixel->set_on_frame = lighting_buffer->current_frame;
             }
+
+            // TODO: Assert pixel->set_on_frame == lighting_buffer->current_frame
         }
     }
 }
@@ -810,9 +831,7 @@ render_map(PyObject *self, PyObject *args)
                 }
 
                 PrintableChar printable_char;
-                calc_pixel(x, y, world_x_l, world_y_l, left_edge,
-                    map, slice_heights, pixel, objects, bk_objects,
-                    &sky_colour, day, lights, &settings, &printable_char);
+                create_lit_block(x, y, world_x_l, world_y_l, map, pixel, objects, &lighting_buffer, &settings, &printable_char);
 
                 if (settings.terminal_output > 0)
                 {
