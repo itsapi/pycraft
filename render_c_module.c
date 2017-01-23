@@ -499,7 +499,7 @@ is_light_behind_a_solid_block(long lx, long ly, long l_height, long l_width, PyO
 
 
 bool
-check_light_z(PyObject *light, long lx, long ly, long lz, long left_edge, long top_edge, PyObject *map, PyObject *slice_heights)
+check_light_z(PyObject *py_light, Light *light, long left_edge, long top_edge, PyObject *map, PyObject *slice_heights)
 {
     /*
         Lights with z of:
@@ -510,33 +510,33 @@ check_light_z(PyObject *light, long lx, long ly, long lz, long left_edge, long t
 
     bool result = false;
 
-    if (lz == -2)
+    if (light->z == -2)
     {
         result = false;
     }
-    else if (lz == -1)
+    else if (light->z == -1)
     {
-        long buffer_ly = ly - top_edge;
+        long buffer_ly = light->y - top_edge;
 
         // Check light source is above ground
 
-        float ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge + lx)));
+        float ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge + light->x)));
         float ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
 
         if (buffer_ly < ground_height_buffer)
         {
             // Check light source is not behind a solid block
 
-            long l_width = get_long_from_PyDict_or(light, "source_width", 1);
-            long l_height = get_long_from_PyDict_or(light, "source_height", 1);
+            long l_width = get_long_from_PyDict_or(py_light, "source_width", 1);
+            long l_height = get_long_from_PyDict_or(py_light, "source_height", 1);
 
-            if (!is_light_behind_a_solid_block(lx, ly, l_height, l_width, map, left_edge))
+            if (!is_light_behind_a_solid_block(light->x, light->y, l_height, l_width, map, left_edge))
             {
                 result = true;
             }
         }
     }
-    else if (lz == 0)
+    else if (light->z == 0)
     {
         result = true;
     }
@@ -546,65 +546,73 @@ check_light_z(PyObject *light, long lx, long ly, long lz, long left_edge, long t
 
 
 void
-add_lights_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, long left_edge, long top_edge)
+add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light)
 {
-    PyObject *iter = PyObject_GetIter(lights);
-    PyObject *light;
+    // TODO: Figure out whether this would be better before (old version) or after inverting the distance?
+    light_distance *= lightness(&light->rgb);
 
-    while ((light = PyIter_Next(iter)))
+    float this_lightness = 1 - light_distance;
+    // this_lightness *= lightness(&light->rgb);
+
+    if (pixel->lightness < this_lightness ||
+        pixel->lightness_set_on_frame != current_frame)
     {
-        long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
-        long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
-        long lz = PyLong_AsLong(PyDict_GetItemString(light, "z"));
-
-        if (check_light_z(light, lx, ly, lz, left_edge, top_edge, map, slice_heights))
-        {
-            long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
-            Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
-
-            long buffer_ly = ly - top_edge;
-
-            long x, y;
-            for (x = lx - l_radius; x <= lx + l_radius; ++x)
-            {
-                for (y = buffer_ly - l_radius; y <= buffer_ly + l_radius; ++y)
-                {
-                    // Is on screen?
-                    if ((x >= 0 && x < width) &&
-                        (y >= 0 && y < height))
-                    {
-                        float light_distance = lit(x, y, lx, buffer_ly, l_radius);
-                        if (light_distance < 1)
-                        {
-                            struct PixelLighting *pixel;
-                            get_lighting_buffer_pixel(lighting_buffer, x, y, &pixel);
-
-                            // TODO: Figure out whether this would be better before (old version) or after inverting the distance?
-                            // light_distance *= lightness(&rgb);
-
-                            float this_lightness = 1 - light_distance;
-                            this_lightness *= lightness(&rgb);
-
-                            if (pixel->lightness < this_lightness ||
-                                pixel->set_on_frame != lighting_buffer->current_frame)
-                            {
-                                pixel->lightness = this_lightness;
-                                pixel->set_on_frame = lighting_buffer->current_frame;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        pixel->lightness = this_lightness;
+        pixel->lightness_set_on_frame = current_frame;
     }
 }
 
 
 void
-add_day_light_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *slice_heights, float day, long left_edge, long top_edge)
+add_light_pixel_colour_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light, PyObject *map, Colour *sky_colour, long left_edge, long top_edge)
 {
     /*
-        Fills in all the gaps of the lighting buffer with daylight, also overwrites darker than daylight parts.
+        Adds the colour of the light's pixel for the light's light-radius' to the lighting buffer.
+    */
+
+    // Check if the background for this pixel is visible
+    bool visible = false;
+
+    // First, if the background for this pixel has already been set this frame, then the check has already passed.
+    if (pixel->background_colour_set_on_frame == current_frame)
+    {
+        visible = true;
+    }
+    else
+    {
+        // Check if there is no block or a block without a clear background at this position.
+        wchar_t block_key = get_block(left_edge+x, top_edge+y, map);
+        if (block_key == 0 ||
+            get_block_data(block_key)->colours.bg.r == -1)
+        {
+            visible = true;
+        }
+    }
+
+    if (visible)
+    {
+        Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
+        Colour rgb = hsv_to_rgb(&hsv);
+
+        float pixel_background_colour_lightness = lightness(&rgb);
+
+        if (pixel->background_colour_lightness < pixel_background_colour_lightness ||
+            pixel->background_colour_set_on_frame != current_frame)
+        {
+            pixel->background_colour = rgb;
+            pixel->background_colour_lightness = pixel_background_colour_lightness;
+            pixel->background_colour_set_on_frame = current_frame;
+        }
+    }
+
+}
+
+
+void
+add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *slice_heights, float day, long left_edge, long top_edge)
+{
+    /*
+        Fills in all the gaps of the lightness lighting buffer with daylight, also overwrites darker than daylight parts.
     */
     long x, y;
     for (x = 0; x < width; ++x)
@@ -640,32 +648,79 @@ add_day_light_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *ligh
             get_lighting_buffer_pixel(lighting_buffer, x, y, &pixel);
 
             if (pixel->lightness < lightness ||
-                pixel->set_on_frame != lighting_buffer->current_frame)
+                pixel->lightness_set_on_frame != lighting_buffer->current_frame)
             {
                 pixel->lightness = lightness;
-                pixel->set_on_frame = lighting_buffer->current_frame;
+                pixel->lightness_set_on_frame = lighting_buffer->current_frame;
             }
 
-            // TODO: Assert pixel->set_on_frame == lighting_buffer->current_frame
+            // TODO: Assert pixel->lightness_set_on_frame == lighting_buffer->current_frame
         }
     }
 }
 
 
 void
-create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, float day, long left_edge, long top_edge)
+create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
 {
     /*
-        Store the lightness value for every block, calculated from the max of:
-         - Lights (passed in from python)
+        - Store the lightness value for every block, calculated from the max of:
+          - Lights (passed in from python)
             - Including sun (not moon), when sun is above ground height and not behind a block
-         - Day value, fading to 0 at the ground
+          - Day value, fading to 0 at the ground
+
+        - Also stores the background colour for pixels where the block in the map has a clear bg.
+          - The colour of the light at radius `r` from the pixel is calculated with:
+              hsv_to_rgb( lerp_colour( rgb_to_hsv(light_colour), r, sky_colour ) )
+          - The colour is then selected by taking the max lightness of that colour from all the lights reaching this pixel.
     */
 
     ++lighting_buffer->current_frame;
 
-    add_lights_to_lighting_buffer(lighting_buffer, lights, map, slice_heights, left_edge, top_edge);
-    add_day_light_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
+    PyObject *iter = PyObject_GetIter(lights);
+    PyObject *py_light;
+    while ((py_light = PyIter_Next(iter)))
+    {
+        Light light = {
+            .x = PyLong_AsLong(PyDict_GetItemString(py_light, "x")),
+            .y = PyLong_AsLong(PyDict_GetItemString(py_light, "y")),
+            .z = PyLong_AsLong(PyDict_GetItemString(py_light, "z")),
+            .radius = PyLong_AsLong(PyDict_GetItemString(py_light, "radius")),
+            .rgb = PyColour_AsColour(PyDict_GetItemString(py_light, "colour"))
+        };
+        light.hsv = rgb_to_hsv(&light.rgb);
+
+        bool add_lightness = check_light_z(py_light, &light, left_edge, top_edge, map, slice_heights);
+
+        long buffer_ly = light.y - top_edge;
+        long x, y;
+        for (x = light.x - light.radius; x <= light.x + light.radius; ++x)
+        {
+            for (y = buffer_ly - light.radius; y <= buffer_ly + light.radius; ++y)
+            {
+                // Is pixel on screen?
+                if ((x >= 0 && x < width) &&
+                    (y >= 0 && y < height))
+                {
+                    float light_distance = lit(x, y, light.x, buffer_ly, light.radius);
+                    if (light_distance < 1)
+                    {
+                        struct PixelLighting *lighting_pixel;
+                        get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
+
+                        if (add_lightness)
+                        {
+                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, x, y, light_distance, &light);
+                        }
+
+                        add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge);
+                    }
+                }
+            }
+        }
+    }
+
+    add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
 }
 
 
@@ -792,9 +847,9 @@ render_map(PyObject *self, PyObject *args)
 
     // Create lighting buffer
 
-    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, left_edge, top_edge);
+    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, &sky_colour, left_edge, top_edge);
 
-    // Add blocks to pixel buffer
+    // Print lit blocks and background
 
     Py_ssize_t i = 0;
     PyObject *world_x, *column;

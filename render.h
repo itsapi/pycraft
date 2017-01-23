@@ -13,12 +13,14 @@ typedef struct
 
 
 typedef union {
-    struct {
+    struct
+    {
         float r;
         float g;
         float b;
     };
-    struct {
+    struct
+    {
         float h;
         float s;
         float v;
@@ -34,13 +36,28 @@ typedef struct
 } PrintableChar;
 
 
+typedef struct {
+    long x;
+    long y;
+    long z;
+    long radius;
+    Colour rgb;
+    Colour hsv;
+} Light;
+
+
 typedef struct
 {
     int current_frame;
 
-    struct PixelLighting {
+    struct PixelLighting
+    {
+        Colour background_colour;
+        float background_colour_lightness;
+        int background_colour_set_on_frame;
+
         float lightness;
-        int set_on_frame;
+        int lightness_set_on_frame;
     } *screen;
 } LightingBuffer;
 
