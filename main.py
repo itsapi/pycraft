@@ -1,4 +1,4 @@
-import cProfile, pdb, os, sys, glob
+import cProfile, pdb, os, sys, glob, timeit
 
 from time import time, sleep
 from math import radians
@@ -15,7 +15,7 @@ import saves, ui, terrain, player, render, server_interface, data
 def main():
     settings = None
     try:
-        meta, settings, profile, debug, name, port = setup()
+        meta, settings, profile, debug, benchmarks, name, port = setup()
 
         while True:
             data = ui.main(meta, settings)
@@ -33,11 +33,11 @@ def main():
             if not server_obj.error:
                 render_c = import_render_c(settings)
                 if profile:
-                    cProfile.runctx('game(server_obj, settings, render_c)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, render_c, benchmarks)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings, render_c)', globals(), locals())
+                    pdb.run('game(server_obj, settings, render_c, benchmarks)', globals(), locals())
                 else:
-                    game(server_obj, settings, render_c)
+                    game(server_obj, settings, render_c, benchmarks)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -54,8 +54,7 @@ def setup():
     settings = saves.get_settings()
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
-
-    # For internal PDB debugging
+    benchmarks = c.getenv_b('PYCRAFT_BENCHMARKS')
     debug = c.getenv_b('PYCRAFT_DEBUG')
 
     # For externally connecting GDB
@@ -69,7 +68,7 @@ def setup():
     saves.check_map_dir()
 
     print(HIDE_CUR + CLS)
-    return meta, settings, profile, debug, name, port
+    return meta, settings, profile, debug, benchmarks, name, port
 
 
 def setdown():
@@ -91,7 +90,7 @@ def import_render_c(settings):
     return render_c
 
 
-def game(server, settings, render_c):
+def game(server, settings, render_c, benchmarks):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -105,7 +104,6 @@ def game(server, settings, render_c):
     old_bk_objects = None
     old_edges = None
     redraw_all = True
-    last_frame = {}
     last_out = time()
     last_move = time()
     inp = None
@@ -319,8 +317,7 @@ def game(server, settings, render_c):
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 render_map = render_c.render_map if settings.get('render_c') else render.render_map
-
-                out, last_frame = render_map(
+                render_args = [
                     server.map_,
                     server.slice_heights,
                     edges,
@@ -331,9 +328,15 @@ def game(server, settings, render_c):
                     day,
                     lights,
                     settings,
-                    last_frame,
                     redraw_all
-                )
+                ]
+
+                if benchmarks:
+                    timer = timeit.Timer(lambda: render_map(*render_args))
+                    t = timer.timeit(1)
+                    log('Render call time = {}'.format(t), m="benchmarks")
+                else:
+                    render_map(*render_args)
 
                 redraw_all = False
 
@@ -351,7 +354,7 @@ def game(server, settings, render_c):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
-                out += render.render_grids(
+                render.render_grids(
                     [
                         [inv_grid, crafting_grid],
                         [[label]]
@@ -359,7 +362,6 @@ def game(server, settings, render_c):
                     width, height
                 )
 
-                print(out)
                 in_game_log('({}, {})'.format(x, y), 0, 0)
 
             d_frame = time() - frame_start

@@ -512,12 +512,11 @@ render_map(PyObject *self, PyObject *args)
              *bk_objects,
              *py_sky_colour,
              *lights,
-             *py_last_frame,
              *py_settings;
 
-    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOOl:render", &map, &slice_heights,
+    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
             &left_edge, &right_edge, &top_edge, &bottom_edge, &objects, &bk_objects,
-            &py_sky_colour, &day, &lights, &py_settings, &py_last_frame, &redraw_all))
+            &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
@@ -608,7 +607,7 @@ render_map(PyObject *self, PyObject *args)
         fflush(stdout);
     }
 
-    return Py_BuildValue("(sO)", "", py_last_frame);
+    Py_RETURN_NONE;
 }
 
 
