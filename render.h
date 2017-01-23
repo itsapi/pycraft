@@ -36,6 +36,17 @@ typedef struct
 
 typedef struct
 {
+    int current_frame;
+
+    struct PixelLighting {
+        float lightness;
+        int set_on_frame;
+    } *screen;
+} LightingBuffer;
+
+
+typedef struct
+{
     wchar_t *buffer;
     size_t size;
     size_t cur_pos;

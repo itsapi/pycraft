@@ -323,7 +323,7 @@ def game(server, settings, render_c, benchmarks):
                     edges,
                     edges_y,
                     objects,
-                    bk_objects,
+                    bk_objects, # Only needed for the python renderer now.
                     sky_colour,
                     day,
                     lights,

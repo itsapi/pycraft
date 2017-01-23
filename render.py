@@ -364,7 +364,10 @@ def get_lights(_map, start_x, bk_objects):
         'x': obj['x'],
         'y': obj['y'],
         'z': obj['z'],
-        'colour': obj['light_colour']
+        'colour': obj['light_colour'],
+        'source_width': obj['width'],
+        'source_height': obj['height'],
+        'source_colour': obj['colour']
     }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
 
     # Give blocks light

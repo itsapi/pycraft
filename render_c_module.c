@@ -23,6 +23,11 @@
 
 PyObject *C_RENDERER_EXCEPTION;
 
+static PrintableChar *last_frame;
+static bool resize;
+static bool redraw_all;
+static long width;
+static long height;
 
 
 #define S_POS_STR_FORMAT L"\033[%ld;%ldH"
@@ -69,6 +74,21 @@ PyString_AsChar(PyObject *str)
     {
         result = *chars;
     }
+    return result;
+}
+
+
+long
+get_long_from_PyDict_or(PyObject *dict, char key[], long default_result)
+{
+    long result = default_result;
+
+    PyObject *item = PyDict_GetItemString(dict, key);
+    if (item != NULL)
+    {
+         result = PyLong_AsLong(item);
+    }
+
     return result;
 }
 
@@ -437,11 +457,196 @@ calc_pixel(long x, long y, long world_x, long world_y, long world_screen_x,
 }
 
 
-static PrintableChar *last_frame;
-static bool resize;
-static bool redraw_all;
-static long width;
-static long height;
+bool
+is_light_behind_a_solid_block(long lx, long ly, long l_height, long l_width, PyObject *map, long left_edge)
+{
+    bool result = true;
+
+    long x, y;
+    for (x = lx; x < lx+l_width; ++x)
+    {
+        for (y = ly; y > ly-l_height; --y)
+        {
+            wchar_t block_key = get_block(left_edge + x, y, map);
+
+            if (block_key == 0 ||
+                !get_block_data(block_key)->solid)
+            {
+                result = false;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+
+bool
+check_light_z(PyObject *light, long lx, long ly, long lz, long left_edge, long top_edge, PyObject *map, PyObject *slice_heights)
+{
+    /*
+        Lights with z of:
+            -2 are not added to the lighting buffer as they are just graphical lights, like the moon.
+            -1 are added to the lighting buffer IF they are above the ground, and not behind a solid block.
+            0  are always added to the lighting buffer.
+    */
+
+    bool result = false;
+
+    if (lz == -2)
+    {
+        result = false;
+    }
+    else if (lz == -1)
+    {
+        long buffer_ly = ly - top_edge;
+
+        // Check light source is above ground
+
+        float ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge + lx)));
+        float ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
+
+        if (buffer_ly < ground_height_buffer)
+        {
+            // Check light source is not behind a solid block
+
+            long l_width = get_long_from_PyDict_or(light, "source_width", 1);
+            long l_height = get_long_from_PyDict_or(light, "source_height", 1);
+
+            if (!is_light_behind_a_solid_block(lx, ly, l_height, l_width, map, left_edge))
+            {
+                result = true;
+            }
+        }
+    }
+    else if (lz == 0)
+    {
+        result = true;
+    }
+
+    return result;
+}
+
+
+void
+add_lights_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, long left_edge, long top_edge)
+{
+    PyObject *iter = PyObject_GetIter(lights);
+    PyObject *light;
+
+    while ((light = PyIter_Next(iter)))
+    {
+        long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
+        long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
+        long lz = PyLong_AsLong(PyDict_GetItemString(light, "z"));
+
+        if (check_light_z(light, lx, ly, lz, left_edge, top_edge, map, slice_heights))
+        {
+            long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
+            Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
+
+            long buffer_ly = ly - top_edge;
+
+            long x, y;
+            for (x = lx - l_radius; x <= lx + l_radius; ++x)
+            {
+                for (y = buffer_ly - l_radius; y <= buffer_ly + l_radius; ++y)
+                {
+                    // Is on screen?
+                    if ((x >= 0 && x < width) &&
+                        (y >= 0 && y < height))
+                    {
+                        float light_distance = lit(x, y, lx, buffer_ly, l_radius);
+                        if (light_distance < 1)
+                        {
+                            struct PixelLighting *pixel = lighting_buffer->screen + (y * width + x);
+
+                            // TODO: Figure out whether this would be better before (old version) or after inverting the distance?
+                            // light_distance *= lightness(&rgb);
+
+                            float this_lightness = 1 - light_distance;
+                            this_lightness *= lightness(&rgb);
+
+                            if (pixel->lightness < this_lightness ||
+                                pixel->set_on_frame != lighting_buffer->current_frame)
+                            {
+                                pixel->lightness = this_lightness;
+                                pixel->set_on_frame = lighting_buffer->current_frame;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void
+add_day_light_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *slice_heights, float day, long left_edge, long top_edge)
+{
+    /*
+        Fills in all the gaps of the lighting buffer with daylight, also overwrites darker than daylight parts.
+    */
+    long x, y;
+    for (x = 0; x < width; ++x)
+    {
+        float ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
+        float ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
+
+        for (y = 0; y < height; ++y)
+        {
+            float lightness;
+
+            if (y < ground_height_buffer)
+            {
+                // Above ground
+                lightness = day;
+            }
+            else if (y < ground_height_buffer + 3)
+            {
+                // Surface fade
+
+                int d_ground = y - ground_height_buffer;
+                float ground_fade = fmin(1.0f, ((float)d_ground / 3.0f));
+
+                lightness = lerp(day, ground_fade, 0.0f);
+            }
+            else
+            {
+                // Underground
+                lightness = 0;
+            }
+
+            struct PixelLighting *pixel = lighting_buffer->screen + (y * width + x);
+
+            if (pixel->lightness < lightness ||
+                pixel->set_on_frame != lighting_buffer->current_frame)
+            {
+                pixel->lightness = lightness;
+            }
+        }
+    }
+}
+
+
+void
+create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, float day, long left_edge, long top_edge)
+{
+    /*
+        Store the lightness value for every block, calculated from the max of:
+         - Lights (passed in from python)
+            - Including sun (not moon), when sun is above ground height and not behind a block
+         - Day value, fading to 0 at the ground
+    */
+
+    ++lighting_buffer->current_frame;
+
+    add_lights_to_lighting_buffer(lighting_buffer, lights, map, slice_heights, left_edge, top_edge);
+    add_day_light_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
+}
+
 
 bool
 terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
@@ -472,7 +677,7 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 
 
 bool
-setup_frame(ScreenBuffer *frame, long new_width, long new_height)
+setup_frame(ScreenBuffer *frame, LightingBuffer *lighting_buffer, long new_width, long new_height)
 {
     resize = false;
     if (new_width != width)
@@ -495,10 +700,18 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
             PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate frame buffer!");
             return false;
         }
+
         last_frame = (PrintableChar *)realloc(last_frame, width * height * sizeof(PrintableChar));
         if (!last_frame)
         {
             PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate last frame buffer!");
+            return false;
+        }
+
+        lighting_buffer->screen = (struct PixelLighting *)realloc(lighting_buffer->screen, width * height * sizeof(struct PixelLighting));
+        if (!lighting_buffer->screen)
+        {
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate lighting map!");
             return false;
         }
     }
@@ -512,6 +725,7 @@ static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
+    static LightingBuffer lighting_buffer = {.current_frame = 0};
 
     float day;
 
@@ -546,7 +760,7 @@ render_map(PyObject *self, PyObject *args)
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
 
-    if (!setup_frame(&frame, cur_width, cur_height))
+    if (!setup_frame(&frame, &lighting_buffer, cur_width, cur_height))
         return NULL;
 
     if (!PyDict_Check(map))
@@ -554,6 +768,12 @@ render_map(PyObject *self, PyObject *args)
         PyErr_SetString(C_RENDERER_EXCEPTION, "Map is not a dict!");
         return NULL;
     }
+
+    // Create lighting buffer
+
+    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, left_edge, top_edge);
+
+    // Add blocks to pixel buffer
 
     Py_ssize_t i = 0;
     PyObject *world_x, *column;
