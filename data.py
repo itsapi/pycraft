@@ -344,7 +344,8 @@ lighting = {
     'sun_colour': (.8,.6,0),
     'moon_colour': (1,1,1),
     'sun_light_colour': (0,1,1),
-    'moon_light_colour': (.6,.6,.8)
+    'moon_light_colour': (.6,.6,.8),
+    'cave_colour': (.1,.1,.1)
 }
 
 

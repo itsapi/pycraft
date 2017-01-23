@@ -62,6 +62,7 @@ get_block_data(char block_key)
     out += switch
 
     out += "\n\nstatic long world_gen_height = {};".format(data.world_gen['height'])
+    out += "\n\nstatic Colour cave_colour = {{{{{}, {}, {}}}}};\n".format(*data.lighting['cave_colour'])
 
     return out
 

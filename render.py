@@ -206,7 +206,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
     # return colour_behind
     if (world_gen['height'] - y) < slice_heights[world_x + x]:
 
-        light = (.1,.1,.1)
+        light = lighting['cave_colour']
         if fancy_lights:
             block_lightness = get_block_lightness(x, y, world_x, map_, slice_heights, lights)
             light = [(b + block_lightness) / 2 for b in light]

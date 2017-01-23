@@ -278,3 +278,6 @@ get_block_data(char block_key)
 
 
 static long world_gen_height = 200;
+
+static Colour cave_colour = {{0.1, 0.1, 0.1}};
+

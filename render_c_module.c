@@ -164,169 +164,6 @@ PyColour_AsColour(PyObject *py_colour)
 }
 
 
-float
-get_lightness(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights)
-{
-    /*
-       Finds the brightest light level which reaches this position, then returns the light level from 0-1.
-    */
-
-    float min = 1.0f;
-    int i = 0;
-    PyObject *iter = PyObject_GetIter(lights);
-    PyObject *light;
-
-    // If the light is not hidden by the mask
-    while ((light = PyIter_Next(iter)))
-    {
-        long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
-        long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
-        long z = PyLong_AsLong(PyDict_GetItemString(light, "z"));
-        long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
-        Colour rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
-
-        float light_radius = lit(x, y, lx, ly, l_radius);
-        bool is_lit = light_radius < 1 && z >= get_z_at_pos(world_x + lx, ly, map, slice_heights);
-        float block_lightness = light_radius * lightness(&rgb);
-
-        if (is_lit && block_lightness < min)
-            min = block_lightness;
-
-        ++i;
-    }
-
-    return 1 - min;
-}
-
-
-Colour
-get_sky_colour(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *lights, Colour *colour_behind, Settings *settings)
-{
-    Colour result;
-    result.r = -1;
-
-    long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x)));
-    if ((world_gen_height - y) < slice_height)
-    {
-        // Underground
-
-        result.r = .1f;
-        result.g = .1f;
-        result.b = .1f;
-        if (settings->fancy_lights > 0)
-        {
-            float block_lightness = get_lightness(x, y, world_x, map, slice_heights, lights);
-            result.r = (result.r + block_lightness) * .5f;
-            result.g = (result.g + block_lightness) * .5f;
-            result.b = (result.b + block_lightness) * .5f;
-        }
-    }
-    else
-    {
-        // Overground
-
-        if (settings->fancy_lights > 0)
-        {
-            // Calculate light level for each light source
-            int i = 0;
-            PyObject *iter = PyObject_GetIter(lights);
-            PyObject *light;
-            float max_light_level = -1;
-            Colour max_light_level_colour = {};
-
-            while ((light = PyIter_Next(iter)))
-            {
-                long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
-                long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
-                long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
-                float light_distance = lit(x, y, lx, ly, l_radius);
-                if (light_distance < 1)
-                {
-                    Colour light_colour_rgb = PyColour_AsColour(PyDict_GetItemString(light, "colour"));
-                    Colour light_colour_hsv = rgb_to_hsv(&light_colour_rgb);
-
-                    Colour this_light_pixel_colour_hsv = lerp_colour(&light_colour_hsv, light_distance, colour_behind);
-                    Colour this_light_pixel_colour_rgb = hsv_to_rgb(&this_light_pixel_colour_hsv);
-                    float light_level = lightness(&this_light_pixel_colour_rgb);
-
-                    if (light_level > max_light_level)
-                    {
-                        max_light_level = light_level;
-                        max_light_level_colour = this_light_pixel_colour_rgb;
-                    }
-                }
-                ++i;
-            }
-
-            // Get brightest light
-            if (max_light_level >= 0)
-            {
-                result = max_light_level_colour;
-            }
-            else
-            {
-                result = hsv_to_rgb(colour_behind);
-            }
-        }
-        else
-        {
-            result = *colour_behind;
-
-            PyObject *iter = PyObject_GetIter(lights);
-            PyObject *light;
-
-            while ((light = PyIter_Next(iter)))
-            {
-                long lx = PyLong_AsLong(PyDict_GetItemString(light, "x"));
-                long ly = PyLong_AsLong(PyDict_GetItemString(light, "y"));
-                long l_radius = PyLong_AsLong(PyDict_GetItemString(light, "radius"));
-                if (lit(x, y, lx, ly, l_radius) < 1)
-                {
-                    result = CYAN;
-                    break;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-
-Colour
-sky(long x, long y, long world_x, PyObject *map, PyObject *slice_heights, PyObject *bk_objects, Colour *sky_colour, PyObject *lights, Settings *settings)
-{
-    Colour result;
-    result.r = -1;
-
-    PyObject *iter = PyObject_GetIter(bk_objects);
-    PyObject *object;
-
-    while ((object = PyIter_Next(iter)))
-    {
-        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
-        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
-        long o_width= PyLong_AsLong(PyDict_GetItemString(object, "width"));
-        long o_height= PyLong_AsLong(PyDict_GetItemString(object, "height"));
-
-        if (x <= ox && ox < (x + o_width) &&
-            y <= oy && oy < (y + o_height) &&
-            (world_gen_height - y) > PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x + x))))
-        {
-            result = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
-            break;
-        }
-    }
-
-    if (result.r < 0)
-    {
-        result = get_sky_colour(x, y, world_x, map, slice_heights, lights, sky_colour, settings);
-    }
-
-    return result;
-}
-
-
 wchar_t
 get_char(long x, long y, PyObject *map, BlockData *pixel)
 {
@@ -413,17 +250,14 @@ get_lighting_buffer_pixel(LightingBuffer *lighting_buffer, int x, int y, struct 
 
 
 void
-create_lit_block(long x, long y, long world_x, long world_y, PyObject *map,
-                 wchar_t pixel_f_key, PyObject *objects, LightingBuffer *lighting_buffer,
-                 Settings *settings, PrintableChar *result)
+create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key,
+                 PyObject *objects, LightingBuffer *lighting_buffer, Settings *settings,
+                 PrintableChar *result, struct PixelLighting **potential_lighting_pixel)
 {
-    result->bg.r = -1;
-    result->fg.r = -1;
-
     bool light_bg = false;
     bool light_fg = false;
 
-    // Add block bg if not clear
+    // Get block bg colour if it isn't transparent
     BlockData *pixel_f = get_block_data(pixel_f_key);
     if (pixel_f->colours.bg.r >= 0)
     {
@@ -431,7 +265,7 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map,
         light_bg = true;
     }
 
-    // Add object fg if object, else block fg
+    // Get object fg colour and character if there is an object, otherwise get block fg colour and character
     wchar_t obj_key = 0;
     Colour obj_colour;
     get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
@@ -452,12 +286,16 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map,
         }
     }
 
+    // Light block fg and bg
+
     if ((settings->fancy_lights > 0) &&
         (light_bg || light_fg))
     {
-        struct PixelLighting *lighting_pixel;
-        get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
+        // Caller passes in **potential_lighting_pixel and it might get populated with the pointer (optimisation!)
+        get_lighting_buffer_pixel(lighting_buffer, x, y, potential_lighting_pixel);
+        struct PixelLighting *lighting_pixel = *potential_lighting_pixel;
 
+        // lighting_pixel->lightness is guaranteed to be set for every pixel this frame by add_daylight_lightness_to_lighting_buffer
         float lightness = lighting_pixel->lightness;
         if (light_bg)
         {
@@ -470,6 +308,50 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map,
     }
 
     result->style = pixel_f->colours.style;
+}
+
+
+void
+create_pixel(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key,
+             PyObject *objects, LightingBuffer *lighting_buffer, bool underground, Colour *sky_colour_rgb,
+             Settings *settings, PrintableChar *result)
+{
+    result->bg.r = -1;
+    result->fg.r = -1;
+    result->style = -1;
+    result->character = ' ';
+
+    struct PixelLighting *lighting_pixel = NULL;
+
+    create_lit_block(x, y, world_x, world_y, map, pixel_f_key, objects, lighting_buffer, settings, result, &lighting_pixel);
+
+    // If the block did not set a background colour, add the sky background.
+    if (result->bg.r == -1)
+    {
+        if (lighting_pixel == NULL)
+        {
+            // If create_lit_block has not filled in lighting_pixel yet, get it now.
+            get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
+        }
+
+        // lighting_pixel->background_colour_set_on_frame is only set for lit pixels, set the rest to sky_colour/cave colour.
+
+        if (lighting_pixel->background_colour_set_on_frame == lighting_buffer->current_frame)
+        {
+            result->bg = lighting_pixel->background_colour;
+        }
+        else
+        {
+            if (underground)
+            {
+                result->bg = cave_colour;
+            }
+            else
+            {
+                result->bg = *sky_colour_rgb;
+            }
+        }
+    }
 }
 
 
@@ -826,7 +708,9 @@ render_map(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    Colour sky_colour = PyColour_AsColour(py_sky_colour);
+    Colour sky_colour_hsv = PyColour_AsColour(py_sky_colour);
+    Colour sky_colour_rgb = hsv_to_rgb(&sky_colour_hsv);
+
     Settings settings = {
         .terminal_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "terminal_output")),
         .fancy_lights = PyLong_AsLong(PyDict_GetItemString(py_settings, "fancy_lights")),
@@ -847,7 +731,7 @@ render_map(PyObject *self, PyObject *args)
 
     // Create lighting buffer
 
-    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, &sky_colour, left_edge, top_edge);
+    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
 
     // Print lit blocks and background
 
@@ -868,6 +752,8 @@ render_map(PyObject *self, PyObject *args)
 
         long x = world_x_l - left_edge;
 
+        long slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x_l)));
+
         PyObject *iter = PyObject_GetIter(column);
         PyObject *py_pixel;
         long world_y_l = 0;
@@ -877,6 +763,7 @@ render_map(PyObject *self, PyObject *args)
             if (world_y_l >= top_edge && world_y_l < bottom_edge)
             {
                 long y = world_y_l - top_edge;
+                bool underground = world_y_l > world_gen_height - slice_height;
 
                 wchar_t pixel = PyString_AsChar(py_pixel);
                 if (!pixel)
@@ -886,7 +773,7 @@ render_map(PyObject *self, PyObject *args)
                 }
 
                 PrintableChar printable_char;
-                create_lit_block(x, y, world_x_l, world_y_l, map, pixel, objects, &lighting_buffer, &settings, &printable_char);
+                create_pixel(x, y, world_x_l, world_y_l, map, pixel, objects, &lighting_buffer, underground, &sky_colour_rgb, &settings, &printable_char);
 
                 if (settings.terminal_output > 0)
                 {
