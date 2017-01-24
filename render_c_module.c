@@ -524,12 +524,19 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
         else
         {
             // Above ground
-            // TODO: Basic lighting
 
-            Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
-            rgb = hsv_to_rgb(&hsv);
+            if (settings->fancy_lights > 0)
+            {
+                Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
+                rgb = hsv_to_rgb(&hsv);
 
-            pixel_background_colour_lightness = lightness(&rgb);
+                pixel_background_colour_lightness = lightness(&rgb);
+            }
+            else
+            {
+                rgb = CYAN;
+                pixel_background_colour_lightness = lightness(&rgb);
+            }
         }
 
         // Update lighting buffer pixel if it's unset this frame or if it's lightness is less than this lights lightness

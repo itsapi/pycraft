@@ -188,7 +188,7 @@ def bk_objects(ticks, width, fancy_lights):
         obj['light_colour'] = lighting[light_type + '_light_colour']
         obj['light_radius'] = lighting[light_type + '_light_radius'] * sin(sun_angle)
     else:
-        sky_colour = CYAN if day else BLUE
+        sky_colour = rgb_to_hsv(CYAN if day else BLUE)
 
     objects.append(obj)
 
