@@ -133,15 +133,6 @@ circle_dist(long test_x, long test_y, long x, long y, long r)
 }
 
 
-int
-get_z_at_pos(long x, long y, PyObject *map, PyObject *slice_heights)
-{
-    PyObject *px = PyLong_FromLong(x);
-    long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, px));
-    return (get_block_data(get_block(x, y, map))->solid || (world_gen_height - y) < slice_height) ? 0 : -1;
-}
-
-
 float
 lit(long x, long y, long lx, long ly, long l_radius)
 {
