@@ -482,7 +482,8 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
         float pixel_background_colour_lightness;
 
         // Different lighting calculations for above and below ground
-        long ground_height_buffer = (world_gen_height - slice_height) - top_edge;
+        long world_top_to_ground = world_gen_height - slice_height;
+        long ground_height_buffer = world_top_to_ground - top_edge;
         if (y > ground_height_buffer)
         {
             // Underground
@@ -498,7 +499,7 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
             }
             else if (light->z == -1)
             {
-                if (light->y > slice_height)
+                if (light->y > world_top_to_ground)
                 {
                     // Light source is underground
                     add_to_buffer = false;
