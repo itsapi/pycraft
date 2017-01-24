@@ -556,7 +556,7 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
 
 
 void
-add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *bk_objects, long top_edge)
+add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *bk_objects, PyObject *slice_heights, long left_edge, long top_edge)
 {
     /*
         Adds the pixels of the background objects (sun and moon).
@@ -564,6 +564,8 @@ add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer,
             usage for bk_objects, this function does not mask around solid
             blocks (create_pixel won't use background pixels it doesn't need
             anyway).
+        - We do need to mask ground height so the objects don't show up
+            underground.
         - We do not need to check brightness as we are not setting light
             pixels, this is just for the actual pixels of the background
             objects.
@@ -579,16 +581,31 @@ add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer,
         long o_height = PyLong_AsLong(PyDict_GetItemString(bk_object, "height"));
         Colour o_colour = PyColour_AsColour(PyDict_GetItemString(bk_object, "colour"));
 
-        long x, y;
-        for (x = ox; x < ox + o_width; ++x)
+        long buffer_x;
+        for (buffer_x = ox; buffer_x < ox + o_width; ++buffer_x)
         {
-            for (y = oy; y > oy - o_height; --y)
+            if (buffer_x >= 0 && buffer_x < width)
             {
-                struct PixelLighting *pixel;
-                get_lighting_buffer_pixel(lighting_buffer, x, y - top_edge, &pixel);
+                long world_x = left_edge + buffer_x;
 
-                pixel->background_colour = o_colour;
-                pixel->background_colour_set_on_frame = lighting_buffer->current_frame;
+                long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x)));
+                long world_top_to_ground = world_gen_height - ground_height_world;
+
+                long world_y;
+                for (world_y = oy; world_y > oy - o_height; --world_y)
+                {
+                    long buffer_y = world_y - top_edge;
+
+                    if (world_y < world_top_to_ground &&
+                        buffer_y >= 0 && buffer_y < height)
+                    {
+                        struct PixelLighting *pixel;
+                        get_lighting_buffer_pixel(lighting_buffer, buffer_x, buffer_y, &pixel);
+
+                        pixel->background_colour = o_colour;
+                        pixel->background_colour_set_on_frame = lighting_buffer->current_frame;
+                    }
+                }
             }
         }
     }
@@ -604,8 +621,8 @@ add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObj
     long x, y;
     for (x = 0; x < width; ++x)
     {
-        float ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
-        float ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
+        long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
+        long ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
 
         for (y = 0; y < height; ++y)
         {
@@ -709,7 +726,7 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
         }
     }
 
-    add_bk_objects_pixels_colour_to_lighting_buffer(lighting_buffer, bk_objects, top_edge);
+    add_bk_objects_pixels_colour_to_lighting_buffer(lighting_buffer, bk_objects, slice_heights, left_edge, top_edge);
 
     add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
 }
