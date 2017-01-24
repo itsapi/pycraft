@@ -556,6 +556,46 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
 
 
 void
+add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *bk_objects, long top_edge)
+{
+    /*
+        Adds the pixels of the background objects (sun and moon).
+        - Because the function is only setting ~4 blocks with the current
+            usage for bk_objects, this function does not mask around solid
+            blocks (create_pixel won't use background pixels it doesn't need
+            anyway).
+        - We do not need to check brightness as we are not setting light
+            pixels, this is just for the actual pixels of the background
+            objects.
+    */
+
+    PyObject *iter = PyObject_GetIter(bk_objects);
+    PyObject *bk_object;
+    while ((bk_object = PyIter_Next(iter)))
+    {
+        long ox = PyLong_AsLong(PyDict_GetItemString(bk_object, "x"));
+        long oy = PyLong_AsLong(PyDict_GetItemString(bk_object, "y"));
+        long o_width = PyLong_AsLong(PyDict_GetItemString(bk_object, "width"));
+        long o_height = PyLong_AsLong(PyDict_GetItemString(bk_object, "height"));
+        Colour o_colour = PyColour_AsColour(PyDict_GetItemString(bk_object, "colour"));
+
+        long x, y;
+        for (x = ox; x < ox + o_width; ++x)
+        {
+            for (y = oy; y > oy - o_height; --y)
+            {
+                struct PixelLighting *pixel;
+                get_lighting_buffer_pixel(lighting_buffer, x, y - top_edge, &pixel);
+
+                pixel->background_colour = o_colour;
+                pixel->background_colour_set_on_frame = lighting_buffer->current_frame;
+            }
+        }
+    }
+}
+
+
+void
 add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *slice_heights, float day, long left_edge, long top_edge)
 {
     /*
@@ -608,7 +648,7 @@ add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObj
 
 
 void
-create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, Settings *settings, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
+create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *bk_objects, PyObject *map, Settings *settings, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
 {
     /*
         - Store the lightness value for every block, calculated from the max of:
@@ -668,6 +708,8 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
             }
         }
     }
+
+    add_bk_objects_pixels_colour_to_lighting_buffer(lighting_buffer, bk_objects, top_edge);
 
     add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
 }
@@ -798,7 +840,7 @@ render_map(PyObject *self, PyObject *args)
 
     // Create lighting buffer
 
-    create_lighting_buffer(&lighting_buffer, lights, map, &settings, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
+    create_lighting_buffer(&lighting_buffer, lights, bk_objects, map, &settings, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
 
     // Print lit blocks and background
 
