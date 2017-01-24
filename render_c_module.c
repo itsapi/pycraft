@@ -96,6 +96,7 @@ get_long_from_PyDict_or(PyObject *dict, char key[], long default_result)
 wchar_t
 get_block(long x, long y, PyObject *map)
 {
+    // TODO: Cache this? (hash map?)
     wchar_t result = 0;
 
     PyObject *column = PyDict_GetItem(map, PyLong_FromLong(x));
@@ -167,7 +168,7 @@ PyColour_AsColour(PyObject *py_colour)
 wchar_t
 get_char(long x, long y, PyObject *map, BlockData *pixel)
 {
-    // TODO: Impement a cache in get_block?
+    // TODO: Implement a cache in get_block?
 
     wchar_t left_block_key = get_block(x-1, y, map);
     wchar_t right_block_key = get_block(x+1, y, map);
@@ -428,8 +429,10 @@ check_light_z(PyObject *py_light, Light *light, long left_edge, long top_edge, P
 
 
 void
-add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light)
+add_light_pixel_lightness_to_lighting_buffer(int current_frame, Settings *settings, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light)
 {
+    // TODO: Basic lighting mode: threshold
+
     // TODO: Figure out whether this would be better before (old version) or after inverting the distance?
     light_distance *= lightness(&light->rgb);
 
@@ -446,7 +449,7 @@ add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLigh
 
 
 void
-add_light_pixel_colour_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light, PyObject *map, Colour *sky_colour, long left_edge, long top_edge)
+add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light, PyObject *map, Colour *sky_colour, long left_edge, long top_edge, long slice_height)
 {
     /*
         Adds the colour of the light's pixel for the light's light-radius' to the lighting buffer.
@@ -473,13 +476,74 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, struct PixelLightin
 
     if (visible)
     {
-        Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
-        Colour rgb = hsv_to_rgb(&hsv);
+        bool add_to_buffer = true;
 
-        float pixel_background_colour_lightness = lightness(&rgb);
+        Colour rgb;
+        float pixel_background_colour_lightness;
 
-        if (pixel->background_colour_lightness < pixel_background_colour_lightness ||
-            pixel->background_colour_set_on_frame != current_frame)
+        // Different lighting calculations for above and below ground
+        long ground_height_buffer = (world_gen_height - slice_height) - top_edge;
+        if (y > ground_height_buffer)
+        {
+            // Underground
+
+            // How light's Z values apply to underground background:
+            //   -2 invisible
+            //   -1 visible if the source is above ground
+            //   0 always visible
+
+            if (light->z == -2)
+            {
+                add_to_buffer = false;
+            }
+            else if (light->z == -1)
+            {
+                if (light->y > slice_height)
+                {
+                    // Light source is underground
+                    add_to_buffer = false;
+                }
+            }
+
+            // Does light's Z value allow this pixel to light?
+            if (add_to_buffer)
+            {
+                if (settings->fancy_lights > 0)
+                {
+                    // Fancy lighting
+
+                    // TODO: Fudge this calculation until it looks like the Python renderer!
+
+                    pixel_background_colour_lightness = 1 - light_distance;
+
+                    rgb.r = (cave_colour.r + pixel_background_colour_lightness) * .5f;
+                    rgb.g = (cave_colour.g + pixel_background_colour_lightness) * .5f;
+                    rgb.b = (cave_colour.b + pixel_background_colour_lightness) * .5f;
+                }
+                else
+                {
+                    // Basic lighting
+                    rgb = cave_colour;
+                    pixel_background_colour_lightness = 0;
+                }
+            }
+
+        }
+        else
+        {
+            // Above ground
+            // TODO: Basic lighting
+
+            Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
+            rgb = hsv_to_rgb(&hsv);
+
+            pixel_background_colour_lightness = lightness(&rgb);
+        }
+
+        // Update lighting buffer pixel if it's unset this frame or if it's lightness is less than this lights lightness
+        if (add_to_buffer &&
+            (pixel->background_colour_lightness < pixel_background_colour_lightness ||
+             pixel->background_colour_set_on_frame != current_frame))
         {
             pixel->background_colour = rgb;
             pixel->background_colour_lightness = pixel_background_colour_lightness;
@@ -543,7 +607,7 @@ add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObj
 
 
 void
-create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
+create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *map, Settings *settings, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
 {
     /*
         - Store the lightness value for every block, calculated from the max of:
@@ -572,12 +636,14 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
         };
         light.hsv = rgb_to_hsv(&light.rgb);
 
-        bool add_lightness = check_light_z(py_light, &light, left_edge, top_edge, map, slice_heights);
+        bool add_this_lights_lightness = check_light_z(py_light, &light, left_edge, top_edge, map, slice_heights);
 
         long buffer_ly = light.y - top_edge;
         long x, y;
         for (x = light.x - light.radius; x <= light.x + light.radius; ++x)
         {
+            long slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
+
             for (y = buffer_ly - light.radius; y <= buffer_ly + light.radius; ++y)
             {
                 // Is pixel on screen?
@@ -590,12 +656,12 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
                         struct PixelLighting *lighting_pixel;
                         get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
 
-                        if (add_lightness)
+                        if (add_this_lights_lightness)
                         {
-                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, x, y, light_distance, &light);
+                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light);
                         }
 
-                        add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge);
+                        add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge, slice_height);
                     }
                 }
             }
@@ -731,7 +797,7 @@ render_map(PyObject *self, PyObject *args)
 
     // Create lighting buffer
 
-    create_lighting_buffer(&lighting_buffer, lights, map, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
+    create_lighting_buffer(&lighting_buffer, lights, map, &settings, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
 
     // Print lit blocks and background
 
