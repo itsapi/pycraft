@@ -420,7 +420,7 @@ check_light_z(PyObject *py_light, Light *light, long left_edge, long top_edge, P
 
 
 void
-add_light_pixel_lightness_to_lighting_buffer(int current_frame, Settings *settings, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light)
+add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, float light_distance, Light *light)
 {
     // TODO: Basic lighting mode: threshold
 
@@ -714,7 +714,7 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
 
                         if (add_this_lights_lightness)
                         {
-                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light);
+                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, light_distance, &light);
                         }
 
                         add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge, slice_height);
