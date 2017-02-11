@@ -380,7 +380,7 @@ is_light_behind_a_solid_block(long lx, long ly, long l_height, long l_width, PyO
 
 
 bool
-check_light_z(PyObject *py_light, Light *light, long left_edge, long top_edge, PyObject *map, PyObject *slice_heights)
+check_light_z(Light *light, long left_edge, long top_edge, PyObject *map, PyObject *slice_heights)
 {
     /*
         Lights with z of:
@@ -408,10 +408,7 @@ check_light_z(PyObject *py_light, Light *light, long left_edge, long top_edge, P
         {
             // Check light source is not behind a solid block
 
-            long l_width = get_long_from_PyDict_or(py_light, "source_width", 1);
-            long l_height = get_long_from_PyDict_or(py_light, "source_height", 1);
-
-            if (!is_light_behind_a_solid_block(light->x, light->y, l_height, l_width, map, left_edge))
+            if (!is_light_behind_a_solid_block(light->x, light->y, light->height, light->width, map, left_edge))
             {
                 result = true;
             }
@@ -690,18 +687,19 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
     PyObject *py_light;
     while ((py_light = PyIter_Next(iter)))
     {
+
         Light light = {
             .x = PyLong_AsLong(PyDict_GetItemString(py_light, "x")),
             .y = PyLong_AsLong(PyDict_GetItemString(py_light, "y")),
             .z = PyLong_AsLong(PyDict_GetItemString(py_light, "z")),
             .radius = PyLong_AsLong(PyDict_GetItemString(py_light, "radius")),
-            .width = PyLong_AsLong(PyDict_GetItemString(py_light, "source_width")),
-            .height = PyLong_AsLong(PyDict_GetItemString(py_light, "source_height")),
+            .width = get_long_from_PyDict_or(py_light, "source_width", 1),
+            .height = get_long_from_PyDict_or(py_light, "source_height", 1),
             .rgb = PyColour_AsColour(PyDict_GetItemString(py_light, "colour"))
         };
         light.hsv = rgb_to_hsv(&light.rgb);
 
-        bool add_this_lights_lightness = check_light_z(py_light, &light, left_edge, top_edge, map, slice_heights);
+        bool add_this_lights_lightness = check_light_z(&light, left_edge, top_edge, map, slice_heights);
 
         long buffer_ly = light.y - top_edge;
         long x, y;
