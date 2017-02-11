@@ -41,6 +41,8 @@ typedef struct {
     long y;
     long z;
     long radius;
+    long width;
+    long height;
     Colour rgb;
     Colour hsv;
 } Light;

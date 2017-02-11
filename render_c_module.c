@@ -126,7 +126,7 @@ lightness(Colour *rgb)
 
 
 float
-circle_dist(long test_x, long test_y, long x, long y, long r)
+circle_dist(float test_x, float test_y, float x, float y, float r)
 {
     return ( pow(test_x - x, 2.0f) / pow(r    , 2.0f) +
              pow(test_y - y, 2.0f) / pow(r*.5f, 2.0f) );
@@ -134,9 +134,16 @@ circle_dist(long test_x, long test_y, long x, long y, long r)
 
 
 float
-lit(long x, long y, long lx, long ly, long l_radius)
+lit(long x, long y, long lx, long ly, long l_width, long l_height, long l_radius)
 {
-    return fmin(circle_dist(x, y, lx, ly, l_radius), 1.0f);
+    float result;
+
+    float l_center_x = (float)lx + ((float)l_width  * 0.5) - 0.5f;
+    float l_center_y = (float)ly - ((float)l_height * 0.5) + 0.5f;
+
+    result = circle_dist(x, y, l_center_x, l_center_y, l_radius);
+
+    return fmin(result, 1.0f);
 }
 
 
@@ -688,6 +695,8 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
             .y = PyLong_AsLong(PyDict_GetItemString(py_light, "y")),
             .z = PyLong_AsLong(PyDict_GetItemString(py_light, "z")),
             .radius = PyLong_AsLong(PyDict_GetItemString(py_light, "radius")),
+            .width = PyLong_AsLong(PyDict_GetItemString(py_light, "source_width")),
+            .height = PyLong_AsLong(PyDict_GetItemString(py_light, "source_height")),
             .rgb = PyColour_AsColour(PyDict_GetItemString(py_light, "colour"))
         };
         light.hsv = rgb_to_hsv(&light.rgb);
@@ -706,7 +715,7 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
                 if ((x >= 0 && x < width) &&
                     (y >= 0 && y < height))
                 {
-                    float light_distance = lit(x, y, light.x, buffer_ly, light.radius);
+                    float light_distance = lit(x, y, light.x, buffer_ly, light.width, light.height, light.radius);
                     if (light_distance < 1)
                     {
                         struct PixelLighting *lighting_pixel;
