@@ -533,14 +533,12 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
             {
                 Colour hsv = lerp_colour(&light->hsv, light_distance, sky_colour);
                 rgb = hsv_to_rgb(&hsv);
-
-                pixel_background_colour_lightness = lightness(&rgb);
             }
             else
             {
                 rgb = CYAN;
-                pixel_background_colour_lightness = lightness(&rgb);
             }
+            pixel_background_colour_lightness = lightness(&rgb);
         }
 
         // Update lighting buffer pixel if it's unset this frame or if it's lightness is less than this lights lightness
@@ -705,8 +703,6 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
         long x, y;
         for (x = light.x - light.radius; x <= light.x + light.radius; ++x)
         {
-            long slice_height = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
-
             for (y = buffer_ly - light.radius; y <= buffer_ly + light.radius; ++y)
             {
                 // Is pixel on screen?
@@ -724,6 +720,7 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
                             add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, light_distance, &light);
                         }
 
+                        long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
                         add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge, slice_height);
                     }
                 }
