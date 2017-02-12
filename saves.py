@@ -8,6 +8,7 @@ from collections import OrderedDict
 from terrain import world_gen
 from console import log
 from data import timings
+from player import MAX_PLAYER_HEALTH
 
 
 default_meta = {
@@ -15,7 +16,9 @@ default_meta = {
     'seed': lambda: hash(random.random()),
     'spawn': 0,
     'tick': timings['tick'],
-    'players': {}
+    'players': {},
+    'mobs': {},
+    'items': {}
 }
 
 default_global_meta = {}
@@ -29,13 +32,15 @@ default_settings = {
     'neopixels': False,
     'gravity': False,
     'flight': False,
+    'mobs': True,
     'width': 40,
     'height': 30
 }
 
 default_player = {
-    'player_x': int(os.getenv('PYCRAFT_START_X') or 0),
-    'player_y': 1,
+    'x': int(os.getenv('PYCRAFT_START_X') or 0),
+    'y': 1,
+    'health': MAX_PLAYER_HEALTH,
     'inv': []
 }
 

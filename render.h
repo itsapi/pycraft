@@ -13,12 +13,14 @@ typedef struct
 
 
 typedef union {
-    struct {
+    struct
+    {
         float r;
         float g;
         float b;
     };
-    struct {
+    struct
+    {
         float h;
         float s;
         float v;
@@ -32,6 +34,34 @@ typedef struct
     Colour fg, bg;
     int style;
 } PrintableChar;
+
+
+typedef struct {
+    long x;
+    long y;
+    long z;
+    long radius;
+    long width;
+    long height;
+    Colour rgb;
+    Colour hsv;
+} Light;
+
+
+typedef struct
+{
+    int current_frame;
+
+    struct PixelLighting
+    {
+        Colour background_colour;
+        float background_colour_lightness;
+        int background_colour_set_on_frame;
+
+        float lightness;
+        int lightness_set_on_frame;
+    } *screen;
+} LightingBuffer;
 
 
 typedef struct
@@ -55,3 +85,27 @@ typedef struct
     } colours;
     bool solid;
 } BlockData;
+
+
+typedef struct Object
+{
+    int from_frame;
+
+    long x;
+    long y;
+    long hierarchy;
+    wchar_t key;
+    Colour rgb;
+    PyObject *model;
+
+    struct Object *next;
+} Object;
+
+
+#define OBJECTS_MAP_SIZE 512
+
+typedef struct
+{
+    Object objects[OBJECTS_MAP_SIZE];
+} ObjectsMap;
+

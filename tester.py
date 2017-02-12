@@ -6,7 +6,7 @@ def main():
 
     render_c = pycraft.import_render_c(settings)
     save = pycraft.saves.new_save({'name': 'test', 'seed': 'This is a test!'})
-    server_obj = pycraft.server_interface.LocalInterface('tester', save, 0)
+    server_obj = pycraft.server_interface.LocalInterface('tester', save, 0, settings)
 
     try:
         pycraft.game(server_obj, settings, render_c, benchmarks)

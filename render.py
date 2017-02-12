@@ -52,6 +52,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
     if redraw_all:
         last_frame = {}
 
+    objects = list(filter(lambda o: (o['x'] >= 0 and o['x'] <= (edges[1] - edges[0])) and
+                                    (o['y'] >= edges_y[0] and o['y'] <= edges_y[1]), objects))
+
     for world_x, column in map_.items():
         if world_x in range(*edges):
 
@@ -89,16 +92,25 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
 
 def obj_pixel(x, y, objects):
+    pixel, colour = None, None
 
-    for object_ in objects:
-        if object_['x'] == x and object_['y'] == y:
+    objects = filter(lambda o: (x >= o['x']                      and x <  o['x'] + len(o['model'])) and
+                               (y >  o['y'] - len(o['model'][0]) and y <= o['y']                  ), objects)
 
-            # Objects can override their block colour
-            colour = object_.get('colour', blocks[object_['char']]['colours']['fg'])
+    object_ = max(objects, key=lambda o: o['hierarchy'], default=None)
 
-            return object_['char'], colour
+    if object_:
+        model = object_['model']
+        width = len(model)
+        height = len(model[0])
 
-    return None, None
+        dx = x - object_['x']
+        dy = (height - 1) - (object_['y'] - y)
+
+        pixel = model[dx][dy]
+        colour = object_.get('colour', blocks[pixel]['colours']['fg'])
+
+    return pixel, colour
 
 
 def calc_pixel(x, y, world_x, world_y, world_screen_x, map_, slice_heights, pixel_f, objects, bk_objects, sky_colour, day, lights, fancy_lights):
@@ -188,7 +200,7 @@ def bk_objects(ticks, width, fancy_lights):
         obj['light_colour'] = lighting[light_type + '_light_colour']
         obj['light_radius'] = lighting[light_type + '_light_radius'] * sin(sun_angle)
     else:
-        sky_colour = CYAN if day else BLUE
+        sky_colour = rgb_to_hsv(CYAN if day else BLUE)
 
     objects.append(obj)
 
@@ -206,7 +218,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
     # return colour_behind
     if (world_gen['height'] - y) < slice_heights[world_x + x]:
 
-        light = (.1,.1,.1)
+        light = lighting['cave_colour']
         if fancy_lights:
             block_lightness = get_block_lightness(x, y, world_x, map_, slice_heights, lights)
             light = [(b + block_lightness) / 2 for b in light]
@@ -364,7 +376,10 @@ def get_lights(_map, start_x, bk_objects):
         'x': obj['x'],
         'y': obj['y'],
         'z': obj['z'],
-        'colour': obj['light_colour']
+        'colour': obj['light_colour'],
+        'source_width': obj['width'],
+        'source_height': obj['height'],
+        'source_colour': obj['colour']
     }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
 
     # Give blocks light

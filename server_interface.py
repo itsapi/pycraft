@@ -5,6 +5,7 @@ from time import time
 from server import Server, log_event_send, log_event_receive, dt
 from console import log
 from data import timings
+from player import MAX_PLAYER_HEALTH
 
 import saves, terrain, network
 
@@ -22,6 +23,8 @@ class RemoteInterface:
         self.map_ = {}
         self.slice_heights = {}
         self.current_players = {}
+        self.mobs = {}
+        self.items = {}
         self.game = True
         self.error = None
         self._name = name
@@ -71,6 +74,8 @@ class RemoteInterface:
         self._chunks_requested = set()
 
         self._send('get_players')
+        self._send('get_mobs')
+        self._send('get_items')
         self._send('get_time')
 
         self.redraw = False
@@ -94,6 +99,10 @@ class RemoteInterface:
              'set_chunks': self._event_set_chunks,
              'set_players': self._event_set_players,
              'remove_player': self._event_remove_player,
+             'set_mobs': self._event_set_mobs,
+             'set_items': self._event_set_items,
+             'add_items': self._event_add_items,
+             'remove_items': self._event_remove_items,
              'set_time': self._event_set_time,
              'logout': self._event_logout,
              'error': self._event_error
@@ -126,6 +135,22 @@ class RemoteInterface:
 
     def _event_remove_player(self, name):
         self.current_players.pop(name)
+        self.redraw = True
+
+    def _event_set_mobs(self, mobs):
+        self.mobs = mobs
+        self.redraw = True
+
+    def _event_set_items(self, items):
+        self.items = items
+        self.redraw = True
+
+    def _event_add_items(self, new_items):
+        self.items.update(new_items)
+        self.redraw = True
+
+    def _event_remove_items(self, removed_items):
+        self.items = {id_: item for id_, item in self.items.items() if id_ not in removed_items}
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -170,7 +195,7 @@ class RemoteInterface:
         self.slice_heights = {x: h for x, h in self.slice_heights.items() if x in range(*edges)}
 
         # TODO: Figure out if we always need to send this...
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])
@@ -186,20 +211,42 @@ class RemoteInterface:
 
         return self._dt
 
+    def update_mobs(self):
+        # The client does nothing
+        pass
+
+    def despawn_items(self):
+        # The client does nothing
+        pass
+
+    def player_attack(self, raduis, strength):
+        x, y = self.pos
+        self._send('player_attack', [self._name, x, y, raduis, strength])
+
     def respawn(self):
         self._send('respawn', [self._name])
 
+    def add_health(self, dhealth):
+        new_health = self.current_players[self._name]['health'] + dhealth
+        self.current_players[self._name]['health'] = min(MAX_PLAYER_HEALTH, new_health)
+
+        self._send('set_player', [self._name, self.current_players[self._name]])
+
     @property
     def pos(self):
-        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
+        return self.current_players[self._name]['x'], self.current_players[self._name]['y']
 
     @property
     def inv(self):
         return self.current_players[self._name]['inv']
 
+    @property
+    def health(self):
+        return self.current_players[self._name]['health']
+
     @pos.setter
     def pos(self, pos):
-        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self.current_players[self._name]['x'], self.current_players[self._name]['y'] = pos
         self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
@@ -219,14 +266,14 @@ class LocalInterface:
         Communicates directly with self._server
     """
 
-    def __init__(self, name, save, port):
+    def __init__(self, name, save, port, settings):
         self.game = True
         self.error = None
         self.serving = False
         self.time = timings['tick']
         self._name = name
         self.current_players = {}
-        self._server = Server(name, save, port, self)
+        self._server = Server(name, save, port, settings, self)
         self._server.local_interface_login()
 
     def _send(self, event, args=[]):
@@ -240,6 +287,10 @@ class LocalInterface:
          'set_chunks': self._event_view_change,
          'set_players': self._event_set_players,
          'remove_player': self._event_remove_player,
+         'set_mobs': self._event_set_mobs,
+         'set_items': self._event_set_items,
+         'add_items': self._event_add_items,
+         'remove_items': self._event_remove_items,
          'set_time': self._event_set_time,
          'logout': self._event_logout,
          'error': self._event_error
@@ -256,6 +307,18 @@ class LocalInterface:
 
     def _event_remove_player(self, name):
         self.current_players.pop(name)
+        self.redraw = True
+
+    def _event_set_mobs(self, mobs):
+        self.redraw = True
+
+    def _event_set_items(self, items):
+        self.redraw = True
+
+    def _event_add_items(self, new_items):
+        self.redraw = True
+
+    def _event_remove_items(self, remove_items):
         self.redraw = True
 
     def _event_set_time(self, time):
@@ -285,7 +348,7 @@ class LocalInterface:
     def unload_slices(self, edges):
         edges = [chunk_size * floor(edges[0] / chunk_size),
                  chunk_size * ceil(edges[1] / chunk_size)]
-        self._send('unload_slices', [edges])
+        self._send('unload_slices', [self._name, edges])
 
     def set_blocks(self, blocks):
         self._send('set_blocks', [blocks])
@@ -307,12 +370,28 @@ class LocalInterface:
         dt, self.time = self._server.local_interface_dt()
         return dt
 
+    def update_mobs(self):
+        self._server.local_interface_update_mobs()
+
+    def update_items(self):
+        self._server.local_interface_update_items()
+
+    def player_attack(self, radius, strength):
+        x, y = self.pos
+        self._send('player_attack', [self._name, x, y, radius, strength])
+
     def respawn(self):
         self._send('respawn', [self._name])
 
+    def add_health(self, dhealth):
+        new_health = self.current_players[self._name]['health'] + dhealth
+        self.current_players[self._name]['health'] = min(MAX_PLAYER_HEALTH, new_health)
+
+        self._send('set_player', [self._name, self.current_players[self._name]])
+
     @property
     def pos(self):
-        return self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y']
+        return self.current_players[self._name]['x'], self.current_players[self._name]['y']
 
     @property
     def inv(self):
@@ -320,12 +399,16 @@ class LocalInterface:
 
     @pos.setter
     def pos(self, pos):
-        self.current_players[self._name]['player_x'], self.current_players[self._name]['player_y'] = pos
+        self.current_players[self._name]['x'], self.current_players[self._name]['y'] = pos
         self._send('set_player', [self._name, self.current_players[self._name]])
 
     @inv.setter
     def inv(self, inv):
         self.current_players[self._name]['inv'] = inv
+
+    @property
+    def health(self):
+        return self.current_players[self._name]['health']
 
     @property
     def map_(self):
@@ -338,6 +421,14 @@ class LocalInterface:
     @property
     def port(self):
         return self._server.port
+
+    @property
+    def mobs(self):
+        return self._server.local_interface_mobs()
+
+    @property
+    def items(self):
+        return self._server.local_interface_items()
 
     # TODO: do the pause stuff
     def pause(self, paused):

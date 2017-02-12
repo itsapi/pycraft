@@ -2,6 +2,8 @@ from colours import *
 from render import blocks
 from terrain import is_solid, world_gen
 
+import data
+
 
 cursor_x = {0:  0, 1:  1, 2: 1, 3: 0, 4: -1, 5: -1}
 cursor_y = {0: -2, 1: -1, 2: 0, 3: 1, 4:  0, 5: -1}
@@ -10,35 +12,20 @@ INV_TITLE = 'Inventory'
 CRAFT_TITLE = 'Crafting'
 
 HAND_STRENGTH = 20
+MAX_PLAYER_HEALTH = 10
 
 
-def get_pos_delta(inp, map_, x, y, jump, flight):
-
-    left_slice = map_[x - 1]
+def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
     player_slice = map_[x]
-    right_slice = map_[x + 1]
 
     feet_y = y
     head_y = y - 1
     below_y = y + 1
     above_y = y - 2
 
-    dy = 0
-    dx = 0
+    dx = -1 * ('a' in inp) + 1 * ('d' in inp)
 
-    # Calculate change in x pos for left and right movement
-    for test_char, dir_, next_slice in (('a', -1, left_slice), ('d', 1, right_slice)):
-        if ( test_char in inp
-             and not is_solid( next_slice[head_y] )):
-
-            if is_solid( next_slice[feet_y] ):
-                if ( not is_solid( next_slice[above_y] )
-                     and not is_solid( player_slice[above_y] )):
-
-                    dy = -1
-                    dx = dir_
-            else:
-                dx = dir_
+    dx, dy = get_pos_delta(dx, x, y, map_)
 
     # Jumps if up pressed, block below, no block above
     if ( 'w' in inp and y > 1
@@ -55,6 +42,32 @@ def get_pos_delta(inp, map_, x, y, jump, flight):
         dy = 1
 
     return dx, dy, jump
+
+
+def get_pos_delta(dx, x, y, map_):
+
+    player_slice = map_[x]
+
+    feet_y = y
+    head_y = y - 1
+    below_y = y + 1
+    above_y = y - 2
+
+    dy = 0
+
+    next_slice = map_[x + dx]
+    checked_dx = 0
+    if not is_solid(next_slice[head_y]):
+        if is_solid( next_slice[feet_y] ):
+            if ( not is_solid( next_slice[above_y] )
+                 and not is_solid( player_slice[above_y] )):
+
+                dy = -1
+                checked_dx = dx
+        else:
+            checked_dx = dx
+
+    return checked_dx, dy
 
 
 def can_place(map_, block_x, block_y, inv_block):
@@ -76,46 +89,60 @@ def can_place(map_, block_x, block_y, inv_block):
     return can_place
 
 
-def cursor_func(inp, map_, x, y, cursor, inv_sel, inv):
-    block_x = x + cursor_x[cursor]
-    block_y = y + cursor_y[cursor]
-    block = map_[block_x][block_y]
-    inv_block = inv[inv_sel]['block'] if len(inv) else None
+def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, hungry):
     dinv = False
+    dhealth = 0
     events = []
 
     slices = {}
 
-    if 'k' in inp and block_y >= 0 and block_y < world_gen['height']:
+    inv_block = inv[inv_sel]['block'] if len(inv) else None
 
-        # If pressing k and block is air and can place
-        if (block == ' ' and len(inv) and
-                blocks[inv_block]['breakable'] and
-                can_place(map_, block_x, block_y, inv_block)):
+    if 'k' in inp:
+        if inv_block is not None and blocks[inv_block].get('edible', False) and hungry:
+            # Eat it!
 
-            # Place block in world from selected inv slot
-            slices[block_x] = {}
-            slices[block_x][block_y] = inv_block
             inv, inv_sel = rem_inv(inv, inv_sel)
+            dhealth += blocks[inv_block]['health']
             dinv = True
 
-            if inv_block == '?':
-                events.append({
-                    'pos': (block_x, block_y),
-                    'time_remaining': 10
-                })
+        else:
+            # Try to place it!
 
-        # If pressing k and block is not air and breakable
-        elif can_inv_tool_break(block, inv, inv_sel):
-
-            # Destroy block
+            block_x = x + cursor_x[cursor]
+            block_y = y + cursor_y[cursor]
             block = map_[block_x][block_y]
-            slices[block_x] = {}
-            slices[block_x][block_y] = ' '
-            inv = add_inv(inv, block)
-            dinv = True
 
-    return slices, inv, inv_sel, events, dinv
+            if block_y >= 0 and block_y < world_gen['height']:
+
+                # If pressing k and block is air and can place
+                if (block == ' ' and len(inv) and
+                        blocks[inv_block]['breakable'] and
+                        can_place(map_, block_x, block_y, inv_block)):
+
+                    # Place block in world from selected inv slot
+                    slices[block_x] = {}
+                    slices[block_x][block_y] = inv_block
+                    inv, inv_sel = rem_inv(inv, inv_sel)
+                    dinv = True
+
+                    if inv_block == '?':
+                        events.append({
+                            'pos': (block_x, block_y),
+                            'time_remaining': 10
+                        })
+
+                # If pressing k and block is not air and breakable
+                elif can_inv_tool_break(block, inv, inv_sel):
+
+                    # Destroy block
+                    block = map_[block_x][block_y]
+                    slices[block_x] = {}
+                    slices[block_x][block_y] = ' '
+                    inv = add_inv(inv, block)
+                    dinv = True
+
+    return slices, inv, inv_sel, events, dhealth, dinv
 
 
 def move_cursor(inp):
@@ -163,36 +190,35 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     return colour
 
 
-def assemble_players(players, x, y, offset, edges):
+def entities_to_render_objects(entities, x, offset, edges):
     objects = []
 
-    for player in players.values():
-        player_x = player['player_x']
-        player_y = player['player_y']
-        x_offset = player_x - x + offset
+    for entity_type, entities_of_type in entities.items():
+        render_object_data = data.render_objects[entity_type]
 
-        if player_x in range(*edges):
-            objects.append({
-                'x': x_offset,
-                'y': player_y - 1,
-                'char': '*'
-            })
-            objects.append({
-                'x': x_offset,
-                'y': player_y,
-                'char': '^'
-            })
+        for entity in entities_of_type:
+            ex = entity['x']
+            ey = entity['y']
+
+            if ex in range(*edges):
+                object_ = render_object_data.copy()
+
+                object_['x'] = ex - x + offset
+                object_['y'] = ey
+
+                objects.append(object_)
 
     return objects
 
 
 def assemble_cursor(x, y, cursor, colour):
-    return {
-        'x': x + cursor_x[cursor],
-        'y': y + cursor_y[cursor],
-        'char': 'X',
-        'colour': colour
-    }
+    object_ = data.render_objects['cursor'].copy()
+
+    object_['x'] = x + cursor_x[cursor]
+    object_['y'] = y + cursor_y[cursor]
+    object_['colour'] = colour
+
+    return object_
 
 
 def get_crafting(inv, crafting_list, crafting_sel, reset=False):

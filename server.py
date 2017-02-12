@@ -1,12 +1,13 @@
 from time import time
 from math import radians, floor, ceil
 from threading import Thread
+
+import terrain, saves, network, mobs, items
+
 from colours import colour_str, TERM_YELLOW
-
-import terrain, saves, network
-
 from console import log
 from data import timings
+from player import MAX_PLAYER_HEALTH
 
 
 def _log_event(event, args):
@@ -39,12 +40,12 @@ def dt(last_tick):
 
 
 class Server:
-    def __init__(self, player, save, port, local_interface):
+    def __init__(self, player, save, port, settings, local_interface):
         self.current_players = {}
         self.local_player = player
 
         self.local_interface = local_interface
-        self.game = Game(save)
+        self.game = Game(save, settings)
         self.default_port = port
 
         self.serving = False
@@ -69,8 +70,11 @@ class Server:
             {'get_chunks': self.event_get_chunks,
              'set_player': self.event_set_player,
              'get_players': self.event_get_players,
+             'get_mobs': self.event_get_mobs,
+             'get_items': self.event_get_items,
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
+             'player_attack': self.event_player_attack,
              'respawn': self.event_respawn,
              'logout': lambda: self.event_logout(sock),
              'login': lambda name: self.event_login(name, sock),
@@ -122,17 +126,36 @@ class Server:
     def event_get_players(self):
         return {'event': 'set_players', 'args': [self.game.get_players(self._player_list())]}
 
-    def event_unload_slices(self, edges):
-        # TODO: Unload slices outside of edges if not loaded by other players
-        pass
+    def event_get_mobs(self):
+        return {'event': 'set_mobs', 'args': [self.game.mobs]}
+
+    def event_get_items(self):
+        return {'event': 'add_items', 'args': [self.game.items]}
+
+    def event_unload_slices(self, name, edges):
+        player = self.game.get_player(name)
+        player['edges'] = edges
+        self.game.set_player(name, player)
+        self.game.reload_slices()
 
     def event_get_time(self):
         return {'event': 'set_time', 'args': [self.game.time]}
 
     def event_respawn(self, name):
         player = self.game.get_player(name)
-        player['player_x'], player['player_y'] = self.game.spawn
+
+        self.game._meta['items'].update(
+            items.new_item(player['x'], player['y'], player['inv'], self.game._last_tick, ttl=5*60))
+        player['inv'] = []
+        player['x'], player['y'] = self.game.spawn
+        player['health'] = MAX_PLAYER_HEALTH
+
         self._update_clients({'event': 'set_players', 'args': [{name: player}]})
+
+    def event_player_attack(self, name, x, y, radius, strength):
+        updated_players, updated_mobs = self.game.player_attack(name, x, y, radius, strength)
+        self._update_clients({'event': 'set_players', 'args': [updated_players]})
+        self._update_clients({'event': 'set_mobs', 'args': [updated_mobs]})
 
     # Methods for local interface only:
 
@@ -168,22 +191,39 @@ class Server:
     def local_interface_slice_heights(self):
         return self.game._slice_heights
 
+    def local_interface_mobs(self):
+        return self.game.mobs
+
     def local_interface_dt(self):
         dt, time = self.game.dt()
         if dt and time % 100 == 0:
             self._update_clients({'event': 'set_time', 'args': [time]})
         return dt, time
 
+    def local_interface_update_mobs(self):
+        updated_players, new_items = self.game.update_mobs()
+        self._update_clients({'event': 'set_players', 'args': [updated_players]})
+        self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
+        self._update_clients({'event': 'add_items', 'args': [new_items]})
+
+    def local_interface_update_items(self):
+        removed_items = self.game.update_items()
+        self._update_clients({'event': 'remove_items', 'args': [removed_items]})
+
+    def local_interface_items(self):
+        return self.game.items
+
 
 class Game:
     """ The game. """
 
-    def __init__(self, save):
+    def __init__(self, save, settings):
         self._save = save
         self._map = {}
         self._slice_heights = {}
         self._meta = saves.get_meta(save)
         self._last_tick = time()
+        self._settings = settings
 
     def get_chunks(self, chunk_list):
         new_slices = {}
@@ -235,9 +275,37 @@ class Game:
 
         return self._dt, self.time
 
-    # TODO: keep track of the chunks loaded by players, only unload those that aren't loaded by others
-    def unload_slices(self):
-        pass
+    def reload_slices(self):
+        new_map = {}
+        for x, slice_ in self._map.items():
+            if any(x in range(*player['edges']) for player in self._meta['players'].values() if player.get('edges')):
+                new_map[x] = slice_
+        self._map = new_map
+
+    def player_attack(self, name, ax, ay, radius, strength):
+        return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
+
+    def update_mobs(self):
+        if not self._settings.get('mobs'):
+            self._meta['mobs'].clear()
+            return {}, {}
+
+        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick)
+        self._meta['items'].update(new_items)
+        return updated_players, new_items
+
+    def update_items(self):
+        removed_items = items.pickup_items(self._meta['items'], self._meta['players'])
+        removed_items += items.despawn_items(self._meta['items'], self._last_tick)
+        return removed_items
+
+    @property
+    def mobs(self):
+        return self._meta['mobs']
+
+    @property
+    def items(self):
+        return self._meta['items']
 
     @property
     def spawn(self):
