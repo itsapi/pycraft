@@ -40,12 +40,12 @@ def dt(last_tick):
 
 
 class Server:
-    def __init__(self, player, save, port, local_interface):
+    def __init__(self, player, save, port, settings, local_interface):
         self.current_players = {}
         self.local_player = player
 
         self.local_interface = local_interface
-        self.game = Game(save)
+        self.game = Game(save, settings)
         self.default_port = port
 
         self.serving = False
@@ -217,12 +217,13 @@ class Server:
 class Game:
     """ The game. """
 
-    def __init__(self, save):
+    def __init__(self, save, settings):
         self._save = save
         self._map = {}
         self._slice_heights = {}
         self._meta = saves.get_meta(save)
         self._last_tick = time()
+        self._settings = settings
 
     def get_chunks(self, chunk_list):
         new_slices = {}
@@ -285,6 +286,10 @@ class Game:
         return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
 
     def update_mobs(self):
+        if not self._settings.get('mobs'):
+            self._meta['mobs'].clear()
+            return {}, {}
+
         updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick)
         self._meta['items'].update(new_items)
         return updated_players, new_items

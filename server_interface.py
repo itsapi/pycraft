@@ -266,14 +266,14 @@ class LocalInterface:
         Communicates directly with self._server
     """
 
-    def __init__(self, name, save, port):
+    def __init__(self, name, save, port, settings):
         self.game = True
         self.error = None
         self.serving = False
         self.time = timings['tick']
         self._name = name
         self.current_players = {}
-        self._server = Server(name, save, port, self)
+        self._server = Server(name, save, port, settings, self)
         self._server.local_interface_login()
 
     def _send(self, event, args=[]):

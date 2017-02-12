@@ -26,7 +26,7 @@ def main():
 
             if data['local']:
                 # Local Server
-                server_obj = server_interface.LocalInterface(name, data['save'], port)
+                server_obj = server_interface.LocalInterface(name, data['save'], port, settings)
             else:
                 # Remote Server
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
