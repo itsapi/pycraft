@@ -305,6 +305,15 @@ def pause(server, settings):
     ))
 
 
+def respawn():
+    print(CLS, end='')
+
+    return loop_menu('You Died!', lambda: (
+        ('Respawn', lambda: False),
+        ('Main Menu', lambda: 'exit')
+    ))
+
+
 def help_():
     """ Displays the help stored in the help_data list. """
 

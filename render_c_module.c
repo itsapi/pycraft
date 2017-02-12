@@ -201,35 +201,6 @@ printable_char_eq(PrintableChar *a, PrintableChar *b)
 
 
 void
-get_obj_pixel(long x, long y, PyObject *objects, wchar_t *obj_key_result, Colour *obj_colour_result)
-{
-    PyObject *iter = PyObject_GetIter(objects);
-    PyObject *object;
-
-    while ((object = PyIter_Next(iter)))
-    {
-        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
-        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
-
-        if (ox == x && oy == y)
-        {
-            wchar_t c = PyString_AsChar(PyDict_GetItemString(object, "char"));
-            Colour rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
-
-            if (rgb.r == -1)
-            {
-                rgb = get_block_data(c)->colours.fg;
-            }
-
-            *obj_key_result = c;
-            *obj_colour_result = rgb;
-            return;
-        }
-    }
-}
-
-
-void
 apply_block_lightness(Colour *result, float lightness)
 {
     /*
@@ -248,9 +219,50 @@ get_lighting_buffer_pixel(LightingBuffer *lighting_buffer, int x, int y, struct 
 }
 
 
+int
+objects_hash_func(long x, long y)
+{
+    int result = (((x + y) * (x + y + 1) / 2) + y) % OBJECTS_MAP_SIZE;
+    return result;
+}
+
+
+static int frame_id = 1;
+
+void
+get_obj_pixel(long x, long y, ObjectsMap *objects_map, Object *result)
+{
+    long current_pixel_hierarchy = 0;
+    Object *object = NULL;
+
+    int map_hash = objects_hash_func(x, y);
+    Object *test_obj = objects_map->objects + map_hash;
+
+    do
+    {
+        if (test_obj->from_frame == frame_id &&
+            test_obj->hierarchy > current_pixel_hierarchy &&
+            x == test_obj->x && y == test_obj->y)
+        {
+            current_pixel_hierarchy = test_obj->hierarchy;
+            object = test_obj;
+        }
+        test_obj = test_obj->next;
+    }
+    while (test_obj != NULL);
+
+    if (object != NULL)
+    {
+        *result = *object;
+    }
+
+    return;
+}
+
+
 void
 create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key,
-                 PyObject *objects, LightingBuffer *lighting_buffer, Settings *settings,
+                 ObjectsMap *objects_map, LightingBuffer *lighting_buffer, Settings *settings,
                  PrintableChar *result, struct PixelLighting **potential_lighting_pixel)
 {
     bool light_bg = false;
@@ -265,13 +277,13 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wcha
     }
 
     // Get object fg colour and character if there is an object, otherwise get block fg colour and character
-    wchar_t obj_key = 0;
-    Colour obj_colour;
-    get_obj_pixel(x, world_y, objects, &obj_key, &obj_colour);
-    if (obj_key != 0)
+    Object object = {.key = 0};
+    get_obj_pixel(x, world_y, objects_map, &object);
+
+    if (object.key != 0)
     {
-        result->character = obj_key;
-        result->fg = obj_colour;
+        result->character = object.key;
+        result->fg = object.rgb;
         light_fg = false;
     }
     else
@@ -311,9 +323,7 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wcha
 
 
 void
-create_pixel(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key,
-             PyObject *objects, LightingBuffer *lighting_buffer, bool underground, Colour *sky_colour_rgb,
-             Settings *settings, PrintableChar *result)
+create_pixel(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key, ObjectsMap *objects_map, LightingBuffer *lighting_buffer, bool underground, Colour *sky_colour_rgb, Settings *settings, PrintableChar *result)
 {
     result->bg.r = -1;
     result->fg.r = -1;
@@ -322,7 +332,7 @@ create_pixel(long x, long y, long world_x, long world_y, PyObject *map, wchar_t 
 
     struct PixelLighting *lighting_pixel = NULL;
 
-    create_lit_block(x, y, world_x, world_y, map, pixel_f_key, objects, lighting_buffer, settings, result, &lighting_pixel);
+    create_lit_block(x, y, world_x, world_y, map, pixel_f_key, objects_map, lighting_buffer, settings, result, &lighting_pixel);
 
     // If the block did not set a background colour, add the sky background.
     if (result->bg.r == -1)
@@ -733,6 +743,67 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
     add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
 }
 
+void
+filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long right_edge, long top_edge, long bottom_edge)
+{
+    ++frame_id;
+
+    static Object zero_obj = {0};
+
+    PyObject *iter = PyObject_GetIter(objects);
+    PyObject *object;
+
+    while ((object = PyIter_Next(iter)))
+    {
+        long ox = PyLong_AsLong(PyDict_GetItemString(object, "x"));
+        long oy = PyLong_AsLong(PyDict_GetItemString(object, "y"));
+
+        PyObject *model = PyDict_GetItemString(object, "model");
+        long width = PySequence_Length(model);
+        long height = PySequence_Length(PySequence_GetItem(model, 0));
+
+        int dx, dy;
+        for (dx = 0; dx < width; ++dx)
+        {
+            for (dy = 0; dy < height; ++dy)
+            {
+                long mx = ox + dx;
+                long my = oy - dy;
+
+                if ((mx >= 0 && mx <= (right_edge - left_edge)) &&
+                    (my >= top_edge && my <= bottom_edge))
+                {
+
+                    int map_hash = objects_hash_func(mx, my);
+                    Object *map_obj = objects_map->objects + map_hash;
+
+                    while (map_obj->from_frame == frame_id)
+                    {
+                        if (map_obj->next == NULL)
+                        {
+                            map_obj->next = (Object *)malloc(sizeof(Object));
+                            *(map_obj->next) = zero_obj;
+                        }
+                        map_obj = map_obj->next;
+                    }
+
+                    map_obj->from_frame = frame_id;
+                    map_obj->x = mx;
+                    map_obj->y = my;
+                    map_obj->hierarchy = PyLong_AsLong(PyDict_GetItemString(object, "hierarchy"));
+
+                    map_obj->key = PyString_AsChar(PySequence_GetItem(PySequence_GetItem(model, dx), height - 1 - dy));
+                    map_obj->rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+                    if (map_obj->rgb.r == -1)
+                    {
+                        map_obj->rgb = get_block_data(map_obj->key)->colours.fg;
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 bool
 terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *settings)
@@ -812,6 +883,7 @@ render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
     static LightingBuffer lighting_buffer = {.current_frame = 0};
+    static ObjectsMap objects_map = {{{0}}};
 
     float day;
 
@@ -857,11 +929,8 @@ render_map(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Create lighting buffer
-
     create_lighting_buffer(&lighting_buffer, lights, bk_objects, map, &settings, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
-
-    // Print lit blocks and background
+    filter_objects(objects, &objects_map, left_edge, right_edge, top_edge, bottom_edge);
 
     Py_ssize_t i = 0;
     PyObject *world_x, *column;
@@ -901,7 +970,7 @@ render_map(PyObject *self, PyObject *args)
                 }
 
                 PrintableChar printable_char;
-                create_pixel(x, y, world_x_l, world_y_l, map, pixel, objects, &lighting_buffer, underground, &sky_colour_rgb, &settings, &printable_char);
+                create_pixel(x, y, world_x_l, world_y_l, map, pixel, &objects_map, &lighting_buffer, underground, &sky_colour_rgb, &settings, &printable_char);
 
                 if (settings.terminal_output > 0)
                 {

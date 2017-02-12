@@ -231,7 +231,33 @@ blocks = {
             '|': 2,
             ':': 1,
             'x': 6
-        }
+        },
+    },
+    '%': {
+        'char': '•%',
+        'name': 'Item box',
+        'colours': {
+            'fg': (2/3, 1/3, 1/9),
+            'bg': None,
+            'style': None
+        },
+        'solid': False,
+        'breakable': False,
+        'hierarchy': 50
+    },
+    '&': {
+        'char': '&',
+        'name': 'Meat',
+        'colours': {
+            'fg': (2/3, 1/3, 1/9),
+            'bg': None,
+            'style': None
+        },
+        'solid': False,
+        'breakable': False,
+        'edible': True,
+        'health': 1,
+        'hierarchy': 50
     },
     '*': {
         'char': '*',
@@ -505,6 +531,27 @@ world_gen = {
 }
 
 
+render_objects = {
+    'player': {
+        'model': ['*^'],
+        'hierarchy': 100
+    },
+    'zombie': {
+        'model': ['*^'],
+        'colour': YELLOW,
+        'hierarchy': 50
+    },
+    'cursor': {
+        'model': ['X'],
+        'hierarchy': 110
+    },
+    'items': {
+        'model': ['%'],
+        'hierarchy': 45
+    }
+}
+
+
 timings = {}
 
 timings['day_length'] = 10 * 60
@@ -516,7 +563,8 @@ help_data = [
     ('Movement:', [
         ('Move left', 'A'),
         ('Move right', 'D'),
-        ('Jump', 'W')
+        ('Jump', 'W'),
+        ('Attack', 'H')
      ]),
     ('Blocks:', [
         ('Break/place block', 'K'),

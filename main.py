@@ -1,4 +1,4 @@
-import cProfile, pdb, os, sys, glob, timeit
+import cProfile, pdb, timeit, os, sys, glob
 
 from time import time, sleep
 from math import radians
@@ -8,6 +8,7 @@ import console as c
 from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
+from items import items_to_render_objects
 
 import saves, ui, terrain, player, render, server_interface, data
 
@@ -55,7 +56,7 @@ def setup():
 
     profile = c.getenv_b('PYCRAFT_PROFILE')
     benchmarks = c.getenv_b('PYCRAFT_BENCHMARKS')
-    debug = c.getenv_b('PYCRAFT_DEBUG')
+    debug = c.getenv_b('PYCRAFT_PDB')
 
     # For externally connecting GDB
     with open('.pid', 'w') as f:
@@ -104,7 +105,6 @@ def game(server, settings, render_c, benchmarks):
     old_bk_objects = None
     old_edges = None
     redraw_all = True
-    last_out = time()
     last_move = time()
     inp = None
     jump = 0
@@ -141,7 +141,7 @@ def game(server, settings, render_c, benchmarks):
                 if char:
                     char = str(char).lower()
 
-                    if char in 'wasdkjliuoc-=\n ':
+                    if char in 'wasdhkjliuoc-=\n ':
                         inp.append(char)
 
             # Hard pause
@@ -160,9 +160,9 @@ def game(server, settings, render_c, benchmarks):
 
             # Update player position
             move_period = 1 / MPS
-            while frame_start >= move_period + last_move:
+            while frame_start >= move_period + last_move and x in server.map_:
 
-                dx, dy, jump = player.get_pos_delta(
+                dx, dy, jump = player.get_pos_delta_on_input(
                     inp, server.map_, x, y, jump, settings.get('flight'))
                 if dx or dy:
                     dpos = True
@@ -178,6 +178,15 @@ def game(server, settings, render_c, benchmarks):
                             # Fall
                             y += 1
                             dpos = True
+
+                if 'h' in inp:
+                    server.player_attack(5, 10)
+
+                server.update_items()
+                server.update_mobs()
+
+                if server.health <= 0:
+                    alive = False
 
                 last_move += move_period
 
@@ -260,6 +269,7 @@ def game(server, settings, render_c, benchmarks):
                 inv_sel = ((inv_sel + ds) % len(server.inv)
                               if len(server.inv) else 0)
 
+
             if any((dpos, dc, ds, dinv, dcraft)):
                 server.redraw = True
             if dpos:
@@ -269,10 +279,14 @@ def game(server, settings, render_c, benchmarks):
             if dc:
                 cursor_hidden = False
 
-            new_blocks, server.inv, inv_sel, new_events, dinv = \
+            p_hungry = server.health < player.MAX_PLAYER_HEALTH
+
+            new_blocks, server.inv, inv_sel, new_events, dhealth, dinv = \
                 player.cursor_func(
-                    inp, server.map_, x, y, cursor, inv_sel, server.inv
+                    inp, server.map_, x, y, cursor, inv_sel, server.inv, p_hungry
                 )
+
+            server.add_health(dhealth)
 
             if new_blocks:
                 server.set_blocks(new_blocks)
@@ -293,6 +307,11 @@ def game(server, settings, render_c, benchmarks):
 
             # Respawn player if dead
             if not alive:
+                if ui.respawn() == 'exit':
+                    server.logout()
+                    continue
+                server.redraw = True
+                redraw_all = True
                 alive = True
                 server.respawn()
 
@@ -301,9 +320,16 @@ def game(server, settings, render_c, benchmarks):
             if server.redraw:
                 server.redraw = False
 
-                objects = player.assemble_players(
-                    server.current_players, x, y, int(width / 2), edges
+                entities = {
+                    'player': list(server.current_players.values()),
+                    'zombie': list(server.mobs.values())
+                }
+
+                objects = player.entities_to_render_objects(
+                    entities, x, int(width / 2), edges
                 )
+
+                objects += items_to_render_objects(server.items, x, int(width / 2))
 
                 if not cursor_hidden:
                     cursor_colour = player.cursor_colour(
@@ -354,10 +380,13 @@ def game(server, settings, render_c, benchmarks):
                         if crafting else
                         player.label(server.inv, inv_sel))
 
+                health = 'Health: {}/{}'.format(round(server.health), player.MAX_PLAYER_HEALTH)
+
                 render.render_grids(
                     [
                         [inv_grid, crafting_grid],
-                        [[label]]
+                        [[label]],
+                        [[health]]
                     ],
                     width, height
                 )
