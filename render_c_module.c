@@ -24,10 +24,13 @@
 PyObject *C_RENDERER_EXCEPTION;
 
 static PrintableChar *last_frame;
+static LightingBuffer lighting_buffer = {.current_frame = 0};
 static bool resize;
 static bool redraw_all;
 static long width;
 static long height;
+
+static int frame_id = 1;
 
 
 #define S_POS_STR_FORMAT L"\033[%ld;%ldH"
@@ -227,8 +230,6 @@ objects_hash_func(long x, long y)
 }
 
 
-static int frame_id = 1;
-
 void
 get_obj_pixel(long x, long y, ObjectsMap *objects_map, Object *result)
 {
@@ -261,9 +262,7 @@ get_obj_pixel(long x, long y, ObjectsMap *objects_map, Object *result)
 
 
 void
-create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key,
-                 ObjectsMap *objects_map, LightingBuffer *lighting_buffer, Settings *settings,
-                 PrintableChar *result, struct PixelLighting **potential_lighting_pixel)
+create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wchar_t pixel_f_key, ObjectsMap *objects_map, LightingBuffer *lighting_buffer, Settings *settings, PrintableChar *result, struct PixelLighting **potential_lighting_pixel)
 {
     bool light_bg = false;
     bool light_fg = false;
@@ -882,7 +881,6 @@ static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
     static ScreenBuffer frame;
-    static LightingBuffer lighting_buffer = {.current_frame = 0};
     static ObjectsMap objects_map = {{{0}}};
 
     float day;
@@ -900,7 +898,7 @@ render_map(PyObject *self, PyObject *args)
              *lights,
              *py_settings;
 
-    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render", &map, &slice_heights,
+    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render_map", &map, &slice_heights,
             &left_edge, &right_edge, &top_edge, &bottom_edge, &objects, &bk_objects,
             &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
     {
@@ -1003,8 +1001,27 @@ render_map(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+get_light_level(PyObject *self, PyObject *args)
+{
+    long x, y;
+
+    if (!PyArg_ParseTuple(args, "ll:get_light_level", &x, &y))
+    {
+        PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
+        return NULL;
+    }
+
+    struct PixelLighting *lighting_pixel;
+    get_lighting_buffer_pixel(&lighting_buffer, x, y, &lighting_pixel);
+
+    return PyFloat_FromDouble(lighting_pixel->lightness);
+}
+
+
 static PyMethodDef render_c_methods[] = {
     {"render_map", render_map, METH_VARARGS, PyDoc_STR("render_map(map, edges, edges_y, slice_heights, objects, bk_objects, sky_colour, day, lights, settings, redraw_all) -> None")},
+    {"get_light_level", get_light_level, METH_VARARGS, PyDoc_STR("render_map(x, y) -> lightness")},
     {NULL, NULL}  /* sentinel */
 };
 
