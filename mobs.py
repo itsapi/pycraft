@@ -19,9 +19,9 @@ mob_attack_rate = 1
 meat_time_to_live = 10
 
 
-def update(mobs, players, map_, last_tick):
+def update(mobs, players, map_, last_tick, get_light_level):
     updated_players = {}
-    updated_mobs = spawn(mobs, map_)
+    updated_mobs = spawn(mobs, map_, get_light_level)
     removed_mobs = []
     new_items = {}
 
@@ -77,7 +77,7 @@ def update(mobs, players, map_, last_tick):
     return updated_players, new_items
 
 
-def spawn(mobs, map_):
+def spawn(mobs, map_, get_light_level):
     global new_mob_id
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
@@ -90,9 +90,14 @@ def spawn(mobs, map_):
             while not spot_found and attempts < max_attempts:
                 mx = random.choice(list(map_.keys()))
                 my = random.randint(0, len(map_[mx]) - 2)
-                spot_found = (not terrain.is_solid(map_[mx][my]) and
-                              not terrain.is_solid(map_[mx][my - 1]) and
-                              terrain.is_solid(map_[mx][my + 1]))
+                feet = map_[mx][my]
+                head = map_[mx][my - 1]
+                floor = map_[mx][my + 1]
+                spot_found = (not terrain.is_solid(feet) and
+                              not terrain.is_solid(head) and
+                              terrain.is_solid(floor) and
+                              not get_light_level(mx, my) and
+                              not get_light_level(mx, my - 1))
                 attempts += 1
 
             new_mobs[new_mob_id] = {

@@ -182,8 +182,10 @@ def game(server, settings, render_c, benchmarks):
                 if 'h' in inp:
                     server.player_attack(5, 10)
 
+                get_light_level = lambda x, y: render_c.get_light_level(x - edges[0], y - edges_y[0])
+
                 server.update_items()
-                server.update_mobs()
+                server.update_mobs(get_light_level)
 
                 if server.health <= 0:
                     alive = False

@@ -211,7 +211,7 @@ class RemoteInterface:
 
         return self._dt
 
-    def update_mobs(self):
+    def update_mobs(self, get_light_level):
         # The client does nothing
         pass
 
@@ -370,8 +370,8 @@ class LocalInterface:
         dt, self.time = self._server.local_interface_dt()
         return dt
 
-    def update_mobs(self):
-        self._server.local_interface_update_mobs()
+    def update_mobs(self, get_light_level):
+        self._server.local_interface_update_mobs(get_light_level)
 
     def update_items(self):
         self._server.local_interface_update_items()

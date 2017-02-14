@@ -200,8 +200,8 @@ class Server:
             self._update_clients({'event': 'set_time', 'args': [time]})
         return dt, time
 
-    def local_interface_update_mobs(self):
-        updated_players, new_items = self.game.update_mobs()
+    def local_interface_update_mobs(self, get_light_level):
+        updated_players, new_items = self.game.update_mobs(get_light_level)
         self._update_clients({'event': 'set_players', 'args': [updated_players]})
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
         self._update_clients({'event': 'add_items', 'args': [new_items]})
@@ -285,12 +285,12 @@ class Game:
     def player_attack(self, name, ax, ay, radius, strength):
         return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
 
-    def update_mobs(self):
+    def update_mobs(self, get_light_level):
         if not self._settings.get('mobs'):
             self._meta['mobs'].clear()
             return {}, {}
 
-        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick)
+        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick, get_light_level)
         self._meta['items'].update(new_items)
         return updated_players, new_items
 
