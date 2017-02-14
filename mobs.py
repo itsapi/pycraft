@@ -4,11 +4,12 @@ from math import sqrt
 
 from console import log
 
+from uuid import uuid4
+
 import player, terrain, items
 
 
 mob_limit = 100
-new_mob_id = 0
 mob_rate = 0.1
 
 max_mob_health = 10
@@ -78,7 +79,6 @@ def update(mobs, players, map_, last_tick, get_light_level):
 
 
 def spawn(mobs, map_, get_light_level):
-    global new_mob_id
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
@@ -100,7 +100,7 @@ def spawn(mobs, map_, get_light_level):
                               not get_light_level(mx, my - 1))
                 attempts += 1
 
-            new_mobs[new_mob_id] = {
+            new_mobs[str(uuid4())] = {
                 'x': mx,
                 'y': my,
                 'x_vel': 0,
@@ -108,7 +108,6 @@ def spawn(mobs, map_, get_light_level):
                 'type': 'mob',
                 'last_attack': 0
             }
-            new_mob_id += 1
 
     return new_mobs
 
