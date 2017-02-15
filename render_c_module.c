@@ -742,6 +742,7 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
     add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
 }
 
+
 void
 filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long right_edge, long top_edge, long bottom_edge)
 {
@@ -1004,8 +1005,13 @@ render_map(PyObject *self, PyObject *args)
 static PyObject *
 get_light_level(PyObject *self, PyObject *args)
 {
-    long x, y;
+    if (lighting_buffer.current_frame == 0)
+    {
+        PyErr_SetString(C_RENDERER_EXCEPTION, "Lighting buffer has not been initialised");
+        return NULL;
+    }
 
+    long x, y;
     if (!PyArg_ParseTuple(args, "ll:get_light_level", &x, &y))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
