@@ -19,6 +19,8 @@ mob_attack_rate = 1
 
 meat_time_to_live = 10
 
+max_spawn_light_level = 0.2
+
 
 def update(mobs, players, map_, last_tick, get_light_level):
     updated_players = {}
@@ -96,8 +98,8 @@ def spawn(mobs, map_, get_light_level):
                 spot_found = (not terrain.is_solid(feet) and
                               not terrain.is_solid(head) and
                               terrain.is_solid(floor) and
-                              not get_light_level(mx, my) and
-                              not get_light_level(mx, my - 1))
+                              get_light_level(mx, my) < max_spawn_light_level and
+                              get_light_level(mx, my - 1) < max_spawn_light_level)
                 attempts += 1
 
             new_mobs[str(uuid4())] = {
