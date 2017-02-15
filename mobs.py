@@ -1,12 +1,11 @@
 import random
 
 from math import sqrt
+from uuid import uuid4
 
 from console import log
 
-from uuid import uuid4
-
-import player, terrain, items
+import player, terrain, items, render_interface
 
 
 mob_limit = 100

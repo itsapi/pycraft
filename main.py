@@ -10,7 +10,7 @@ from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 from items import items_to_render_objects
 
-import saves, ui, terrain, player, render, server_interface, data
+import saves, ui, terrain, player, render, render_interface, server_interface, data
 
 
 def main():
@@ -32,13 +32,14 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
-                render_c = import_render_c(settings)
+                render_interface.setup_render_module(settings)
+
                 if profile:
-                    cProfile.runctx('game(server_obj, settings, render_c, benchmarks)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, benchmarks)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings, render_c, benchmarks)', globals(), locals())
+                    pdb.run('game(server_obj, settings, benchmarks)', globals(), locals())
                 else:
-                    game(server_obj, settings, render_c, benchmarks)
+                    game(server_obj, settings, benchmarks)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -76,22 +77,7 @@ def setdown():
     print(SHOW_CUR + CLS)
 
 
-def import_render_c(settings):
-    render_c = None
-
-    sys.path += glob.glob('build/lib.*')
-    try:
-        import render_c
-    except ImportError:
-        log('Cannot import C renderer: disabling option.', m='warning')
-        settings['render_c'] = False
-
-    saves.save_settings(settings)
-
-    return render_c
-
-
-def game(server, settings, render_c, benchmarks):
+def game(server, settings, benchmarks):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -156,7 +142,6 @@ def game(server, settings, render_c, benchmarks):
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
-                render_c = import_render_c(settings)
 
             # Update player position
             move_period = 1 / MPS
@@ -344,7 +329,6 @@ def game(server, settings, render_c, benchmarks):
 
                 lights = render.get_lights(extended_view, edges[0], bk_objects)
 
-                render_map = render_c.render_map if settings.get('render_c') else render.render_map
                 render_args = [
                     server.map_,
                     server.slice_heights,
@@ -358,13 +342,14 @@ def game(server, settings, render_c, benchmarks):
                     settings,
                     redraw_all
                 ]
+                render_map = lambda: render_interface.render_map(*render_args)
 
                 if benchmarks:
-                    timer = timeit.Timer(lambda: render_map(*render_args))
+                    timer = timeit.Timer(render_map)
                     t = timer.timeit(1)
                     log('Render call time = {}'.format(t), m="benchmarks")
                 else:
-                    render_map(*render_args)
+                    render_map()
 
                 redraw_all = False
 
