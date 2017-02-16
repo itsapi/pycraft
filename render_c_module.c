@@ -1001,8 +1001,8 @@ create_lighting_buffer(PyObject *self, PyObject *args)
 
     long new_width,
          new_height,
-         x, y,
-         day;
+         x, y;
+    float day;
 
     PyObject *map,
              *slice_heights,
@@ -1011,7 +1011,7 @@ create_lighting_buffer(PyObject *self, PyObject *args)
              *lights,
              *py_settings;
 
-    if (!PyArg_ParseTuple(args, "llllOOOOOO:create_lighting_buffer", &new_width, &new_height, &x, &y, &map, &slice_heights, &bk_objects, &py_sky_colour, &day, &lights, &py_settings))
+    if (!PyArg_ParseTuple(args, "llllOOOOfOO:create_lighting_buffer", &new_width, &new_height, &x, &y, &map, &slice_heights, &bk_objects, &py_sky_colour, &day, &lights, &py_settings))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
