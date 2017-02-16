@@ -44,7 +44,10 @@ pos_str(long x, long y, wchar_t *result)
 }
 
 
+// #define DEBUG
+
 #define debug_colour(c) debug(L"%f, %f, %f\n", (c).r, (c).g, (c).b)
+#ifdef DEBUG
 void
 debug(wchar_t *str, ...)
 {
@@ -65,6 +68,11 @@ debug(wchar_t *str, ...)
     if (debug_y > 20)
         debug_y = 0;
 }
+#else
+void
+debug(wchar_t *str, ...)
+{}
+#endif
 
 
 wchar_t
