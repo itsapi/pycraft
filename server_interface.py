@@ -385,8 +385,8 @@ class LocalInterface:
         px, py = self.pos
         width  = 2 * mobs.spawn_player_range
         height = 2 * mobs.spawn_player_range # TODO: Do we want this to be the full map height?
-        x = px -  width * 0.5
-        y = py - height * 0.5
+        x = px - int(width  * 0.5)
+        y = py - int(height * 0.5)
         render_interface.create_lighting_buffer(width, height, x, y, self.map_, self.slice_heights, bk_objects, sky_colour, day, lights)
 
     def spawn_mobs(self):
