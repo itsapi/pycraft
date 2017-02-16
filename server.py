@@ -200,11 +200,15 @@ class Server:
             self._update_clients({'event': 'set_time', 'args': [time]})
         return dt, time
 
-    def local_interface_update_mobs(self, get_light_level):
-        updated_players, new_items = self.game.update_mobs(get_light_level)
+    def local_interface_update_mobs(self):
+        updated_players, new_items = self.game.update_mobs()
         self._update_clients({'event': 'set_players', 'args': [updated_players]})
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
         self._update_clients({'event': 'add_items', 'args': [new_items]})
+
+    def local_interface_spawn_mobs(self):
+        self.game.spawn_mobs()
+        self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
 
     def local_interface_update_items(self):
         removed_items = self.game.update_items()
@@ -285,14 +289,20 @@ class Game:
     def player_attack(self, name, ax, ay, radius, strength):
         return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
 
-    def update_mobs(self, get_light_level):
+    def update_mobs(self):
         if not self._settings.get('mobs'):
             self._meta['mobs'].clear()
             return {}, {}
 
-        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick, get_light_level)
+        updated_players, new_items = mobs.update(self._meta['mobs'], self._meta['players'], self._map, self._last_tick)
         self._meta['items'].update(new_items)
         return updated_players, new_items
+
+    def spawn_mobs(self):
+        if self._settings.get('mobs'):
+            return mobs.spawn(self._meta['mobs'], self._map)
+        else:
+            return {}
 
     def update_items(self):
         removed_items = items.pickup_items(self._meta['items'], self._meta['players'])

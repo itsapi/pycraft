@@ -7,7 +7,7 @@ from console import log
 from data import timings
 from player import MAX_PLAYER_HEALTH
 
-import saves, terrain, network
+import saves, terrain, network, mobs, render_interface
 
 chunk_size = terrain.world_gen['chunk_size']
 
@@ -211,7 +211,15 @@ class RemoteInterface:
 
         return self._dt
 
-    def update_mobs(self, get_light_level):
+    def update_mobs(self):
+        # The client does nothing
+        pass
+
+    def create_mobs_lighting_buffer(self, *_):
+        # The client does nothing
+        pass
+
+    def spawn_mobs(self):
         # The client does nothing
         pass
 
@@ -370,8 +378,19 @@ class LocalInterface:
         dt, self.time = self._server.local_interface_dt()
         return dt
 
-    def update_mobs(self, get_light_level):
-        self._server.local_interface_update_mobs(get_light_level)
+    def update_mobs(self):
+        self._server.local_interface_update_mobs()
+
+    def create_mobs_lighting_buffer(self, bk_objects, sky_colour, day, lights):
+        px, py = self.pos
+        width  = 2 * mobs.spawn_player_range
+        height = 2 * mobs.spawn_player_range # TODO: Do we want this to be the full map height?
+        x = px -  width * 0.5
+        y = py - height * 0.5
+        render_interface.create_lighting_buffer(width, height, x, y, self.map_, self.slice_heights, bk_objects, sky_colour, day, lights)
+
+    def spawn_mobs(self):
+        self._server.local_interface_spawn_mobs()
 
     def update_items(self):
         self._server.local_interface_update_items()

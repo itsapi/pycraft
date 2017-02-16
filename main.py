@@ -87,11 +87,13 @@ def game(server, settings, benchmarks):
     dcraft = False  # Crafting
     FPS = 15  # Max
     MPS = 15  # Movement
+    SPS = 5  # Mob spawns
 
     old_bk_objects = None
     old_edges = None
     redraw_all = True
     last_move = time()
+    last_mob_spawn = time()
     inp = None
     jump = 0
     cursor = 0
@@ -143,7 +145,10 @@ def game(server, settings, benchmarks):
                     server.logout()
                     continue
 
-            # Update player position
+            width = settings.get('width')
+            height = settings.get('height')
+
+            # Update player and mobs position / damage
             move_period = 1 / MPS
             while frame_start >= move_period + last_move and x in server.map_:
 
@@ -167,10 +172,8 @@ def game(server, settings, benchmarks):
                 if 'h' in inp:
                     server.player_attack(5, 10)
 
-                get_light_level = lambda x, y: render_c.get_light_level(x - edges[0], y - edges_y[0])
-
                 server.update_items()
-                server.update_mobs(get_light_level)
+                server.update_mobs()
 
                 if server.health <= 0:
                     alive = False
@@ -178,9 +181,6 @@ def game(server, settings, benchmarks):
                 last_move += move_period
 
             ## Update Map
-
-            width = settings.get('width')
-            height = settings.get('height')
 
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
@@ -266,6 +266,8 @@ def game(server, settings, benchmarks):
             if dc:
                 cursor_hidden = False
 
+            ## Eating or placing blocks
+
             p_hungry = server.health < player.MAX_PLAYER_HEALTH
 
             new_blocks, server.inv, inv_sel, new_events, dhealth, dinv = \
@@ -277,6 +279,8 @@ def game(server, settings, benchmarks):
 
             if new_blocks:
                 server.set_blocks(new_blocks)
+
+            ## Process events
 
             events += new_events
 
@@ -302,10 +306,30 @@ def game(server, settings, benchmarks):
                 alive = True
                 server.respawn()
 
+            ## Spawning mobs / Generating lighting buffer
+
+            lights = render.get_lights(extended_view, edges[0], bk_objects)
+
+            spawn_period = 1 / SPS
+            n_mob_spawn_cycles = int((frame_start - last_mob_spawn) // spawn_period)
+
+            # TODO: This will only generate a lighting buffer for spawning mobs around the server player
+            created_lighting_buffer_this_frame = False
+            if n_mob_spawn_cycles != 0:
+                server.create_mobs_lighting_buffer(bk_objects, sky_colour, day, lights)
+                created_lighting_buffer_this_frame = True
+
+            for i in range(n_mob_spawn_cycles):
+                server.spawn_mobs()
+            last_mob_spawn += spawn_period * n_mob_spawn_cycles
+
             ## Render
 
             if server.redraw:
                 server.redraw = False
+
+                if not created_lighting_buffer_this_frame:
+                    render_interface.create_lighting_buffer(width, height, edges[0], edges_y[0], server.map_, server.slice_heights, bk_objects, sky_colour, day, lights)
 
                 entities = {
                     'player': list(server.current_players.values()),
@@ -326,8 +350,6 @@ def game(server, settings, benchmarks):
                     objects.append(player.assemble_cursor(
                         int(width / 2), y, cursor, cursor_colour
                     ))
-
-                lights = render.get_lights(extended_view, edges[0], bk_objects)
 
                 render_args = [
                     server.map_,
