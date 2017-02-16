@@ -48,7 +48,7 @@ def get_light_level(*args):
     result = 1
 
     if settings_ref['render_c']:
-        result = render_c.get_light_level(*args)
+        result = render_c.get_world_light_level(*args)
     else:
         log('Not implemented: Python get_light_level function', m='warning')
 
