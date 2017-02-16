@@ -102,14 +102,15 @@ def spawn(mobs, map_):
                               render_interface.get_light_level(mx, my - 1) < max_spawn_light_level)
                 attempts += 1
 
-            new_mobs[str(uuid4())] = {
-                'x': mx,
-                'y': my,
-                'x_vel': 0,
-                'health': max_mob_health,
-                'type': 'mob',
-                'last_attack': 0
-            }
+            if spot_found:
+                new_mobs[str(uuid4())] = {
+                    'x': mx,
+                    'y': my,
+                    'x_vel': 0,
+                    'health': max_mob_health,
+                    'type': 'mob',
+                    'last_attack': 0
+                }
 
     mobs.update(new_mobs)
 
