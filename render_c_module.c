@@ -1064,15 +1064,15 @@ get_world_light_level(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    long x, y;
-    if (!PyArg_ParseTuple(args, "ll:get_world_light_level", &x, &y))
+    long world_x, world_y;
+    if (!PyArg_ParseTuple(args, "ll:get_world_light_level", &world_x, &world_y))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
     }
 
     struct PixelLighting *lighting_pixel;
-    get_lighting_buffer_pixel(&lighting_buffer, lighting_buffer.x + x, lighting_buffer.y + y, &lighting_pixel);
+    get_lighting_buffer_pixel(&lighting_buffer, world_x - lighting_buffer.x, world_y - lighting_buffer.y, &lighting_pixel);
 
     return PyFloat_FromDouble(lighting_pixel->lightness);
 }
@@ -1081,7 +1081,7 @@ get_world_light_level(PyObject *self, PyObject *args)
 static PyMethodDef render_c_methods[] = {
     {"render_map", render_map, METH_VARARGS, PyDoc_STR("render_map(map, edges, edges_y, slice_heights, objects, bk_objects, sky_colour, day, lights, settings, redraw_all) -> None")},
     {"create_lighting_buffer", create_lighting_buffer, METH_VARARGS, PyDoc_STR("create_lighting_buffer(width, height, x, y, map, slice_heights, bk_objects, sky_colour, day, lights, py_settings) -> None")},
-    {"get_world_light_level", get_world_light_level, METH_VARARGS, PyDoc_STR("get_world_light_level(x, y) -> lightness")},
+    {"get_world_light_level", get_world_light_level, METH_VARARGS, PyDoc_STR("get_world_light_level(world_x, world_y) -> lightness")},
     {NULL, NULL}  /* sentinel */
 };
 
