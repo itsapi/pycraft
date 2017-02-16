@@ -32,7 +32,7 @@ default_settings = {
     'neopixels': False,
     'gravity': False,
     'flight': False,
-    'mobs': True,
+    'mobs': False,
     'width': 40,
     'height': 30
 }
