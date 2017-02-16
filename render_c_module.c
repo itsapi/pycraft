@@ -218,7 +218,7 @@ apply_block_lightness(Colour *result, float lightness)
 void
 get_lighting_buffer_pixel(LightingBuffer *lighting_buffer, int x, int y, struct PixelLighting **result)
 {
-    *result = lighting_buffer->screen + y * width + x;
+    *result = lighting_buffer->screen + y * lighting_buffer->width + x;
 }
 
 
@@ -629,12 +629,12 @@ add_daylight_lightness_to_lighting_buffer(PyObject *lights, PyObject *slice_heig
         Fills in all the gaps of the lightness lighting buffer with daylight, also overwrites darker than daylight parts.
     */
     long x, y;
-    for (x = 0; x < width; ++x)
+    for (x = 0; x < lighting_buffer.width; ++x)
     {
         long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(lighting_buffer.x+x)));
         long ground_height_buffer = (world_gen_height - ground_height_world) - lighting_buffer.y;
 
-        for (y = 0; y < height; ++y)
+        for (y = 0; y < lighting_buffer.height; ++y)
         {
             float lightness;
 
