@@ -30,9 +30,9 @@ def setup_render_module(settings):
     render_c = import_render_c()
 
 
-def create_lighting_buffer(width, height, x, y, map, slice_heights, bk_objects, sky_colour, day, lights):
+def create_lighting_buffer(width, height, x, y, map_, slice_heights, bk_objects, sky_colour, day, lights):
     if settings_ref['render_c']:
-        return render_c.create_lighting_buffer(width, height, x, y, map, slice_heights, bk_objects, sky_colour, day, lights, settings_ref)
+        return render_c.create_lighting_buffer(width, height, x, y, map_, slice_heights, bk_objects, sky_colour, day, lights, settings_ref)
     else:
         log('Not implemented: Python create_lighting_buffer function', m='warning')
 

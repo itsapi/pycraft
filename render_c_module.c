@@ -23,8 +23,8 @@
 
 PyObject *C_RENDERER_EXCEPTION;
 
-static PrintableChar *last_frame;
-static LightingBuffer lighting_buffer = {.current_frame = 0};
+static PrintableChar *last_frame = 0;
+static LightingBuffer lighting_buffer = {.current_frame = 0, .screen = 0};
 static bool resize;
 static bool redraw_all;
 static long width;
@@ -299,7 +299,8 @@ create_lit_block(long x, long y, long world_x, long world_y, PyObject *map, wcha
     // Light block fg and bg
 
     if ((settings->fancy_lights > 0) &&
-        (light_bg || light_fg))
+        (light_bg || light_fg) &&
+        lighting_buffer->current_frame != 0)
     {
         // Caller passes in **potential_lighting_pixel and it might get populated with the pointer (optimisation!)
         get_lighting_buffer_pixel(lighting_buffer, x, y, potential_lighting_pixel);
@@ -334,7 +335,7 @@ create_pixel(long x, long y, long world_x, long world_y, PyObject *map, wchar_t 
     create_lit_block(x, y, world_x, world_y, map, pixel_f_key, objects_map, lighting_buffer, settings, result, &lighting_pixel);
 
     // If the block did not set a background colour, add the sky background.
-    if (result->bg.r == -1)
+    if (result->bg.r == -1 && lighting_buffer->current_frame != 0)
     {
         if (lighting_pixel == NULL)
         {
@@ -872,7 +873,7 @@ setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 static PyObject *
 render_map(PyObject *self, PyObject *args)
 {
-    static ScreenBuffer frame;
+    static ScreenBuffer frame = {.buffer = 0};
     static ObjectsMap objects_map = {{{0}}};
 
     float day;
@@ -1089,7 +1090,7 @@ PyDoc_STRVAR(module_doc, "The super-duper-fast renderer");
 
 static struct PyModuleDef render_c_module = {
     PyModuleDef_HEAD_INIT,
-    "render",
+    "render_c",
     module_doc,
     -1,
     render_c_methods,
