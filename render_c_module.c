@@ -433,7 +433,7 @@ check_light_z(Light *light, long left_edge, long top_edge, PyObject *map, PyObje
 
 
 void
-add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLighting *pixel, float light_distance, Light *light)
+add_light_pixel_lightness_to_lighting_buffer(struct PixelLighting *pixel, float light_distance, Light *light)
 {
     // TODO: Basic lighting mode: threshold
 
@@ -444,16 +444,16 @@ add_light_pixel_lightness_to_lighting_buffer(int current_frame, struct PixelLigh
     // this_lightness *= lightness(&light->rgb);
 
     if (pixel->lightness < this_lightness ||
-        pixel->lightness_set_on_frame != current_frame)
+        pixel->lightness_set_on_frame != lighting_buffer.current_frame)
     {
         pixel->lightness = this_lightness;
-        pixel->lightness_set_on_frame = current_frame;
+        pixel->lightness_set_on_frame = lighting_buffer.current_frame;
     }
 }
 
 
 void
-add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light, PyObject *map, Colour *sky_colour, long left_edge, long top_edge, long slice_height)
+add_light_pixel_colour_to_lighting_buffer(Settings *settings, struct PixelLighting *pixel, long x, long y, float light_distance, Light *light, PyObject *map, Colour *sky_colour, long slice_height)
 {
     /*
         Adds the colour of the light's pixel for the light's light-radius' to the lighting buffer.
@@ -463,14 +463,14 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
     bool visible = false;
 
     // First, if the background for this pixel has already been set this frame, then the check has already passed.
-    if (pixel->background_colour_set_on_frame == current_frame)
+    if (pixel->background_colour_set_on_frame == lighting_buffer.current_frame)
     {
         visible = true;
     }
     else
     {
         // Check if there is no block or a block without a clear background at this position.
-        wchar_t block_key = get_block(left_edge+x, top_edge+y, map);
+        wchar_t block_key = get_block(lighting_buffer.x+x, lighting_buffer.y+y, map);
         if (block_key == 0 ||
             get_block_data(block_key)->colours.bg.r == -1)
         {
@@ -487,7 +487,7 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
 
         // Different lighting calculations for above and below ground
         long world_top_to_ground = world_gen_height - slice_height;
-        long ground_height_buffer = world_top_to_ground - top_edge;
+        long ground_height_buffer = world_top_to_ground - lighting_buffer.y;
         if (y > ground_height_buffer)
         {
             // Underground
@@ -553,11 +553,11 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
         // Update lighting buffer pixel if it's unset this frame or if it's lightness is less than this lights lightness
         if (add_to_buffer &&
             (pixel->background_colour_lightness < pixel_background_colour_lightness ||
-             pixel->background_colour_set_on_frame != current_frame))
+             pixel->background_colour_set_on_frame != lighting_buffer.current_frame))
         {
             pixel->background_colour = rgb;
             pixel->background_colour_lightness = pixel_background_colour_lightness;
-            pixel->background_colour_set_on_frame = current_frame;
+            pixel->background_colour_set_on_frame = lighting_buffer.current_frame;
         }
     }
 
@@ -565,7 +565,7 @@ add_light_pixel_colour_to_lighting_buffer(int current_frame, Settings *settings,
 
 
 void
-add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *bk_objects, PyObject *slice_heights, long left_edge, long top_edge)
+add_bk_objects_pixels_colour_to_lighting_buffer(PyObject *bk_objects, PyObject *slice_heights)
 {
     /*
         Adds the pixels of the background objects (sun and moon).
@@ -593,9 +593,9 @@ add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer,
         long buffer_x;
         for (buffer_x = ox; buffer_x < ox + o_width; ++buffer_x)
         {
-            if (buffer_x >= 0 && buffer_x < width)
+            if (buffer_x >= 0 && buffer_x < lighting_buffer.width)
             {
-                long world_x = left_edge + buffer_x;
+                long world_x = lighting_buffer.x + buffer_x;
 
                 long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(world_x)));
                 long world_top_to_ground = world_gen_height - ground_height_world;
@@ -603,16 +603,16 @@ add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer,
                 long world_y;
                 for (world_y = oy; world_y > oy - o_height; --world_y)
                 {
-                    long buffer_y = world_y - top_edge;
+                    long buffer_y = world_y - lighting_buffer.y;
 
                     if (world_y < world_top_to_ground &&
-                        buffer_y >= 0 && buffer_y < height)
+                        buffer_y >= 0 && buffer_y < lighting_buffer.height)
                     {
                         struct PixelLighting *pixel;
-                        get_lighting_buffer_pixel(lighting_buffer, buffer_x, buffer_y, &pixel);
+                        get_lighting_buffer_pixel(&lighting_buffer, buffer_x, buffer_y, &pixel);
 
                         pixel->background_colour = o_colour;
-                        pixel->background_colour_set_on_frame = lighting_buffer->current_frame;
+                        pixel->background_colour_set_on_frame = lighting_buffer.current_frame;
                     }
                 }
             }
@@ -622,7 +622,7 @@ add_bk_objects_pixels_colour_to_lighting_buffer(LightingBuffer *lighting_buffer,
 
 
 void
-add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *slice_heights, float day, long left_edge, long top_edge)
+add_daylight_lightness_to_lighting_buffer(PyObject *lights, PyObject *slice_heights, float day)
 {
     /*
         Fills in all the gaps of the lightness lighting buffer with daylight, also overwrites darker than daylight parts.
@@ -630,8 +630,8 @@ add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObj
     long x, y;
     for (x = 0; x < width; ++x)
     {
-        long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
-        long ground_height_buffer = (world_gen_height - ground_height_world) - top_edge;
+        long ground_height_world = PyFloat_AsDouble(PyDict_GetItem(slice_heights, PyLong_FromLong(lighting_buffer.x+x)));
+        long ground_height_buffer = (world_gen_height - ground_height_world) - lighting_buffer.y;
 
         for (y = 0; y < height; ++y)
         {
@@ -658,23 +658,23 @@ add_daylight_lightness_to_lighting_buffer(LightingBuffer *lighting_buffer, PyObj
             }
 
             struct PixelLighting *pixel;
-            get_lighting_buffer_pixel(lighting_buffer, x, y, &pixel);
+            get_lighting_buffer_pixel(&lighting_buffer, x, y, &pixel);
 
             if (pixel->lightness < lightness ||
-                pixel->lightness_set_on_frame != lighting_buffer->current_frame)
+                pixel->lightness_set_on_frame != lighting_buffer.current_frame)
             {
                 pixel->lightness = lightness;
-                pixel->lightness_set_on_frame = lighting_buffer->current_frame;
+                pixel->lightness_set_on_frame = lighting_buffer.current_frame;
             }
 
-            // TODO: Assert pixel->lightness_set_on_frame == lighting_buffer->current_frame
+            // TODO: Assert pixel->lightness_set_on_frame == lighting_buffer.current_frame
         }
     }
 }
 
 
 void
-create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObject *bk_objects, PyObject *map, Settings *settings, PyObject *slice_heights, float day, Colour *sky_colour, long left_edge, long top_edge)
+fill_lighting_buffer(PyObject *lights, PyObject *bk_objects, PyObject *map, Settings *settings, PyObject *slice_heights, float day, Colour *sky_colour)
 {
     /*
         - Store the lightness value for every block, calculated from the max of:
@@ -687,8 +687,6 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
               hsv_to_rgb( lerp_colour( rgb_to_hsv(light_colour), r, sky_colour ) )
           - The colour is then selected by taking the max lightness of that colour from all the lights reaching this pixel.
     */
-
-    ++lighting_buffer->current_frame;
 
     PyObject *iter = PyObject_GetIter(lights);
     PyObject *py_light;
@@ -706,40 +704,40 @@ create_lighting_buffer(LightingBuffer *lighting_buffer, PyObject *lights, PyObje
         };
         light.hsv = rgb_to_hsv(&light.rgb);
 
-        bool add_this_lights_lightness = check_light_z(&light, left_edge, top_edge, map, slice_heights);
+        bool add_this_lights_lightness = check_light_z(&light, lighting_buffer.x, lighting_buffer.y, map, slice_heights);
 
-        long buffer_ly = light.y - top_edge;
+        long buffer_ly = light.y - lighting_buffer.y;
         long x, y;
         for (x = light.x - light.radius; x <= light.x + light.radius; ++x)
         {
             for (y = buffer_ly - light.radius; y <= buffer_ly + light.radius; ++y)
             {
                 // Is pixel on screen?
-                if ((x >= 0 && x < width) &&
-                    (y >= 0 && y < height))
+                if ((x >= 0 && x < lighting_buffer.width) &&
+                    (y >= 0 && y < lighting_buffer.height))
                 {
                     float light_distance = lit(x, y, light.x, buffer_ly, light.width, light.height, light.radius);
                     if (light_distance < 1)
                     {
                         struct PixelLighting *lighting_pixel;
-                        get_lighting_buffer_pixel(lighting_buffer, x, y, &lighting_pixel);
+                        get_lighting_buffer_pixel(&lighting_buffer, x, y, &lighting_pixel);
 
                         if (add_this_lights_lightness)
                         {
-                            add_light_pixel_lightness_to_lighting_buffer(lighting_buffer->current_frame, lighting_pixel, light_distance, &light);
+                            add_light_pixel_lightness_to_lighting_buffer(lighting_pixel, light_distance, &light);
                         }
 
-                        long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(left_edge+x)));
-                        add_light_pixel_colour_to_lighting_buffer(lighting_buffer->current_frame, settings, lighting_pixel, x, y, light_distance, &light, map, sky_colour, left_edge, top_edge, slice_height);
+                        long slice_height = PyLong_AsLong(PyDict_GetItem(slice_heights, PyLong_FromLong(lighting_buffer.x+x)));
+                        add_light_pixel_colour_to_lighting_buffer(settings, lighting_pixel, x, y, light_distance, &light, map, sky_colour, slice_height);
                     }
                 }
             }
         }
     }
 
-    add_bk_objects_pixels_colour_to_lighting_buffer(lighting_buffer, bk_objects, slice_heights, left_edge, top_edge);
+    add_bk_objects_pixels_colour_to_lighting_buffer(bk_objects, slice_heights);
 
-    add_daylight_lightness_to_lighting_buffer(lighting_buffer, lights, slice_heights, day, left_edge, top_edge);
+    add_daylight_lightness_to_lighting_buffer(lights, slice_heights, day);
 }
 
 
@@ -834,7 +832,7 @@ terminal_out(ScreenBuffer *frame, PrintableChar *c, long x, long y, Settings *se
 
 
 bool
-setup_frame(ScreenBuffer *frame, LightingBuffer *lighting_buffer, long new_width, long new_height)
+setup_frame(ScreenBuffer *frame, long new_width, long new_height)
 {
     resize = false;
     if (new_width != width)
@@ -862,13 +860,6 @@ setup_frame(ScreenBuffer *frame, LightingBuffer *lighting_buffer, long new_width
         if (!last_frame)
         {
             PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate last frame buffer!");
-            return false;
-        }
-
-        lighting_buffer->screen = (struct PixelLighting *)realloc(lighting_buffer->screen, width * height * sizeof(struct PixelLighting));
-        if (!lighting_buffer->screen)
-        {
-            PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate lighting map!");
             return false;
         }
     }
@@ -899,6 +890,8 @@ render_map(PyObject *self, PyObject *args)
              *lights,
              *py_settings;
 
+    // Unused args: lights, bk_objects, &settings, day
+
     if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render_map", &map, &slice_heights,
             &left_edge, &right_edge, &top_edge, &bottom_edge, &objects, &bk_objects,
             &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
@@ -919,7 +912,7 @@ render_map(PyObject *self, PyObject *args)
     long cur_width = right_edge - left_edge;
     long cur_height = bottom_edge - top_edge;
 
-    if (!setup_frame(&frame, &lighting_buffer, cur_width, cur_height))
+    if (!setup_frame(&frame, cur_width, cur_height))
         return NULL;
 
     if (!PyDict_Check(map))
@@ -928,7 +921,6 @@ render_map(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    create_lighting_buffer(&lighting_buffer, lights, bk_objects, map, &settings, slice_heights, day, &sky_colour_hsv, left_edge, top_edge);
     filter_objects(objects, &objects_map, left_edge, right_edge, top_edge, bottom_edge);
 
     Py_ssize_t i = 0;
@@ -1003,7 +995,68 @@ render_map(PyObject *self, PyObject *args)
 
 
 static PyObject *
-get_light_level(PyObject *self, PyObject *args)
+create_lighting_buffer(PyObject *self, PyObject *args)
+{
+    ++lighting_buffer.current_frame;
+
+    long new_width,
+         new_height,
+         x, y,
+         day;
+
+    PyObject *map,
+             *slice_heights,
+             *bk_objects,
+             *py_sky_colour,
+             *lights,
+             *py_settings;
+
+    if (!PyArg_ParseTuple(args, "llllOOOOOO:create_lighting_buffer", &new_width, &new_height, &x, &y, &map, &slice_heights, &bk_objects, &py_sky_colour, &day, &lights, &py_settings))
+    {
+        PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
+        return NULL;
+    }
+
+    Colour sky_colour_hsv = PyColour_AsColour(py_sky_colour);
+
+    Settings settings = {
+        .terminal_output = PyLong_AsLong(PyDict_GetItemString(py_settings, "terminal_output")),
+        .fancy_lights = PyLong_AsLong(PyDict_GetItemString(py_settings, "fancy_lights")),
+        .colours = PyLong_AsLong(PyDict_GetItemString(py_settings, "colours"))
+    };
+
+    lighting_buffer.x = x;
+    lighting_buffer.y = y;
+
+    bool resize = false;
+    if (new_width != lighting_buffer.width)
+    {
+        resize = true;
+        lighting_buffer.width = new_width;
+    }
+    if (new_height != lighting_buffer.height)
+    {
+        resize = true;
+        lighting_buffer.height = new_height;
+    }
+    if (resize)
+    {
+        lighting_buffer.screen = (struct PixelLighting *)realloc(lighting_buffer.screen, lighting_buffer.width * lighting_buffer.height * sizeof(struct PixelLighting));
+        if (!lighting_buffer.screen)
+        {
+            PyErr_SetString(C_RENDERER_EXCEPTION, "Could not allocate lighting map!");
+            return NULL;
+        }
+    }
+
+    fill_lighting_buffer(lights, bk_objects, map, &settings, slice_heights, day, &sky_colour_hsv);
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject *
+get_world_light_level(PyObject *self, PyObject *args)
 {
     if (lighting_buffer.current_frame == 0)
     {
@@ -1012,14 +1065,14 @@ get_light_level(PyObject *self, PyObject *args)
     }
 
     long x, y;
-    if (!PyArg_ParseTuple(args, "ll:get_light_level", &x, &y))
+    if (!PyArg_ParseTuple(args, "ll:get_world_light_level", &x, &y))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
     }
 
     struct PixelLighting *lighting_pixel;
-    get_lighting_buffer_pixel(&lighting_buffer, x, y, &lighting_pixel);
+    get_lighting_buffer_pixel(&lighting_buffer, lighting_buffer.x + x, lighting_buffer.y + y, &lighting_pixel);
 
     return PyFloat_FromDouble(lighting_pixel->lightness);
 }
@@ -1027,7 +1080,8 @@ get_light_level(PyObject *self, PyObject *args)
 
 static PyMethodDef render_c_methods[] = {
     {"render_map", render_map, METH_VARARGS, PyDoc_STR("render_map(map, edges, edges_y, slice_heights, objects, bk_objects, sky_colour, day, lights, settings, redraw_all) -> None")},
-    {"get_light_level", get_light_level, METH_VARARGS, PyDoc_STR("render_map(x, y) -> lightness")},
+    {"create_lighting_buffer", create_lighting_buffer, METH_VARARGS, PyDoc_STR("create_lighting_buffer(width, height, x, y, map, slice_heights, bk_objects, sky_colour, day, lights, py_settings) -> None")},
+    {"get_world_light_level", get_world_light_level, METH_VARARGS, PyDoc_STR("get_world_light_level(x, y) -> lightness")},
     {NULL, NULL}  /* sentinel */
 };
 

@@ -51,6 +51,11 @@ typedef struct {
 typedef struct
 {
     int current_frame;
+    long width;
+    long height;
+
+    long x;
+    long y;
 
     struct PixelLighting
     {
