@@ -243,6 +243,8 @@ def set_setting(settings, setting, value):
 
         print(CLS, end='')
 
+    saves.save_settings(settings)
+
 
 def edit_settings(settings):
     result = loop_menu('Settings', lambda: (
