@@ -37,11 +37,11 @@ def create_lighting_buffer(width, height, x, y, map_, slice_heights, bk_objects,
         log('Not implemented: Python create_lighting_buffer function', m='warning')
 
 
-def render_map(*args):
+def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, redraw_all):
     if settings_ref['render_c']:
-        return render_c.render_map(*args)
+        return render_c.render_map(map_, slice_heights, edges, edges_y, objects, sky_colour, settings, redraw_all)
     else:
-        return render.render_map(*args)
+        return render.render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_colour, day, lights, settings, redraw_all)
 
 
 def get_light_level(*args):

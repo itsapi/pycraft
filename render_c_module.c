@@ -884,8 +884,6 @@ render_map(PyObject *self, PyObject *args)
     static ScreenBuffer frame = {.buffer = 0};
     static ObjectsMap objects_map = {{{0}}};
 
-    float day;
-
     long left_edge,
          right_edge,
          top_edge,
@@ -894,16 +892,13 @@ render_map(PyObject *self, PyObject *args)
     PyObject *map,
              *slice_heights,
              *objects,
-             *bk_objects,
              *py_sky_colour,
-             *lights,
              *py_settings;
 
-    // Unused args: lights, bk_objects, &settings, day
 
-    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOfOOl:render_map", &map, &slice_heights,
-            &left_edge, &right_edge, &top_edge, &bottom_edge, &objects, &bk_objects,
-            &py_sky_colour, &day, &lights, &py_settings, &redraw_all))
+    if (!PyArg_ParseTuple(args, "OO(ll)(ll)OOOl:render_map", &map, &slice_heights,
+            &left_edge, &right_edge, &top_edge, &bottom_edge,
+            &objects, &py_sky_colour, &py_settings, &redraw_all))
     {
         PyErr_SetString(C_RENDERER_EXCEPTION, "Could not parse arguments!");
         return NULL;
@@ -1088,7 +1083,7 @@ get_world_light_level(PyObject *self, PyObject *args)
 
 
 static PyMethodDef render_c_methods[] = {
-    {"render_map", render_map, METH_VARARGS, PyDoc_STR("render_map(map, edges, edges_y, slice_heights, objects, bk_objects, sky_colour, day, lights, settings, redraw_all) -> None")},
+    {"render_map", render_map, METH_VARARGS, PyDoc_STR("    render_map(map, slice_heights, edges, edges_y, objects, sky_colour, settings, redraw_all) -> None")},
     {"create_lighting_buffer", create_lighting_buffer, METH_VARARGS, PyDoc_STR("create_lighting_buffer(width, height, x, y, map, slice_heights, bk_objects, sky_colour, day, lights, py_settings) -> None")},
     {"get_world_light_level", get_world_light_level, METH_VARARGS, PyDoc_STR("get_world_light_level(world_x, world_y) -> lightness")},
     {NULL, NULL}  /* sentinel */
