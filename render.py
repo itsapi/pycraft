@@ -205,10 +205,10 @@ def bk_objects(ticks, width, left_edge, fancy_lights):
     return objects, sky_colour, shade
 
 
-def get_block_lights(x, y, lights):
+def get_block_lights(world_x, x, y, lights):
     # Get all lights which affect this pixel
     for l in lights:
-        l['distance'] = lit(x, y, l)
+        l['distance'] = lit(world_x + x, y, l)
     return filter(lambda l: l['distance'] < 1, lights)
 
 
@@ -224,7 +224,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
     else:
 
         if fancy_lights:
-            pixel_lights = get_block_lights(x, y, lights)
+            pixel_lights = get_block_lights(world_x, x, y, lights)
 
             # Calculate light level for each light source
             light_levels = [hsv_to_rgb(lerp_n(rgb_to_hsv(l['colour']), l['distance'], colour_behind)) for l in pixel_lights]
@@ -237,7 +237,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
 
         else:
 
-            light = CYAN if any(map(lambda l: lit(x, y, l) < 1, lights)) else colour_behind
+            light = CYAN if any(map(lambda l: lit(world_x, x, y, l) < 1, lights)) else colour_behind
 
     return light
 
@@ -251,10 +251,10 @@ def light_mask(x, y, map_, slice_heights):
 
 
 def get_block_lightness(x, y, world_x, map_, slice_heights, lights):
-    block_lights = get_block_lights(x, y, lights)
+    block_lights = get_block_lights(world_x, x, y, lights)
 
     # If the light is not hidden by the mask
-    block_lights = filter(lambda l: l['z'] >= light_mask(world_x + l['x'], l['y'], map_, slice_heights), block_lights)
+    block_lights = filter(lambda l: l['z'] >= light_mask(l['x'], l['y'], map_, slice_heights), block_lights)
 
     # Multiply the distance from the source by the lightness of the source colour.
     block_lights_lightness = map(lambda l: l['distance'] * lightness(l['colour']), block_lights)
@@ -285,7 +285,7 @@ def sky(x, y, world_x, map_, slice_heights, bk_objects, sky_colour, lights, fanc
     """ Returns the sky colour. """
 
     for obj in bk_objects:
-        if (obj['x'] in range(x, x+obj['width']) and
+        if (obj['x'] in range(world_x + x, world_x + x + obj['width']) and
             obj['y'] in range(y, y+obj['height']) and
             (world_gen['height'] - y) > slice_heights[world_x + x]):
 
