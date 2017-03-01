@@ -1075,10 +1075,25 @@ get_world_light_level(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    struct PixelLighting *lighting_pixel;
-    get_lighting_buffer_pixel(&lighting_buffer, world_x - lighting_buffer.x, world_y - lighting_buffer.y, &lighting_pixel);
+    long result = 1;
 
-    return PyFloat_FromDouble(lighting_pixel->lightness);
+    long buffer_x = world_x - lighting_buffer.x;
+    long buffer_y = world_y - lighting_buffer.y;
+
+    if (buffer_x >= 0 && buffer_x < lighting_buffer.width &&
+        buffer_y >= 0 && buffer_y < lighting_buffer.height)
+    {
+        struct PixelLighting *lighting_pixel;
+        get_lighting_buffer_pixel(&lighting_buffer, buffer_x, buffer_y, &lighting_pixel);
+
+        result = lighting_pixel->lightness;
+    }
+    else
+    {
+        debug(L"get_world_light_level() arguments out of current lighting_buffer bounds");
+    }
+
+    return PyFloat_FromDouble(result);
 }
 
 
