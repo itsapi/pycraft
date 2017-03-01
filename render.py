@@ -163,7 +163,7 @@ def get_char(x, y, map_, pixel):
     return char
 
 
-def bk_objects(ticks, width, fancy_lights):
+def bk_objects(ticks, width, left_edge, fancy_lights):
     """ Returns objects for rendering to the background """
 
     objects = []
@@ -175,17 +175,15 @@ def bk_objects(ticks, width, fancy_lights):
     day_angle = day_time * 2 * pi
     sun_angle = day_angle % pi
 
-    sun_r = width / 2
-
-    x = int(sun_r * cos(sun_angle % pi) + width/2 + 1)
-    y = int(sun_y - sun_r * sin(sun_angle % pi))
+    world_x = (width // 2) + int(round(((width / 2) * cos(sun_angle % pi))) - 1) + left_edge
+    world_y = int(sun_y - (width / 2) * sin(sun_angle % pi))
 
     light_type = 'sun' if day else 'moon'
 
     # Sun/moon
     obj = {
-        'x': x,
-        'y': y,
+        'x': world_x,
+        'y': world_y,
         'z': -1 if day else -2,
         'width': 2,
         'height': 1,
@@ -369,7 +367,20 @@ def hsv_to_rgb(colour):
     }[i]
 
 
-def get_lights(_map, start_x, bk_objects):
+def get_lights(_map, bk_objects, player_x):
+    # returns [
+    #   {
+    #     'radius': pixels,
+    #     'x': relative to world,
+    #     'y': relative to world,
+    #     'z': relative to screen,
+    #     'colour': rgb,
+    #     ('source_width': light source in pixels,
+    #      'source_height': light source in pixels)
+    #   },
+    #   ...
+    # ]
+
     # Give background objects light
     lights = list(map(lambda obj: {
         'radius': obj['light_radius'],
@@ -378,12 +389,11 @@ def get_lights(_map, start_x, bk_objects):
         'z': obj['z'],
         'colour': obj['light_colour'],
         'source_width': obj['width'],
-        'source_height': obj['height'],
-        'source_colour': obj['colour']
+        'source_height': obj['height']
     }, filter(lambda obj: obj.get('light_radius'), bk_objects)))
 
     # Give blocks light
-    for x, slice_ in _map.items():
+    for world_x, slice_ in _map.items():
         # Get the lights and their y positions in this slice
         slice_lights = filter(lambda pixel: blocks[pixel[1]].get('light_radius'),
             zip(range(len(slice_)), slice_)) # [(0, ' '), (1, '~'), ...]
@@ -392,7 +402,7 @@ def get_lights(_map, start_x, bk_objects):
         lights.extend(map(
             lambda pixel: {
                 'radius': blocks[pixel[1]]['light_radius'],
-                'x': x-start_x,
+                'x': world_x,
                 'y': pixel[0],
                 'z': 0,
                 'colour': blocks[pixel[1]].get('light_colour', (1,1,1))

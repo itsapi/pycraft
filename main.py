@@ -208,7 +208,7 @@ def game(server, settings, benchmarks):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour, day = render.bk_objects(server.time, width, settings.get('fancy_lights'))
+            bk_objects, sky_colour, day = render.bk_objects(server.time, width, edges[0], settings.get('fancy_lights'))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -308,16 +308,14 @@ def game(server, settings, benchmarks):
 
             ## Spawning mobs / Generating lighting buffer
 
-            lights = render.get_lights(extended_view, edges[0], bk_objects)
+            lights = render.get_lights(extended_view, bk_objects, x)
 
             spawn_period = 1 / SPS
             n_mob_spawn_cycles = int((frame_start - last_mob_spawn) // spawn_period)
 
             # TODO: This will only generate a lighting buffer for spawning mobs around the server player
-            created_lighting_buffer_this_frame = False
             if n_mob_spawn_cycles != 0:
                 server.create_mobs_lighting_buffer(bk_objects, sky_colour, day, lights)
-                created_lighting_buffer_this_frame = True
 
             for i in range(n_mob_spawn_cycles):
                 server.spawn_mobs()
@@ -328,8 +326,8 @@ def game(server, settings, benchmarks):
             if server.redraw:
                 server.redraw = False
 
-                if not created_lighting_buffer_this_frame:
-                    render_interface.create_lighting_buffer(width, height, edges[0], edges_y[0], server.map_, server.slice_heights, bk_objects, sky_colour, day, lights)
+                # TODO: It would be nice to reuse any of the lighting_buffer generated for the mobs which overlaps with the screen
+                render_interface.create_lighting_buffer(width, height, edges[0], edges_y[0], server.map_, server.slice_heights, bk_objects, sky_colour, day, lights)
 
                 entities = {
                     'player': list(server.current_players.values()),

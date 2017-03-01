@@ -37,8 +37,8 @@ typedef struct
 
 
 typedef struct {
-    long x;
-    long y;
+    long world_x;
+    long world_y;
     long z;
     long radius;
     long width;
