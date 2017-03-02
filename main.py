@@ -10,7 +10,7 @@ from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 from items import items_to_render_objects
 
-import saves, ui, terrain, player, render, server_interface, data
+import saves, ui, terrain, player, render, render_interface, server_interface, data
 
 
 def main():
@@ -32,13 +32,14 @@ def main():
                 server_obj = server_interface.RemoteInterface(name, data['ip'], data['port'])
 
             if not server_obj.error:
-                render_c = import_render_c(settings)
+                render_interface.setup_render_module(settings)
+
                 if profile:
-                    cProfile.runctx('game(server_obj, settings, render_c, benchmarks)', globals(), locals(), filename='game.profile')
+                    cProfile.runctx('game(server_obj, settings, benchmarks)', globals(), locals(), filename='game.profile')
                 elif debug:
-                    pdb.run('game(server_obj, settings, render_c, benchmarks)', globals(), locals())
+                    pdb.run('game(server_obj, settings, benchmarks)', globals(), locals())
                 else:
-                    game(server_obj, settings, render_c, benchmarks)
+                    game(server_obj, settings, benchmarks)
 
             if server_obj.error:
                 ui.error(server_obj.error)
@@ -76,22 +77,7 @@ def setdown():
     print(SHOW_CUR + CLS)
 
 
-def import_render_c(settings):
-    render_c = None
-
-    sys.path += glob.glob('build/lib.*')
-    try:
-        import render_c
-    except ImportError:
-        log('Cannot import C renderer: disabling option.', m='warning')
-        settings['render_c'] = False
-
-    saves.save_settings(settings)
-
-    return render_c
-
-
-def game(server, settings, render_c, benchmarks):
+def game(server, settings, benchmarks):
     dt = 0  # Tick
     df = 0  # Frame
     dc = 0  # Cursor
@@ -101,11 +87,13 @@ def game(server, settings, render_c, benchmarks):
     dcraft = False  # Crafting
     FPS = 15  # Max
     MPS = 15  # Movement
+    SPS = 5  # Mob spawns
 
     old_bk_objects = None
     old_edges = None
     redraw_all = True
     last_move = time()
+    last_mob_spawn = time()
     inp = None
     jump = 0
     cursor = 0
@@ -156,9 +144,11 @@ def game(server, settings, render_c, benchmarks):
                 if ui.pause(server, settings) == 'exit':
                     server.logout()
                     continue
-                render_c = import_render_c(settings)
 
-            # Update player position
+            width = settings.get('width')
+            height = settings.get('height')
+
+            # Update player and mobs position / damage
             move_period = 1 / MPS
             while frame_start >= move_period + last_move and x in server.map_:
 
@@ -192,9 +182,6 @@ def game(server, settings, render_c, benchmarks):
 
             ## Update Map
 
-            width = settings.get('width')
-            height = settings.get('height')
-
             # Finds display boundaries
             edges = (x - int(width / 2), x + int(width / 2))
             edges_y = (y - int(height / 2), y + int(height / 2))
@@ -221,7 +208,7 @@ def game(server, settings, render_c, benchmarks):
                 server.view_change = False
 
             # Sun has moved
-            bk_objects, sky_colour, day = render.bk_objects(server.time, width, settings.get('fancy_lights'))
+            bk_objects, sky_colour, day = render.bk_objects(server.time, width, edges[0], settings.get('fancy_lights'))
             if not bk_objects == old_bk_objects:
                 old_bk_objects = bk_objects
                 server.redraw = True
@@ -279,6 +266,8 @@ def game(server, settings, render_c, benchmarks):
             if dc:
                 cursor_hidden = False
 
+            ## Eating or placing blocks
+
             p_hungry = server.health < player.MAX_PLAYER_HEALTH
 
             new_blocks, server.inv, inv_sel, new_events, dhealth, dinv = \
@@ -290,6 +279,8 @@ def game(server, settings, render_c, benchmarks):
 
             if new_blocks:
                 server.set_blocks(new_blocks)
+
+            ## Process events
 
             events += new_events
 
@@ -315,10 +306,22 @@ def game(server, settings, render_c, benchmarks):
                 alive = True
                 server.respawn()
 
+            ## Spawning mobs / Generating lighting buffer
+
+            lights = render.get_lights(extended_view, bk_objects, x)
+
+            spawn_period = 1 / SPS
+            n_mob_spawn_cycles = int((frame_start - last_mob_spawn) // spawn_period)
+            last_mob_spawn += spawn_period * n_mob_spawn_cycles
+            server.spawn_mobs(n_mob_spawn_cycles, bk_objects, sky_colour, day, lights)
+
             ## Render
 
             if server.redraw:
                 server.redraw = False
+
+                # TODO: It would be nice to reuse any of the lighting_buffer generated for the mobs which overlaps with the screen
+                render_interface.create_lighting_buffer(width, height, edges[0], edges_y[0], server.map_, server.slice_heights, bk_objects, sky_colour, day, lights)
 
                 entities = {
                     'player': list(server.current_players.values()),
@@ -340,29 +343,27 @@ def game(server, settings, render_c, benchmarks):
                         int(width / 2), y, cursor, cursor_colour
                     ))
 
-                lights = render.get_lights(extended_view, edges[0], bk_objects)
-
-                render_map = render_c.render_map if settings.get('render_c') else render.render_map
                 render_args = [
                     server.map_,
                     server.slice_heights,
                     edges,
                     edges_y,
                     objects,
-                    bk_objects, # Only needed for the python renderer now.
+                    bk_objects,
                     sky_colour,
                     day,
                     lights,
                     settings,
                     redraw_all
                 ]
+                render_map = lambda: render_interface.render_map(*render_args)
 
                 if benchmarks:
-                    timer = timeit.Timer(lambda: render_map(*render_args))
+                    timer = timeit.Timer(render_map)
                     t = timer.timeit(1)
                     log('Render call time = {}'.format(t), m="benchmarks")
                 else:
-                    render_map(*render_args)
+                    render_map()
 
                 redraw_all = False
 

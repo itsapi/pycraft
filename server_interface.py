@@ -7,7 +7,7 @@ from console import log
 from data import timings
 from player import MAX_PLAYER_HEALTH
 
-import saves, terrain, network
+import saves, terrain, network, mobs
 
 chunk_size = terrain.world_gen['chunk_size']
 
@@ -215,6 +215,10 @@ class RemoteInterface:
         # The client does nothing
         pass
 
+    def spawn_mobs(self, *_):
+        # The client does nothing
+        pass
+
     def despawn_items(self):
         # The client does nothing
         pass
@@ -372,6 +376,9 @@ class LocalInterface:
 
     def update_mobs(self):
         self._server.local_interface_update_mobs()
+
+    def spawn_mobs(self, *args):
+        self._server.local_interface_spawn_mobs(*args)
 
     def update_items(self):
         self._server.local_interface_update_items()

@@ -1,14 +1,14 @@
 import random
 
 from math import sqrt
+from uuid import uuid4
 
 from console import log
 
-import player, terrain, items
+import player, terrain, items, render_interface
 
 
 mob_limit = 100
-new_mob_id = 0
 mob_rate = 0.1
 
 max_mob_health = 10
@@ -18,10 +18,13 @@ mob_attack_rate = 1
 
 meat_time_to_live = 10
 
+spawn_player_range = 10
+max_spawn_light_level = 0.3
+
 
 def update(mobs, players, map_, last_tick):
     updated_players = {}
-    updated_mobs = spawn(mobs, map_)
+    updated_mobs = {}
     removed_mobs = []
     new_items = {}
 
@@ -77,8 +80,7 @@ def update(mobs, players, map_, last_tick):
     return updated_players, new_items
 
 
-def spawn(mobs, map_):
-    global new_mob_id
+def spawn(mobs, map_, x_start_range, y_start_range, x_end_range, y_end_range):
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
@@ -88,22 +90,29 @@ def spawn(mobs, map_):
             max_attempts = 100
             attempts = 0
             while not spot_found and attempts < max_attempts:
-                mx = random.choice(list(map_.keys()))
-                my = random.randint(0, len(map_[mx]) - 2)
-                spot_found = (not terrain.is_solid(map_[mx][my]) and
-                              not terrain.is_solid(map_[mx][my - 1]) and
-                              terrain.is_solid(map_[mx][my + 1]))
+                mx = random.randint(x_start_range, x_end_range-1)
+                my = random.randint(y_start_range, y_end_range-1)
+                feet = map_[mx][my]
+                head = map_[mx][my - 1]
+                floor = map_[mx][my + 1]
+                spot_found = (not terrain.is_solid(feet) and
+                              not terrain.is_solid(head) and
+                              terrain.is_solid(floor) and
+                              render_interface.get_light_level(mx, my) < max_spawn_light_level and
+                              render_interface.get_light_level(mx, my - 1) < max_spawn_light_level)
                 attempts += 1
 
-            new_mobs[new_mob_id] = {
-                'x': mx,
-                'y': my,
-                'x_vel': 0,
-                'health': max_mob_health,
-                'type': 'mob',
-                'last_attack': 0
-            }
-            new_mob_id += 1
+            if spot_found:
+                new_mobs[str(uuid4())] = {
+                    'x': mx,
+                    'y': my,
+                    'x_vel': 0,
+                    'health': max_mob_health,
+                    'type': 'mob',
+                    'last_attack': 0
+                }
+
+    mobs.update(new_mobs)
 
     return new_mobs
 
