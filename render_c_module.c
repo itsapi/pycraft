@@ -53,7 +53,7 @@ debug(wchar_t *str, ...)
 {
     static int debug_y = 0;
     static wchar_t debug_buff[128];
-    size_t pos = pos_str(0, 50 + debug_y++, debug_buff);
+    size_t pos = pos_str(0, 31 + debug_y++, debug_buff);
     debug_buff[pos] = L'\0';
 
     wprintf(debug_buff);

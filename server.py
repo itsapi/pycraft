@@ -2,7 +2,7 @@ from time import time
 from math import radians, floor, ceil
 from threading import Thread
 
-import terrain, saves, network, mobs, items
+import terrain, saves, network, mobs, items, render_interface
 
 from colours import colour_str, TERM_YELLOW
 from console import log
@@ -206,8 +206,8 @@ class Server:
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
         self._update_clients({'event': 'add_items', 'args': [new_items]})
 
-    def local_interface_spawn_mobs(self):
-        self.game.spawn_mobs()
+    def local_interface_spawn_mobs(self, *args):
+        self.game.spawn_mobs(*args)
         self._update_clients({'event': 'set_mobs', 'args': [self.game.mobs]})
 
     def local_interface_update_items(self):
@@ -298,11 +298,23 @@ class Game:
         self._meta['items'].update(new_items)
         return updated_players, new_items
 
-    def spawn_mobs(self):
-        if self._settings.get('mobs'):
-            return mobs.spawn(self._meta['mobs'], self._map)
-        else:
-            return {}
+    def spawn_mobs(self, n_mob_spawn_cycles, bk_objects, sky_colour, day, lights):
+        if self._settings.get('mobs') and n_mob_spawn_cycles != 0:
+            for player in self._meta['players'].values():
+                px, py = player['x'], player['y']
+
+                width  = 2 * mobs.spawn_player_range
+                height = 2 * mobs.spawn_player_range # TODO: Do we want this to be the full map height?
+
+                x_start = px - int(width  * 0.5)
+                y_start = py - int(height * 0.5)
+                x_end = x_start + width
+                y_end = y_start + height
+
+                render_interface.create_lighting_buffer(width, height, x_start, y_start, self._map, self._slice_heights, bk_objects, sky_colour, day, lights)
+
+                for i in range(n_mob_spawn_cycles):
+                    mobs.spawn(self._meta['mobs'], self._map, x_start, y_start, x_end, y_end)
 
     def update_items(self):
         removed_items = items.pickup_items(self._meta['items'], self._meta['players'])

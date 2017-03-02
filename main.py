@@ -312,14 +312,8 @@ def game(server, settings, benchmarks):
 
             spawn_period = 1 / SPS
             n_mob_spawn_cycles = int((frame_start - last_mob_spawn) // spawn_period)
-
-            # TODO: This will only generate a lighting buffer for spawning mobs around the server player
-            if n_mob_spawn_cycles != 0:
-                server.create_mobs_lighting_buffer(bk_objects, sky_colour, day, lights)
-
-            for i in range(n_mob_spawn_cycles):
-                server.spawn_mobs()
             last_mob_spawn += spawn_period * n_mob_spawn_cycles
+            server.spawn_mobs(n_mob_spawn_cycles, bk_objects, sky_colour, day, lights)
 
             ## Render
 

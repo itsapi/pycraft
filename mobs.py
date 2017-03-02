@@ -80,7 +80,7 @@ def update(mobs, players, map_, last_tick):
     return updated_players, new_items
 
 
-def spawn(mobs, map_):
+def spawn(mobs, map_, x_start_range, y_start_range, x_end_range, y_end_range):
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
@@ -90,8 +90,8 @@ def spawn(mobs, map_):
             max_attempts = 100
             attempts = 0
             while not spot_found and attempts < max_attempts:
-                mx = random.choice(list(map_.keys()))
-                my = random.randint(0, len(map_[mx]) - 2)
+                mx = random.randint(x_start_range, x_end_range-1)
+                my = random.randint(y_start_range, y_end_range-1)
                 feet = map_[mx][my]
                 head = map_[mx][my - 1]
                 floor = map_[mx][my + 1]
