@@ -18,6 +18,7 @@ mob_attack_rate = 1
 
 meat_time_to_live = 10
 
+spawn_player_range_min = 5
 spawn_player_range = 10
 max_spawn_light_level = 0.3
 
@@ -80,7 +81,7 @@ def update(mobs, players, map_, last_tick):
     return updated_players, new_items
 
 
-def spawn(mobs, map_, x_start_range, y_start_range, x_end_range, y_end_range):
+def spawn(mobs, players, map_, x_start_range, y_start_range, x_end_range, y_end_range):
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
@@ -95,11 +96,14 @@ def spawn(mobs, map_, x_start_range, y_start_range, x_end_range, y_end_range):
                 feet = map_[mx][my]
                 head = map_[mx][my - 1]
                 floor = map_[mx][my + 1]
+                closest_player_dist = min(players.values(), key=lambda p: abs(p['x'] - mx))['x'] - mx
+
                 spot_found = (not terrain.is_solid(feet) and
                               not terrain.is_solid(head) and
                               terrain.is_solid(floor) and
                               render_interface.get_light_level(mx, my) < max_spawn_light_level and
-                              render_interface.get_light_level(mx, my - 1) < max_spawn_light_level)
+                              render_interface.get_light_level(mx, my - 1) < max_spawn_light_level and
+                              not closest_player_dist < spawn_player_range_min)
                 attempts += 1
 
             if spot_found:
