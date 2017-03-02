@@ -1083,7 +1083,7 @@ get_world_light_level(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    long result = 1;
+    float result = 1;
 
     long buffer_x = world_x - lighting_buffer.x;
     long buffer_y = world_y - lighting_buffer.y;
