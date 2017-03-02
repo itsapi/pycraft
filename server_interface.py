@@ -7,7 +7,7 @@ from console import log
 from data import timings
 from player import MAX_PLAYER_HEALTH
 
-import saves, terrain, network, mobs, render_interface
+import saves, terrain, network, mobs
 
 chunk_size = terrain.world_gen['chunk_size']
 

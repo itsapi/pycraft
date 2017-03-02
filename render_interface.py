@@ -34,6 +34,9 @@ def create_lighting_buffer(width, height, x, y, map_, slice_heights, bk_objects,
     if settings_ref['render_c']:
         return render_c.create_lighting_buffer(width, height, x, y, map_, slice_heights, bk_objects, sky_colour, day, lights, settings_ref)
     else:
+        global day_global
+        day_global = day
+
         log('Not implemented: Python create_lighting_buffer function', m='warning')
 
 
@@ -45,11 +48,10 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
 
 
 def get_light_level(*args):
-    result = 1
-
     if settings_ref['render_c']:
         result = render_c.get_world_light_level(*args)
     else:
+        result = day_global
         log('Not implemented: Python get_light_level function', m='warning')
 
     log('{}'.format(result), m='lighting')
