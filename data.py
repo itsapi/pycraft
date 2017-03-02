@@ -309,7 +309,9 @@ blocks = {
         'recipe': {
             '/': 2,
             '|': 3
-        }
+        },
+        'attack_radius': 6,
+        'attack_damage': 12
     },
     '2': {
         'char': '⚒T',
@@ -325,7 +327,9 @@ blocks = {
         'recipe': {
             '/': 2,
             '#': 3
-        }
+        },
+        'attack_radius': 6,
+        'attack_damage': 13
     },
     '3': {
         'char': '⚒T',
@@ -341,7 +345,9 @@ blocks = {
         'recipe': {
             '/': 2,
             '+': 3
-        }
+        },
+        'attack_radius': 6,
+        'attack_damage': 14
     },
     '4': {
         'char': '⚒T',
@@ -357,7 +363,9 @@ blocks = {
         'recipe': {
             '/': 2,
             'o': 3
-        }
+        },
+        'attack_radius': 6,
+        'attack_damage': 15
     }
 }
 

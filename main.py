@@ -170,7 +170,8 @@ def game(server, settings, benchmarks):
                             dpos = True
 
                 if 'h' in inp:
-                    server.player_attack(5, 10)
+                    item = render.blocks[server.inv[inv_sel]['block']] if len(server.inv) else {}
+                    server.player_attack(item.get('attack_radius', 5), item.get('attack_damage', 10))
 
                 server.update_items()
                 server.update_mobs()
