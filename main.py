@@ -9,6 +9,7 @@ from colours import init_colours
 from console import DEBUG, log, in_game_log, CLS, SHOW_CUR, HIDE_CUR
 from nbinput import NonBlockingInput
 from items import items_to_render_objects
+from events import process_events
 
 import saves, ui, terrain, player, render, render_interface, server_interface, data
 
@@ -286,7 +287,7 @@ def game(server, settings, benchmarks):
 
             new_blocks = {}
             for i in range(int(dt)):
-                new_blocks.update(process_events(events, server.map_))
+                new_blocks.update(process_events(events, server))
             if new_blocks:
                 server.set_blocks(new_blocks)
 
@@ -397,37 +398,6 @@ def game(server, settings, benchmarks):
             d_frame = time() - frame_start
             if d_frame < (1/FPS):
                 sleep((1/FPS) - d_frame)
-
-
-def process_events(events, map_):
-    new_blocks = {}
-
-    for event in events:
-        if event['time_remaining'] <= 0:
-            ex, ey = event['pos']
-
-            # Boom
-            radius = 5
-            blast_strength = 85
-            for tx in range(ex - radius*2, ex + radius*2):
-                new_blocks[tx] = {}
-
-                for ty in range(ey - radius, ey + radius):
-
-                    if (render.in_circle(tx, ty, ex, ey, radius) and tx in map_ and ty >= 0 and ty < len(map_[tx]) and
-                            player.can_strength_break(map_[tx][ty], blast_strength)):
-
-                        if not render.in_circle(tx, ty, ex, ey, radius - 1):
-                            if random() < .5:
-                                new_blocks[tx][ty] = ' '
-                        else:
-                            new_blocks[tx][ty] = ' '
-
-            events.remove(event)
-        else:
-            event['time_remaining'] -= 1
-
-    return new_blocks
 
 
 if __name__ == '__main__':

@@ -75,6 +75,7 @@ class Server:
              'set_blocks': self.event_set_blocks,
              'get_time': self.event_get_time,
              'player_attack': self.event_player_attack,
+             'splash_damage': self.event_splash_damage,
              'respawn': self.event_respawn,
              'logout': lambda: self.event_logout(sock),
              'login': lambda name: self.event_login(name, sock),
@@ -154,6 +155,11 @@ class Server:
 
     def event_player_attack(self, name, x, y, radius, strength):
         updated_players, updated_mobs = self.game.player_attack(name, x, y, radius, strength)
+        self._update_clients({'event': 'set_players', 'args': [updated_players]})
+        self._update_clients({'event': 'set_mobs', 'args': [updated_mobs]})
+
+    def event_splash_damage(self, x, y, radius, strength):
+        updated_players, updated_mobs = self.game.splash_damage(x, y, radius, strength)
         self._update_clients({'event': 'set_players', 'args': [updated_players]})
         self._update_clients({'event': 'set_mobs', 'args': [updated_mobs]})
 
@@ -288,6 +294,9 @@ class Game:
 
     def player_attack(self, name, ax, ay, radius, strength):
         return mobs.calculate_player_attack(name, ax, ay, radius, strength, self._meta['players'], self._meta['mobs'])
+
+    def splash_damage(self, dx, dy, radius, strength):
+        return mobs.calculate_player_attack(None, dx, dy, radius, strength, self._meta['players'], self._meta['mobs'])
 
     def update_mobs(self):
         if not self._settings.get('mobs'):
