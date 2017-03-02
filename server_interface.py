@@ -227,6 +227,9 @@ class RemoteInterface:
         x, y = self.pos
         self._send('player_attack', [self._name, x, y, raduis, strength])
 
+    def splash_damage(self, *args):
+        self._send('splash_damage', args)
+
     def respawn(self):
         self._send('respawn', [self._name])
 
@@ -386,6 +389,9 @@ class LocalInterface:
     def player_attack(self, radius, strength):
         x, y = self.pos
         self._send('player_attack', [self._name, x, y, radius, strength])
+
+    def splash_damage(self, *args):
+        self._send('splash_damage', args)
 
     def respawn(self):
         self._send('respawn', [self._name])

@@ -1,6 +1,7 @@
 from colours import *
 from render import blocks
 from terrain import is_solid, world_gen
+from events import boom
 
 import data
 
@@ -128,7 +129,8 @@ def cursor_func(inp, map_, x, y, cursor, inv_sel, inv, hungry):
 
                     if inv_block == '?':
                         events.append({
-                            'pos': (block_x, block_y),
+                            'func': boom,
+                            'args': (block_x, block_y),
                             'time_remaining': 10
                         })
 
