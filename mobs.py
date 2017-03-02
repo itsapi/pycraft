@@ -18,8 +18,8 @@ mob_attack_rate = 1
 
 meat_time_to_live = 10
 
-spawn_player_range = 5
-max_spawn_light_level = 0.2
+spawn_player_range = 10
+max_spawn_light_level = 0.3
 
 
 def update(mobs, players, map_, last_tick):
