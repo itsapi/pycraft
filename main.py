@@ -241,11 +241,10 @@ def game(server, settings, benchmarks):
                 dcraft = dcraftC or dcraftN
 
             # Update crafting list
-            if dinv or dcraft:
-                crafting_list, crafting_sel = \
-                    player.get_crafting(server.inv, crafting_list,
-                                        crafting_sel, dcraftC)
-                if not len(crafting_list): crafting = False
+            crafting_list, crafting_sel = \
+                player.get_crafting(server.inv, crafting_list,
+                                    crafting_sel, dcraftC)
+            if not len(crafting_list): crafting = False
 
             dc = player.move_cursor(inp)
             cursor = (cursor + dc) % 6
