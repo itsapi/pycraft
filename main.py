@@ -216,7 +216,7 @@ def game(server, settings, benchmarks):
                 server.redraw = True
 
             if settings.get('gravity'):
-                blocks = terrain.apply_gravity(server.map_, edges)
+                blocks = terrain.apply_gravity(server.map_, extended_edges)
                 if blocks: server.set_blocks(blocks)
 
             ## Crafting
