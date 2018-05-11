@@ -41,7 +41,7 @@ def apply_gravity(map_, edges):
                  world_gen['height'] - 1)
 
     new_blocks = {}
-    connected_to_ground = explore_map(map_, edges, start_pos, [])
+    connected_to_ground = explore_map(map_, edges, start_pos, set())
 
     for x, slice_ in map_.items():
         if x not in range(*edges):
@@ -56,25 +56,34 @@ def apply_gravity(map_, edges):
     return new_blocks
 
 
-def explore_map(map_, edges, start_pos, found):
-    if (start_pos[1] >= 0 and start_pos[1] < world_gen['height'] and
-            start_pos not in found and
-            start_pos[0] in range(edges[0]-1, edges[1]+1)):
+def explore_map(map_, edges, start_pos, connected_to_ground):
+    blocks_to_explore = set([start_pos])
+    visted_blocks = set()
 
-        try:
-            current_block = map_[start_pos[0]][start_pos[1]]
-        except (IndexError, KeyError):
-            current_block = None
+    while blocks_to_explore:
+        current_pos = blocks_to_explore.pop()
+        visted_blocks.add(current_pos)
 
-        if (current_block is not None and
-                is_solid(current_block)) or start_pos[0] in (edges[0]-1, edges[1]):
+        if (current_pos[1] >= 0 and current_pos[1] < world_gen['height'] and
+                current_pos not in connected_to_ground and
+                current_pos[0] in range(edges[0]-1, edges[1]+1)):
 
-            found.append(start_pos)
-            for diff in ((x, y) for x in range(3) for y in range(3)):
-                pos = (start_pos[0] + diff[0] - 1, start_pos[1] + diff[1] - 1)
-                found = explore_map(map_, edges, pos, found)
+            try:
+                current_block = map_[current_pos[0]][current_pos[1]]
+            except (IndexError, KeyError):
+                current_block = None
 
-    return found
+            if (current_block is not None and
+                    is_solid(current_block)) or current_pos[0] in (edges[0]-1, edges[1]):
+
+                connected_to_ground.add(current_pos)
+                for (dx, dy) in ((x, y) for x in (-1, 0, 1) for y in (-1, 0, 1)):
+                    pos = (current_pos[0] + dx, current_pos[1] + dy)
+
+                    if pos not in visted_blocks:
+                        blocks_to_explore.add(pos)
+
+    return connected_to_ground
 
 
 def spawn_hierarchy(tests):
