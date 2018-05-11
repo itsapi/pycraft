@@ -93,9 +93,13 @@ def spawn(mobs, players, map_, x_start_range, y_start_range, x_end_range, y_end_
             while not spot_found and attempts < max_attempts:
                 mx = random.randint(x_start_range, x_end_range-1)
                 my = random.randint(y_start_range, y_end_range-1)
+
+                if mx not in map_ or my < 1 or my > len(map_[mx]) - 2: continue
+
                 feet = map_[mx][my]
                 head = map_[mx][my - 1]
                 floor = map_[mx][my + 1]
+
                 closest_player_dist = min(players.values(), key=lambda p: abs(p['x'] - mx))['x'] - mx
 
                 spot_found = (not terrain.is_solid(feet) and
