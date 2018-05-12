@@ -542,7 +542,8 @@ world_gen = {
 render_objects = {
     'player': {
         'model': ['*^'],
-        'hierarchy': 100
+        'hierarchy': 100,
+        'dead_colour': (0, 2/3, 0)
     },
     'zombie': {
         'model': ['*^'],

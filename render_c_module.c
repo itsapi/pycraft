@@ -760,6 +760,38 @@ fill_lighting_buffer(PyObject *lights, PyObject *bk_objects, PyObject *map, Sett
 
 
 void
+calculate_object_pixel_colour(PyObject *object, Object *map_obj)
+{
+    // Apply effect colour if it exists
+
+    Colour colour = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
+    if (colour.r == -1)
+    {
+        colour = get_block_data(map_obj->key)->colours.fg;
+    }
+
+    Colour effect_colour = PyColour_AsColour(PyDict_GetItemString(object, "effect_colour"));
+
+    float effect_strength = -1;
+    PyObject *effect_strength_obj = PyDict_GetItemString(object, "effect_strength");
+    if (effect_strength_obj != NULL)
+    {
+        effect_strength = (PyFloat_AsDouble(effect_strength_obj));
+    }
+
+    if (effect_colour.r != -1 &&
+        effect_strength >= 0 && effect_strength <= 1)
+    {
+        map_obj->rgb = lerp_colour(&colour, effect_strength, &effect_colour);
+    }
+    else
+    {
+        map_obj->rgb = colour;
+    }
+}
+
+
+void
 filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long right_edge, long top_edge, long bottom_edge)
 {
     ++frame_id;
@@ -809,11 +841,8 @@ filter_objects(PyObject *objects, ObjectsMap *objects_map, long left_edge, long 
                     map_obj->hierarchy = PyLong_AsLong(PyDict_GetItemString(object, "hierarchy"));
 
                     map_obj->key = PyString_AsChar(PySequence_GetItem(PySequence_GetItem(model, dx), height - 1 - dy));
-                    map_obj->rgb = PyColour_AsColour(PyDict_GetItemString(object, "colour"));
-                    if (map_obj->rgb.r == -1)
-                    {
-                        map_obj->rgb = get_block_data(map_obj->key)->colours.fg;
-                    }
+
+                    calculate_object_pixel_colour(object, map_obj);
                 }
             }
         }

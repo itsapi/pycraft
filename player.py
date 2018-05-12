@@ -192,6 +192,16 @@ def cursor_colour(x, y, cursor, map_, inv, inv_sel):
     return colour
 
 
+def create_render_object_health_colour_effect(health, render_object):
+    dead_colour = render_object.get('dead_colour')
+
+    if dead_colour is not None:
+        live_colour = render_object.get('colour', render_object['model'][0][0])
+
+        render_object['effect_colour'] = dead_colour
+        render_object['effect_strength'] = 1 - (health / MAX_PLAYER_HEALTH)
+
+
 def entities_to_render_objects(entities, x, offset, edges):
     objects = []
 
@@ -207,6 +217,9 @@ def entities_to_render_objects(entities, x, offset, edges):
 
                 object_['x'] = ex - x + offset
                 object_['y'] = ey
+
+                if 'health' in entity:
+                    create_render_object_health_colour_effect(entity['health'], object_)
 
                 objects.append(object_)
 
