@@ -351,6 +351,7 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
         if air_points:
             features[chunk_pos]['cave'] = air_points
 
+
 def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
     """ Adds a tree feature at x to the chunk. """
 
