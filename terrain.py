@@ -234,11 +234,12 @@ def gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 else:
                     attrs['trunk_depth'] = len(center_leaves)
 
-
                 # Get space above ground
                 air_height = world_gen['height'] - ground_heights[x]
                 tree_height = air_height - (len(center_leaves) - attrs['trunk_depth'])
-                attrs['height'] = random.randint(2, max(tree_height, 2))
+                tree_height = min(tree_height, tree_data['min_height'])
+
+                attrs['height'] = random.randint(tree_data['min_height'], max(tree_height, 2))
 
                 features[x]['tree'] = attrs
 

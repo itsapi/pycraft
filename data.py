@@ -468,12 +468,16 @@ world_gen = {
     'trees': (
         {
             'chance': 1,
+            'max_height': 8,
+            'min_height': 3,
             'leaves': ((0, 1, 1),
                        (1, 1, 0),
                        (0, 1, 1))
         },
         {
             'chance': 1,
+            'max_height': 12,
+            'min_height': 6,
             'leaves': ((1, 1, 0, 0, 0, 1, 1),
                        (0, 1, 1, 0, 1, 1, 0),
                        (0, 0, 1, 1, 0, 0, 0),
@@ -482,6 +486,8 @@ world_gen = {
         },
         {
             'chance': .7,
+            'max_height': 10,
+            'min_height': 4,
             'leaves': ((0, 0, 0, 0, 1),
                        (0, 0, 1, 1, 0),
                        (0, 1, 0, 0, 0),
@@ -495,12 +501,16 @@ world_gen = {
         },
         {
             'chance': 1,
+            'max_height': 8,
+            'min_height': 4,
             'leaves': ((0, 0, 1),
                        (1, 0, 0),
                        (0, 1, 0))
         },
         {
             'chance': .9,
+            'max_height': 16,
+            'min_height': 6,
             'leaves': ((0, 0, 0, 1, 0, 1),
                        (0, 1, 1, 1, 1, 0),
                        (1, 1, 0, 0, 0, 0),
@@ -509,6 +519,8 @@ world_gen = {
         },
         {
             'chance': .8,
+            'max_height': 22,
+            'min_height': 8,
             'leaves': ((0,0,1,1,0,1,1,0),
                        (0,1,1,1,1,1,1,1),
                        (1,1,1,1,1,1,1,1),
@@ -519,6 +531,8 @@ world_gen = {
         },
         {
             'chance': 1,
+            'max_height': 32,
+            'min_height': 12,
             'leaves': ((0, 0, 0, 0, 0, 1, 1, 1, 0),
                        (0, 0, 0, 0, 1, 1, 1, 1, 0),
                        (0, 0, 0, 1, 1, 1, 1, 1, 0),
