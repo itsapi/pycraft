@@ -54,6 +54,9 @@ def update(mobs, players, map_, last_tick):
                 if kill_mob:
                     removed_mobs.append(mob_id)
 
+    for name, player_ in updated_players.items():
+        player_['health'] = max(player_['health'], players[name]['health'] - attack_strength)
+
     for mob_id in removed_mobs:
         mobs.pop(mob_id)
 
