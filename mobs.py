@@ -37,13 +37,11 @@ def update(mobs, players, map_, last_tick):
             new_items.update(items.new_item(mx, my, [{'block': '&', 'num': 1}], last_tick))
 
         else:
+            closest_player_dist = min(map(lambda p: abs(p['x'] - mx), players.values()))
 
-            closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
+            if (abs(closest_player_dist) < attack_radius and
+                mob['last_attack'] + (1 / mob_attack_rate) <= last_tick):
 
-            closest_player_dist = closest_player['x'] - mx
-
-            if abs(closest_player_dist) < attack_radius and \
-                    mob['last_attack'] + (1/mob_attack_rate) <= last_tick:
                 updated_players.update(calculate_mob_attack(mx, my, attack_radius, attack_strength, players))
                 mob['last_attack'] = last_tick
 
