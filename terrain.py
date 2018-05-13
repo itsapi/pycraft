@@ -310,29 +310,45 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
-    if features.get(chunk_pos) is None:
-        # Init to empty, so 'no features' is cached.
-        features[chunk_pos] = {}
+    ca_iterations = 4
 
-    # If it is not None, it has all ready been generated.
-    if features[chunk_pos].get('cave') is None:
+    air_points = set()
+    air_points_x_min = chunk_pos - ca_iterations
+    air_points_x_max = chunk_pos + world_gen['chunk_size'] + ca_iterations
 
-        random.seed(str(meta['seed']) + str(chunk_pos) + 'cave')
-        air_points = set()
+    for x in range(air_points_x_min, air_points_x_max):
 
-        # Generate initial random air points
-        for x in range(chunk_pos, chunk_pos + world_gen['chunk_size'] + 1):
+        # TODO: Each of these `if` blocks should be abstracted into a function
+        #         which just returns the `attrs` object.
+
+        if features.get(x) is None:
+            # Init to empty, so 'no features' is cached.
+            features[x] = {}
+
+        # If it is not None, it has all ready been generated.
+        if features[x].get('cave_initial_air_points') is None:
+            random.seed(str(meta['seed']) + str(x) + 'cave')
+
+            # Generate air points for this slice
+            slice_air_points = set()
             for y in range(ground_heights[x] - 2):
                 world_y = world_gen['height'] - y - 2
 
                 if random.random() < world_gen['cave_chance']:
-                    air_points.add((x, world_y))
+                    slice_air_points.add((x, world_y))
 
+            if slice_air_points:
+                features[x]['cave_initial_air_points'] = slice_air_points
+
+        # Store slice air points in our local collection of air points for CA generation
+        air_points = air_points.union(features[x]['cave_initial_air_points'])
+
+    if features[chunk_pos].get('cave') is None:
         # Perform cellular automata
-        for i in range(4):
+        for i in range(ca_iterations):
             old_air_points = set(p for p in air_points)
 
-            for x in range(chunk_pos, chunk_pos + world_gen['chunk_size'] + 1):
+            for x in range(air_points_x_min, air_points_x_max):
                 for y in range(ground_heights[x] - 2):
                     world_y = world_gen['height'] - y - 2
 
@@ -347,8 +363,8 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
                     else:
                         air_points.add((x, world_y))
 
-        if air_points:
-            features[chunk_pos]['cave'] = air_points
+        features[chunk_pos]['cave'] = air_points
+
 
 def build_tree(chunk, chunk_pos, x, tree_feature, ground_heights):
     """ Adds a tree feature at x to the chunk. """
