@@ -68,7 +68,7 @@ else:
 
 IN_GAME_LOGGING = getenv_b('PYCRAFT_IN_GAME_LOGGING')
 LOG_FILE = os.getenv('PYCRAFT_LOG_FILE') or 'pycraft.log'
-LOGGING = DEBUG and getenv_b('PYCRAFT_LOGGING')
+LOGGING = getenv_b('PYCRAFT_LOGGING')
 
 WIDTH, HEIGHT = _get_terminal_size()
 CLS = '\033[2J'

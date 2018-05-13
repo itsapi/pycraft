@@ -237,7 +237,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
 
         else:
 
-            light = CYAN if any(map(lambda l: lit(world_x, x, y, l) < 1, lights)) else colour_behind
+            light = CYAN if any(map(lambda l: lit(world_x, x, y, l) < 1, lights)) else hsv_to_rgb(colour_behind)
 
     return light
 

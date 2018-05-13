@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from console import log
 
-import player, terrain, items, render_interface
+import player, terrain, items, render_interface, pathfinding
 
 
 mob_limit = 100
@@ -19,7 +19,7 @@ mob_attack_rate = 1
 meat_time_to_live = 10
 
 spawn_player_range_min = 5
-spawn_player_range = 10
+spawn_player_range = 30
 max_spawn_light_level = 0.3
 
 
@@ -37,41 +37,23 @@ def update(mobs, players, map_, last_tick):
             new_items.update(items.new_item(mx, my, [{'block': '&', 'num': 1}], last_tick))
 
         else:
+            closest_player_dist = min(map(lambda p: abs(p['x'] - mx), players.values()))
 
-            closest_player = min(players.values(), key=lambda p: abs(p['x'] - mx))
+            if (abs(closest_player_dist) < attack_radius and
+                mob['last_attack'] + (1 / mob_attack_rate) <= last_tick):
 
-            closest_player_dist = closest_player['x'] - mx
-
-            if abs(closest_player_dist) < attack_radius and \
-                    mob['last_attack'] + (1/mob_attack_rate) <= last_tick:
                 updated_players.update(calculate_mob_attack(mx, my, attack_radius, attack_strength, players))
                 mob['last_attack'] = last_tick
 
             else:
-
-                x_vel += closest_player_dist / 100
-                if abs(x_vel) > 1:
-                    x_vel = x_vel / abs(x_vel)
-
-                dx = round(x_vel)
-
-                if (mx + dx - 1 not in map_.keys() or
-                        mx + dx not in map_.keys() or
-                        mx + dx + 1 not in map_.keys()):
+                updated, kill_mob = pathfinding.pathfind_towards_delta(mob, closest_player_dist, map_)
+                if updated:
+                    updated_mobs[mob_id] = mob
+                if kill_mob:
                     removed_mobs.append(mob_id)
 
-                else:
-                    dx, dy = player.get_pos_delta(dx, mx, my, map_)
-                    mx, my = mx + dx, my + dy
-
-                    if not terrain.is_solid(map_[mx][my + 1]):
-                        my += 1
-
-                    mob['x'] = mx
-                    mob['y'] = my
-                    mob['x_vel'] = x_vel
-
-                    updated_mobs[mob_id] = mob
+    for name, player_ in updated_players.items():
+        player_['health'] = max(player_['health'], players[name]['health'] - attack_strength)
 
     for mob_id in removed_mobs:
         mobs.pop(mob_id)
@@ -82,43 +64,47 @@ def update(mobs, players, map_, last_tick):
 
 
 def spawn(mobs, players, map_, x_start_range, y_start_range, x_end_range, y_end_range):
+    log("spawning", x_start_range, x_end_range, m='mobs');
+
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}
 
-    for i in range(n_mobs_to_spawn):
-        if len(mobs) + len(new_mobs) < mob_limit:
-            spot_found = False
-            max_attempts = 100
-            attempts = 0
-            while not spot_found and attempts < max_attempts:
-                mx = random.randint(x_start_range, x_end_range-1)
-                my = random.randint(y_start_range, y_end_range-1)
+    max_attempts = 100 * n_mobs_to_spawn
+    attempts = 0
 
-                if mx not in map_ or my < 1 or my > len(map_[mx]) - 2: continue
+    while (len(mobs) + len(new_mobs) < mob_limit and
+           len(new_mobs) < n_mobs_to_spawn and
+           attempts < max_attempts):
 
-                feet = map_[mx][my]
-                head = map_[mx][my - 1]
-                floor = map_[mx][my + 1]
+        attempts += 1
 
-                closest_player_dist = min(players.values(), key=lambda p: abs(p['x'] - mx))['x'] - mx
+        mx = random.randint(x_start_range, x_end_range-1)
+        my = random.randint(y_start_range, y_end_range-1)
 
-                spot_found = (not terrain.is_solid(feet) and
-                              not terrain.is_solid(head) and
-                              terrain.is_solid(floor) and
-                              render_interface.get_light_level(mx, my) < max_spawn_light_level and
-                              render_interface.get_light_level(mx, my - 1) < max_spawn_light_level and
-                              not closest_player_dist < spawn_player_range_min)
-                attempts += 1
+        if mx not in map_ or my < 1 or my > len(map_[mx]) - 2: continue
 
-            if spot_found:
-                new_mobs[str(uuid4())] = {
-                    'x': mx,
-                    'y': my,
-                    'x_vel': 0,
-                    'health': max_mob_health,
-                    'type': 'mob',
-                    'last_attack': 0
-                }
+        feet = map_[mx][my]
+        head = map_[mx][my - 1]
+        floor = map_[mx][my + 1]
+
+        closest_player_dist = min(map(lambda p: abs(p['x'] - mx), players.values()))
+
+        spot_found = (not terrain.is_solid(feet) and
+                      not terrain.is_solid(head) and
+                      terrain.is_solid(floor) and
+                      render_interface.get_light_level(mx, my) < max_spawn_light_level and
+                      render_interface.get_light_level(mx, my - 1) < max_spawn_light_level and
+                      not closest_player_dist < spawn_player_range_min)
+
+        if spot_found:
+            new_mobs[str(uuid4())] = {
+                'x': mx,
+                'y': my,
+                'x_vel': 0,
+                'health': max_mob_health,
+                'type': 'mob',
+                'last_attack': 0
+            }
 
     mobs.update(new_mobs)
 
