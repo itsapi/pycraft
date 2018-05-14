@@ -311,7 +311,8 @@ def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
-    ca_iterations = 4
+    cave_y_res = 2  # Double the y resolution of the CA to correct for aspect ratio
+    ca_iterations = 6
 
     air_points = set()
     air_points_x_min = chunk_pos - ca_iterations
@@ -332,8 +333,8 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
             # Generate air points for this slice
             slice_air_points = set()
-            for y in range(ground_heights[x] - 2):
-                world_y = world_gen['height'] - y - 2
+            for y in range(cave_y_res * (ground_heights[x] - 2)):
+                world_y = world_gen['height'] - (y/cave_y_res) - 2
 
                 if random.random() < world_gen['cave_chance']:
                     slice_air_points.add((x, world_y))
@@ -342,27 +343,28 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
                 features[x]['cave_initial_air_points'] = slice_air_points
 
         # Store slice air points in our local collection of air points for CA generation
-        air_points = air_points.union(features[x]['cave_initial_air_points'])
+        if features[x].get('cave_initial_air_points'):
+            air_points = air_points.union(features[x]['cave_initial_air_points'])
 
     if features[chunk_pos].get('cave') is None:
         # Perform cellular automata
         for i in range(ca_iterations):
-            old_air_points = set(p for p in air_points)
+            new_air_points = set()
 
             for x in range(air_points_x_min, air_points_x_max):
-                for y in range(ground_heights[x] - 2):
-                    world_y = world_gen['height'] - y - 2
+                for y in range(cave_y_res * (ground_heights[x] - 2)):
+                    world_y = world_gen['height'] - (y/cave_y_res) - 2
 
                     n_neighbours = 0
-                    for dx in range(-1, 2):
-                        for dy in range(-1, 2):
-                            if (x + dx, world_y + dy) in old_air_points:
+                    for dx in (-1, 0, 1):
+                        for dy in (-(1/cave_y_res), 0, (1/cave_y_res)):
+                            if (x + dx, world_y + dy) in air_points:
                                 n_neighbours += 1
 
-                    if n_neighbours >= 5:
-                        air_points.discard((x, world_y))
-                    else:
-                        air_points.add((x, world_y))
+                    if n_neighbours < 5:
+                        new_air_points.add((x, world_y))
+
+            air_points = new_air_points
 
         features[chunk_pos]['cave'] = air_points
 
@@ -432,7 +434,7 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
 
     for (world_x, y) in cave_feature:
         if in_chunk(world_x, chunk_pos):
-            chunk[world_x][y] = ' '
+            chunk[world_x][int(y)] = ' '
 
 
 def gen_chunk(chunk_n, meta):

@@ -392,7 +392,7 @@ world_gen = {
     'min_biome': 16,
     'max_biome': 64,
     'max_cave_radius': 50,
-    'cave_chance': 0.45,
+    'cave_chance': 0.5,
 
     'biomes': {
         'plains': {
