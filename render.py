@@ -68,6 +68,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                     fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects,
                         bk_objects, sky_colour, day, lights, settings.get('fancy_lights'))
 
+                    if DEBUG and world_x % world_gen['chunk_size'] == 0:
+                        bg = RED
+
                     if settings.get('terminal_output'):
                         pixel = colour_str(
                             char,
