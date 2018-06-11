@@ -17,6 +17,13 @@ EMPTY_SLICE = [' ' for y in range(world_gen['height'])]
 get_chunk_list = lambda slice_list: list(set(int(i) // world_gen['chunk_size'] for i in slice_list))
 
 MAX_HILL_RAD = world_gen['max_hill'] * world_gen['min_grad']
+MAX_HILL_CHUNKS = ceil(MAX_HILL_RAD / world_gen['chunk_size'])
+
+MAX_BIOME_RAD = world_gen['max_biome']
+MAX_BIOME_CHUNKS = ceil(MAX_BIOME_RAD / world_gen['chunk_size'])
+
+flatten = lambda l: [item for sublist in l for item in sublist]
+biomes_population = sorted(flatten([name] * int(data['chance'] * 100) for name, data in world_gen['biomes'].items()))
 
 
 def move_map(map_, edges):
@@ -118,14 +125,7 @@ class TerrainCache(OrderedDict):
                 self.popitem(last=False)
 
 
-# TODO: This probably shouldn't stay here...
-features = None
-def init_features():
-    global features
-    cache_size = (world_gen['max_biome'] * 4) + world_gen['chunk_size']
-    features = TerrainCache(limit=cache_size)
-
-init_features()
+features = TerrainCache(limit=(world_gen['max_biome'] * 4) + world_gen['chunk_size'])
 
 
 # # TODO: Use this for the other functions!
@@ -144,169 +144,160 @@ init_features()
 #             feature_cache[chunk_pos]['biome'] = generator()
 
 
-def gen_biome_features(features, chunk_pos, meta):
-    for x in range(chunk_pos - world_gen['max_biome'], chunk_pos + world_gen['chunk_size'] + world_gen['max_biome']):
-
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
-
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
-
-        # If it is not None, it has all ready been generated.
-        if features[x].get('biome') is None:
-
-            random.seed(str(meta['seed']) + str(x) + 'biome')
-            if random.random() <= 0.05:
-
-                # TODO: Move outside function
-                biomes_population = []
-                for name, data in world_gen['biomes'].items():
-                    biomes_population.extend([name] * int(data['chance'] * 100))
-
-                attrs = {}
-                attrs['type'] = random.choice(sorted(biomes_population))
-                attrs['radius'] = random.randint(world_gen['min_biome'], world_gen['max_biome'])
-
-                features[x]['biome'] = attrs
-
-
-def gen_hill_features(features, chunk_pos, meta):
-    for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD):
-
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
-
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
-
-        # If it is not None, it has all ready been generated.
-        if features[x].get('hill') is None:
-
-            random.seed(str(meta['seed']) + str(x) + 'hill')
-            if random.random() <= 0.05:
-
-                attrs = {}
-                attrs['gradient_l'] = random.randint(1, world_gen['min_grad'])
-                attrs['gradient_r'] = random.randint(1, world_gen['min_grad'])
-                attrs['height'] = random.randint(0, world_gen['max_hill'])
-
-                features[x]['hill'] = attrs
-
-
-def gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta):
-    for x in range(chunk_pos - MAX_HALF_TREE, chunk_pos + world_gen['chunk_size'] + MAX_HALF_TREE):
-
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
-
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
-
-        # If it is not None, it has all ready been generated.
-        if features[x].get('tree') is None:
-
-            biome_data = world_gen['biomes'][slices_biome[x][0]]
-            boime_tree_chance = biome_data['trees']
-
-            random.seed(str(meta['seed']) + str(x) + 'tree')
-            type_ = random.randint(0, len(world_gen['trees'])-1)
-            tree_data = world_gen['trees'][type_]
-
-            tree_chance = boime_tree_chance * tree_data['chance']
-
-            if random.random() <= tree_chance:
-
-                attrs = {}
-                attrs['type'] = type_
-
-                leaves = tree_data['leaves']
-
-                # Centre tree slice (contains trunk)
-                # TODO: This calculation could be done on start-up, and stored
-                #         with each tree type.
-                center_leaves = leaves[int(len(leaves) / 2)]
-                if 1 in center_leaves:
-                    attrs['trunk_depth'] = center_leaves[::-1].index(1)
-                else:
-                    attrs['trunk_depth'] = len(center_leaves)
-
-                # Get space above ground
-                air_height = world_gen['height'] - ground_heights[x]
-                tree_height = air_height - (len(center_leaves) - attrs['trunk_depth'])
-                tree_height = min(tree_height, tree_data['min_height'])
-
-                attrs['height'] = random.randint(tree_data['min_height'], max(tree_height, 2))
-
-                features[x]['tree'] = attrs
-
-
-def gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta):
-    for x in range(chunk_pos - MAX_ORE_RANGE[0], chunk_pos + world_gen['chunk_size'] + MAX_ORE_RANGE[1]):
-
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
-
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
-
-        # Ores
-        # NOTE: Ores seem to be the way to model the generalization of the
-        #         rest of the features after
-        for name, ore in world_gen['ores'].items():
-            feature_name = name + '_ore_root'
-
-            # If it is not None, it has all ready been generated.
-            if features[x].get(feature_name) is None:
-
-                random.seed(str(meta['seed']) + str(x) + feature_name)
-                if random.random() <= ore['chance']:
-
-                    upper = int(world_gen['height'] * ore['upper'])
-                    lower = int(world_gen['height'] * ore['lower'])
-
-                    attrs = {}
-                    attrs['root_height'] = world_gen['height'] - random.randint(
-                        lower, min(upper, (ground_heights[x] - 1))  # -1 for grass.
-                    )
-
-                    # Generates ore at random position around root ore
-                    pot_vain_blocks = ore['vain_size'] ** 2
-
-                    # Describes the shape of the vain,
-                    #   top to bottom, left to right.
-                    attrs['vain_shape'] = [b / 100 for b in random.sample(range(0, 100), pot_vain_blocks)]
-
-                    features[x][feature_name] = attrs
-
-
-def gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta):
+def gen_biome_chunk_features(chunk_pos, chunk_features, seed):
+    chunk_biomes = []
     for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
 
-        # TODO: Each of these `if` blocks should be abstracted into a function
-        #         which just returns the `attrs` object.
+        if random.random() <= 0.05:
 
-        if features.get(x) is None:
-            # Init to empty, so 'no features' is cached.
-            features[x] = {}
+            slice_biome = {}
+            slice_biome['x'] = x
+            slice_biome['type'] = random.choice(biomes_population)
+            slice_biome['radius'] = random.randint(world_gen['min_biome'], world_gen['max_biome'])
 
-        # If it is not None, it has all ready been generated.
-        if features[x].get('grass') is None:
+            features[x]['biome'] = slice_biome
 
-            biome_data = world_gen['biomes'][slices_biome[x][0]]
-            grass_chance = biome_data['grass']
+            chunk_biomes.append(slice_biome)
 
-            random.seed(str(meta['seed']) + str(x) + 'grass')
-            if random.random() <= grass_chance:
+    return chunk_biomes
 
-                attrs = {}
-                attrs['y'] = ground_heights[x]
 
-                features[x]['grass'] = attrs
+def gen_hill_chunk_features(chunk_pos, chunk_features, seed):
+    chunk_hills = []
+    for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
+
+        if random.random() <= 0.05:
+
+            slice_hill = {}
+            slice_hill['x'] = x
+            slice_hill['gradient_l'] = random.randint(1, world_gen['min_grad'])
+            slice_hill['gradient_r'] = random.randint(1, world_gen['min_grad'])
+            slice_hill['height'] = random.randint(0, world_gen['max_hill'])
+
+            chunk_hills.append(slice_hill)
+
+    return chunk_hills
+
+
+def gen_biome_slice_features(x, chunk_features, slice_features, seed):
+
+    slice_biome = ('normal', None)
+
+    if chunk_features.get('biomes') is not None:
+        for biome in chunk_features.get('biomes'):
+            slice_biome = (biome['type'], biome['x'])
+
+    return slice_biome
+
+
+def gen_ground_height_slice_features(x, chunk_features, slice_features, seed):
+
+    ground_height = world_gen['ground_height']
+
+    if chunk_features.get('hills') is not None:
+        for hill in chunk_features.get('hills'):
+            hill_dist = x - hill['x']
+
+            if hill_dist == 0:
+                gradient = 1
+            elif hill_dist > 0:
+                gradient = hill['gradient_r']
+            else:
+                gradient = hill['gradient_l']
+
+            hill_height = int(hill['height'] - (abs(hill_dist) / gradient))
+            new_ground_height = world_gen['ground_height'] + hill_height
+
+            ground_height = max(ground_height, new_ground_height)
+
+    return ground_height
+
+
+def gen_tree_features(x, chunk_features, slice_features, seed):
+
+    biome = features[x].get('slice_biome')
+    ground_height = features[x].get('ground_height')
+
+    biome_data = world_gen['biomes'][biome[0]]
+    boime_tree_chance = biome_data['trees']
+
+    tree_type = random.randint(0, len(world_gen['trees'])-1)
+    tree_data = world_gen['trees'][tree_type]
+
+    tree_chance = boime_tree_chance * tree_data['chance']
+
+    if random.random() <= tree_chance:
+
+        tree_feature = {}
+        tree_feature['type'] = tree_type
+
+        leaves = tree_data['leaves']
+
+        # Centre tree slice (contains trunk)
+        # TODO: This calculation could be done on start-up, and stored
+        #         with each tree type.
+        center_leaves = leaves[int(len(leaves) / 2)]
+        if 1 in center_leaves:
+            tree_feature['trunk_depth'] = center_leaves[::-1].index(1)
+        else:
+            tree_feature['trunk_depth'] = len(center_leaves)
+
+        # Get space above ground
+        air_height = world_gen['height'] - ground_height
+        tree_height = air_height - (len(center_leaves) - tree_feature['trunk_depth'])
+        tree_height = min(tree_height, tree_data['min_height'])
+
+        tree_feature['height'] = random.randint(tree_data['min_height'], max(tree_height, 2))
+
+        return tree_feature
+
+
+def gen_ore_features(x, chunk_features, slice_features, seed):
+
+    biome = features[x].get('slice_biome')
+    ground_height = features[x].get('ground_height')
+
+    ore_features = {}
+
+    for ore_name, ore in world_gen['ores'].items():
+
+        random.seed(seed + ore_name)
+        if random.random() <= ore['chance']:
+
+            upper = int(world_gen['height'] * ore['upper'])
+            lower = int(world_gen['height'] * ore['lower'])
+
+            ore_feature = {}
+            ore_feature['root_height'] = world_gen['height'] - random.randint(
+                lower, min(upper, (ground_height - 1))  # -1 for grass.
+            )
+
+            # Generates ore at random position around root ore
+            pot_vain_blocks = ore['vain_size'] ** 2
+
+            # Describes the shape of the vain,
+            #   top to bottom, left to right.
+            ore_feature['vain_shape'] = [b / 100 for b in random.sample(range(0, 100), pot_vain_blocks)]
+
+            ore_features[ore_name] = ore_feature
+
+    return ore_features
+
+
+def gen_grass_features(x, chunk_features, slice_features, seed):
+
+    biome = features[x].get('slice_biome')
+    ground_height = features[x].get('ground_height')
+
+    biome_data = world_gen['biomes'][biome[0]]
+    grass_chance = biome_data['grass']
+
+    if random.random() <= grass_chance:
+
+        grass_feature = {}
+        grass_feature['y'] = ground_height
+
+        return grass_feature
 
 
 def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
@@ -437,6 +428,41 @@ def build_cave(chunk, chunk_pos, x, cave_feature, ground_heights):
             chunk[world_x][int(y)] = ' '
 
 
+def generate_slice_features(features, chunk_pos, meta, feature_generator, feature_name, feature_buffer):
+    for x in range(chunk_pos - feature_buffer[0], chunk_pos + world_gen['chunk_size'] + feature_buffer[1]):
+
+        slice_chunk_pos = (x // world_gen['chunk_size']) * world_gen['chunk_size']
+
+        if features.get(x) is None:
+            # Init to empty, so 'no features' is cached.
+            features[x] = {}
+
+        # If it is not None, it has all ready been generated.
+        if features[x].get(feature_name) is None:
+
+            seed = str(meta['seed']) + str(x) + feature_name
+            random.seed(seed)
+
+            features[x][feature_name] = feature_generator(x, features[slice_chunk_pos], features[x], seed)
+
+
+def generate_chunk_features(features, chunk_n, meta, feature_generator, feature_name, feature_buffer):
+    for chunk_n_gen in range(chunk_n - feature_buffer[0], chunk_n + feature_buffer[1]):
+        chunk_pos = chunk_n_gen * world_gen['chunk_size']
+
+        if features.get(chunk_pos) is None:
+            # Init to empty, so 'no features' is cached.
+            features[chunk_pos] = {}
+
+        # If it is not None, it has all ready been generated.
+        if features[chunk_pos].get(feature_name) is None:
+
+            seed = str(meta['seed']) + str(chunk_pos) + feature_name
+            random.seed(seed)
+
+            features[chunk_pos][feature_name] = feature_generator(chunk_pos, features[chunk_pos], seed)
+
+
 def gen_chunk(chunk_n, meta):
     chunk_pos = chunk_n * world_gen['chunk_size']
 
@@ -445,47 +471,32 @@ def gen_chunk(chunk_n, meta):
     # First generate all the features we will need
     #   for all the slice is in this chunk
 
-    gen_biome_features(features, chunk_pos, meta)
-    gen_hill_features(features, chunk_pos, meta)
+    generate_chunk_features(features, chunk_n, meta, gen_hill_chunk_features, 'hills', (MAX_HILL_CHUNKS, MAX_HILL_CHUNKS))
+    generate_slice_features(features, chunk_pos, meta, gen_ground_height_slice_features, 'ground_height', (MAX_HILL_RAD, MAX_HILL_RAD))
 
-    # Generate hill heights and biomes map for the tree and ore generation.
-    ground_heights = {x: world_gen['ground_height'] for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)}
-    # Store feature_x with the value for calculating precedence.
-    slices_biome = {x: ('normal', None) for x in range(chunk_pos - world_gen['max_biome'], chunk_pos + world_gen['chunk_size'] + world_gen['max_biome'])}
+    generate_chunk_features(features, chunk_n, meta, gen_biome_chunk_features, 'biomes', (MAX_BIOME_CHUNKS, MAX_BIOME_CHUNKS))
+    generate_slice_features(features, chunk_pos, meta, gen_biome_slice_features, 'slice_biome', (MAX_BIOME_RAD, MAX_BIOME_RAD))
 
-    for feature_x, slice_features in features.items():
-        feature_x = int(feature_x)
+    ground_heights = {x: features[x].get('ground_height') for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)}
+    slices_biome = {x: features[x].get('slice_biome') for x in range(chunk_pos - MAX_BIOME_RAD, chunk_pos + world_gen['chunk_size'] + MAX_BIOME_RAD)}
 
-        for feature_name, feature in slice_features.items():
+    int_x = list(map(int, ground_heights.keys()))
+    log('chunk', chunk_pos, m=1)
+    log('max', max(int_x), m=1)
+    log('min', min(int_x), m=1)
+    log('gh diff', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(int_x), m=1, trunc=False)
+    log('slices_biome', list(filter(lambda slice_: (int(slice_[0])%16 == 0) or (int(slice_[0])+1)%16 == 0, sorted(slices_biome.items()))), m=1, trunc=False)
 
-            if feature_name == 'hill':
+    gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta)
 
-                for d_x in range(-feature['height'] * feature['gradient_l'],
-                                 feature['height'] * feature['gradient_r']):
-                    x = feature_x + d_x
+    generate_slice_features(features, chunk_pos, meta, gen_tree_features, 'tree', (MAX_HALF_TREE, MAX_HALF_TREE))
+    generate_slice_features(features, chunk_pos, meta, gen_grass_features, 'grass', (0, 0))
+    generate_slice_features(features, chunk_pos, meta, gen_ore_features, 'ores', MAX_ORE_RANGE)
 
-                    gradient = feature['gradient_l'] if d_x < 0 else feature['gradient_r']
-                    hill_height = int(feature['height'] - (abs(d_x) / gradient))
-
-                    if d_x == 0:
-                        hill_height -= 1
-
-                    ground_height = world_gen['ground_height'] + hill_height
-
-                    old_height = ground_heights.get(x, 0)
-                    ground_heights[x] = max(ground_height, old_height)
-
-            elif feature_name == 'biome':
-
-                for d_x in range(-feature['radius'], feature['radius']):
-                    x = feature_x + d_x
-
-                    if x in slices_biome:
-                        previous_slice_biome_feature_x = slices_biome[x][1]
-
-                        if (previous_slice_biome_feature_x is None or
-                                previous_slice_biome_feature_x < feature_x):
-                            slices_biome[x] = (feature['type'], feature_x)
+    log('chunk_pos', chunk_pos, m=1)
+    tree_features = list(filter(lambda f: f[1].get('tree'), features.items()))
+    log('trees in cache\n', [str(f[0]) for f in tree_features], m=1, trunc=0)
+    log('trees in range', [str(f[0]) for f in tree_features if (chunk_pos <= int(f[0]) < chunk_pos + world_gen['chunk_size'])], m=1, trunc=0)
 
     chunk = {}
     for x in range(chunk_pos, chunk_pos + world_gen['chunk_size']):
@@ -496,28 +507,14 @@ def gen_chunk(chunk_n, meta):
             ['_']
         )
 
-    int_x = list(map(int, ground_heights.keys()))
-    log('chunk', chunk_pos, m=1)
-    log('max', max(int_x), m=1)
-    log('min', min(int_x), m=1)
-    log('gh diff', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(int_x), m=1, trunc=False)
-    log('slices_biome', list(filter(lambda slice_: (int(slice_[0])%16 == 0) or (int(slice_[0])+1)%16 == 0, sorted(slices_biome.items()))), m=1, trunc=False)
-
-    gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta)
-    gen_tree_features(features, ground_heights, slices_biome, chunk_pos, meta)
-    gen_ore_features(features, ground_heights, slices_biome, chunk_pos, meta)
-    gen_grass_features(features, ground_heights, slices_biome, chunk_pos, meta)
-
-    log('chunk_pos', chunk_pos, m=1)
-    tree_features = list(filter(lambda f: f[1].get('tree'), features.items()))
-    log('trees in cache\n', [str(f[0]) for f in tree_features], m=1, trunc=0)
-    log('trees in range', [str(f[0]) for f in tree_features if (chunk_pos <= int(f[0]) < chunk_pos + world_gen['chunk_size'])], m=1, trunc=0)
-
     # Insert trees and ores
     for feature_x, slice_features in features.items():
         feature_x = int(feature_x)
 
         for feature_name, feature in slice_features.items():
+
+            if feature is None:
+                continue
 
             if feature_name == 'tree':
                 build_tree(chunk, chunk_pos, feature_x, feature, ground_heights)
@@ -528,12 +525,9 @@ def gen_chunk(chunk_n, meta):
             elif feature_name == 'cave':
                 build_cave(chunk, chunk_pos, feature_x, feature, ground_heights)
 
-            else:
-                for name, ore in world_gen['ores'].items():
-                    ore_name = name + '_ore_root'
+            elif feature_name == 'ores':
+                for ore_name, ore_feature in feature.items():
+                    build_ore(chunk, chunk_pos, feature_x, ore_feature, world_gen['ores'][ore_name], ground_heights)
 
-                    if feature_name == ore_name:
-                        build_ore(chunk, chunk_pos, feature_x, feature, ore, ground_heights)
-                        break
 
-    return chunk, {x: s for x, s in ground_heights.items() if x in range(chunk_pos, chunk_pos+world_gen['chunk_size'])}
+    return chunk, {x: ground_heights[x] for x in range(chunk_pos, chunk_pos+world_gen['chunk_size'])}
