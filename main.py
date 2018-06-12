@@ -11,7 +11,7 @@ from nbinput import NonBlockingInput
 from items import items_to_render_objects
 from events import process_events
 
-import saves, ui, terrain, player, render, render_interface, server_interface, data
+import saves, ui, terrain, gravity, player, render, render_interface, server_interface, data
 
 
 def main():
@@ -216,7 +216,7 @@ def game(server, settings, benchmarks):
                 server.redraw = True
 
             if settings.get('gravity'):
-                blocks = terrain.apply_gravity(server.map_, extended_edges)
+                blocks = gravity.apply_gravity(server.map_, extended_edges)
                 if blocks: server.set_blocks(blocks)
 
             ## Crafting
