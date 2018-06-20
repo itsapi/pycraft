@@ -319,25 +319,20 @@ def gen_chunk_features(chunk_n, meta):
     log('', m=1)
 
     chunk_pos = chunk_n * world_gen['chunk_size']
+    log('chunk', chunk_pos, m=1)
 
     generate_chunk_features(FEATURES, chunk_n, meta, gen_hill_chunk_features, 'hills', (MAX_HILL_CHUNKS, MAX_HILL_CHUNKS))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_ground_height_slice_features, 'ground_height', (MAX_HILL_RAD, MAX_HILL_RAD))
 
+    log('missing ground heights', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(pos for pos, fs in FEATURES.items() if fs.get('ground_height')), m=1, trunc=False)
+
     generate_chunk_features(FEATURES, chunk_n, meta, gen_biome_chunk_features, 'biomes', (MAX_BIOME_CHUNKS, MAX_BIOME_CHUNKS))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_biome_slice_features, 'slice_biome', (MAX_BIOME_RAD, MAX_BIOME_RAD))
-
-    log('chunk', chunk_pos, m=1)
-    log('missing ground heights', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(pos for pos, fs in FEATURES.items() if fs.get('ground_height')), m=1, trunc=False)
 
     gen_cave_features(FEATURES, chunk_pos, meta)
 
     generate_slice_features(FEATURES, chunk_pos, meta, gen_tree_features, 'tree', (MAX_HALF_TREE, MAX_HALF_TREE))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_grass_features, 'grass', (0, 0))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_ore_features, 'ores', MAX_ORE_RANGE)
-
-    log('chunk_pos', chunk_pos, m=1)
-    tree_features = list(filter(lambda f: f[1].get('tree'), FEATURES.items()))
-    log('trees in cache\n', [str(f[0]) for f in tree_features], m=1, trunc=0)
-    log('trees in range', [str(f[0]) for f in tree_features if (chunk_pos <= int(f[0]) < chunk_pos + world_gen['chunk_size'])], m=1, trunc=0)
 
     return FEATURES
