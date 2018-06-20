@@ -40,7 +40,7 @@ class TerrainCache(OrderedDict):
                 self.popitem(last=False)
 
 
-FEATURES = TerrainCache(limit=(world_gen['max_biome'] * 4) + world_gen['chunk_size'])
+FEATURES = TerrainCache(limit=(max(MAX_HILL_RAD, MAX_BIOME_RAD) * 4) + world_gen['chunk_size'])
 
 
 def gen_biome_chunk_features(chunk_pos, chunk_features, seed):
