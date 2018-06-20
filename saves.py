@@ -74,6 +74,7 @@ def new_save(meta):
         os.mkdir(save_path(save))
     except OSError:
         save = None
+        print("OSError while creating new save.\n")
     else:
         save_meta(save, meta)
     finally:
