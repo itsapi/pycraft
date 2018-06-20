@@ -205,7 +205,7 @@ def gen_grass_features(x, chunk_features_in_range, slice_features, seed):
         return grass_feature
 
 
-def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
+def gen_cave_features(features, chunk_pos, meta):
 
     cave_y_res = 2  # Double the y resolution of the CA to correct for aspect ratio
     ca_iterations = 6
@@ -229,7 +229,7 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
 
             # Generate air points for this slice
             slice_air_points = set()
-            for y in range(cave_y_res * (ground_heights[x] - 2)):
+            for y in range(cave_y_res * (features[x]['ground_height'] - 2)):
                 world_y = world_gen['height'] - (y/cave_y_res) - 2
 
                 if random.random() < world_gen['cave_chance']:
@@ -248,7 +248,7 @@ def gen_cave_features(features, ground_heights, slices_biome, chunk_pos, meta):
             new_air_points = set()
 
             for x in range(air_points_x_min, air_points_x_max):
-                for y in range(cave_y_res * (ground_heights[x] - 2)):
+                for y in range(cave_y_res * (features[x]['ground_height'] - 2)):
                     world_y = world_gen['height'] - (y/cave_y_res) - 2
 
                     n_neighbours = 0
@@ -326,17 +326,10 @@ def gen_chunk_features(chunk_n, meta):
     generate_chunk_features(FEATURES, chunk_n, meta, gen_biome_chunk_features, 'biomes', (MAX_BIOME_CHUNKS, MAX_BIOME_CHUNKS))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_biome_slice_features, 'slice_biome', (MAX_BIOME_RAD, MAX_BIOME_RAD))
 
-    ground_heights = {x: FEATURES[x].get('ground_height') for x in range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)}
-    slices_biome = {x: FEATURES[x].get('slice_biome') for x in range(chunk_pos - MAX_BIOME_RAD, chunk_pos + world_gen['chunk_size'] + MAX_BIOME_RAD)}
-
-    int_x = list(map(int, ground_heights.keys()))
     log('chunk', chunk_pos, m=1)
-    log('max', max(int_x), m=1)
-    log('min', min(int_x), m=1)
-    log('gh diff', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(int_x), m=1, trunc=False)
-    log('slices_biome', list(filter(lambda slice_: (int(slice_[0])%16 == 0) or (int(slice_[0])+1)%16 == 0, sorted(slices_biome.items()))), m=1, trunc=False)
+    log('missing ground heights', set(range(chunk_pos - MAX_HILL_RAD, chunk_pos + world_gen['chunk_size'] + MAX_HILL_RAD)) - set(pos for pos, fs in FEATURES.items() if fs.get('ground_height')), m=1, trunc=False)
 
-    gen_cave_features(FEATURES, ground_heights, slices_biome, chunk_pos, meta)
+    gen_cave_features(FEATURES, chunk_pos, meta)
 
     generate_slice_features(FEATURES, chunk_pos, meta, gen_tree_features, 'tree', (MAX_HALF_TREE, MAX_HALF_TREE))
     generate_slice_features(FEATURES, chunk_pos, meta, gen_grass_features, 'grass', (0, 0))
