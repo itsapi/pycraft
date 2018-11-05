@@ -35,7 +35,7 @@ Movement:
 
 A number of items are only obtainable through the crafting system.
 Items that can be crafted with the materials in the player inventory will automatically show up in the crafting grid.
-Press <kbd>C</kbd> to toggle selection between inventory and crafting grid. press <kbd>I</kbd> to craft the currently selected item.
+Press <kbd>C</kbd> to toggle selection between inventory and crafting grid. Press <kbd>I</kbd> to craft the currently selected item.
 
 #### Recipes:
 
