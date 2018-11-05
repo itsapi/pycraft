@@ -1,6 +1,6 @@
 # Pycraft (Termcraft)
 
-A console based 2D Minecraft, runs best on *nix with Python 3.3+. Built by [grit96](https://github.com/grit96) and [olls](https://github.com/olls).
+A command line based 2D Minecraft, runs best on *nix with Python 3.3+. Built by [grit96](https://github.com/grit96) and [olls](https://github.com/olls).
 
 Usage: `python3 main.py`
 
@@ -8,7 +8,7 @@ Usage: `python3 main.py`
 
 ## Controls
 
-For the best control, you should set your keyboard repeat time to around 200-300ms.
+For the best control, set keyboard repeat time to around 200-300ms.
 
 ```
 Menus:
@@ -33,9 +33,9 @@ Movement:
 
 ## Crafting
 
-A number of items are only obtainable through crafting them using the crafting system.
-Items that you can craft with the items in your inventory will automatically show up in the crafting grid.
-Press <kbd>C</kbd> to toggle your selection between inventory and crafting grid, press <kbd>I</kbd> to craft the currently selected item.
+A number of items are only obtainable through the crafting system.
+Items that can be crafted with the materials in the player inventory will automatically show up in the crafting grid.
+Press <kbd>C</kbd> to toggle selection between inventory and crafting grid. press <kbd>I</kbd> to craft the currently selected item.
 
 #### Recipes:
 
@@ -61,9 +61,9 @@ Press <kbd>C</kbd> to toggle your selection between inventory and crafting grid,
 
 ####  Tools:
 
-Certain blocks require you to craft the right tool before being able to mine it.
-The tool has to be selected in your inventory to be able to use it.
-Each tier of pickaxe allows you to break more blocks than the previous tier.
+Certain blocks require the right tool before being able to mine it.
+The tool has to be selected in inventory to be able to use it.
+Each tier of pickaxe can break more blocks than the previous tier.
 
 - fist (i.e. don't need a tool):
    - grass
@@ -86,9 +86,9 @@ Each tier of pickaxe allows you to break more blocks than the previous tier.
 
 ## Using the C Renderer
 
-The C renderer is likely to be faster than the Python renderer, but to use it you must compile it first. To do this run the command: `python3 setup.py build` in the root of the repository. Then run the game as normal, and go in to the settings to swich the renderer.
+The C renderer is likely to be faster than the Python renderer. To use the C renderer, it must be compiled first. To complile, run the command: `python3 setup.py build` in the root of the repository. Then run the game as normal and go into settings to switch the renderers.
 
-Please report any bugs in the C renderer, or differences between the Python renderer and the C renderer, in the issues.
+Please report any bugs in the C renderer, or differences between the Python renderer and the C renderer in issues.
 
 ## Contributing
 
