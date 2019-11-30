@@ -1,4 +1,4 @@
-# Pycraft (Termcraft)
+# Pycraft
 
 A command line based 2D Minecraft, runs best on *nix with Python 3.3+. Built by [grit96](https://github.com/grit96) and [olls](https://github.com/olls).
 
