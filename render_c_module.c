@@ -713,7 +713,7 @@ fill_lighting_buffer(PyObject *lights, PyObject *bk_objects, PyObject *map, Sett
             .world_x = PyLong_AsLong(PyDict_GetItemString(py_light, "x")),
             .world_y = PyLong_AsLong(PyDict_GetItemString(py_light, "y")),
             .z = PyLong_AsLong(PyDict_GetItemString(py_light, "z")),
-            .radius = PyLong_AsLong(PyDict_GetItemString(py_light, "radius")),
+            .radius = PyLong_AsLong(PyNumber_Long(PyDict_GetItemString(py_light, "radius"))),
             .width = get_long_from_PyDict_or(py_light, "source_width", 1),
             .height = get_long_from_PyDict_or(py_light, "source_height", 1),
             .rgb = PyColour_AsColour(PyDict_GetItemString(py_light, "colour"))
