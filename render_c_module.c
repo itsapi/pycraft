@@ -1023,7 +1023,7 @@ render_map(PyObject *self, PyObject *args)
         frame.buffer[frame.cur_pos] = L'\0';
         int n_wprintf_written = wprintf(frame.buffer);
 
-        if (n_wprintf_written != frame.cur_pos)
+        if (n_wprintf_written >= 0 && (size_t)n_wprintf_written != frame.cur_pos)
         {
             PyErr_SetString(C_RENDERER_EXCEPTION, "wfprint messed up!");
             return NULL;
