@@ -219,7 +219,7 @@ class RemoteInterface:
         # The client does nothing
         pass
 
-    def despawn_items(self):
+    def update_items(self):
         # The client does nothing
         pass
 
