@@ -30,7 +30,7 @@ def update(mobs, players, map_, last_tick):
     new_items = {}
 
     for mob_id, mob in mobs.items():
-        mx, my, x_vel = mob['x'], mob['y'], mob['x_vel']
+        mx, my = mob['x'], mob['y']
 
         if mob['health'] <= 0:
             removed_mobs.append(mob_id)
@@ -64,7 +64,7 @@ def update(mobs, players, map_, last_tick):
 
 
 def spawn(mobs, players, map_, x_start_range, y_start_range, x_end_range, y_end_range):
-    log("spawning", x_start_range, x_end_range, m='mobs');
+    log('spawning', x_start_range, x_end_range, m='mobs')
 
     n_mobs_to_spawn = random.randint(0, 5) if random.random() < mob_rate else 0
     new_mobs = {}

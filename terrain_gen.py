@@ -26,7 +26,7 @@ class TerrainCache(OrderedDict):
         Beyond which it replaces the oldest item. """
 
     def __init__(self, *args, **kwds):
-        self._limit = kwds.pop("limit", None)
+        self._limit = kwds.pop('limit', None)
         OrderedDict.__init__(self, *args, **kwds)
         self._check_limit()
 
@@ -81,7 +81,7 @@ def gen_hill_chunk_features(chunk_pos, chunk_features_in_range, seed):
 def gen_biome_slice_features(x, chunk_features_in_range, slice_features, seed):
 
     slice_biome = ('normal', None)
-    slice_biome_distance_to_centre = float("inf")
+    slice_biome_distance_to_centre = float('inf')
 
     if chunk_features_in_range.get('biomes') is not None:
         for biome in chunk_features_in_range.get('biomes'):
@@ -248,7 +248,7 @@ def gen_cave_features(features, chunk_pos, meta):
 
     if features[chunk_pos].get('cave') is None:
         # Perform cellular automata
-        for i in range(ca_iterations):
+        for _ in range(ca_iterations):
             new_air_points = set()
 
             for x in range(air_points_x_min, air_points_x_max):
@@ -271,10 +271,9 @@ def gen_cave_features(features, chunk_pos, meta):
 
 def generate_slice_features(features, chunk_pos, meta, feature_generator, feature_name, feature_buffer):
 
-    log("generate_slice_features range", chunk_pos - feature_buffer[0], chunk_pos + world_gen['chunk_size'] + feature_buffer[1], m=1)
+    log('generate_slice_features range', chunk_pos - feature_buffer[0], chunk_pos + world_gen['chunk_size'] + feature_buffer[1], m=1)
 
     # Generate dictionary of chunk-features (features on chunk positions) within the feature_buffer range.
-    chunk_n = ceil(chunk_pos / world_gen['chunk_size'])
     feature_buffer_chunk = (ceil(feature_buffer[0] / world_gen['chunk_size']) * world_gen['chunk_size'],
                             ceil(feature_buffer[1] / world_gen['chunk_size']) * world_gen['chunk_size'])
     feature_buffer_range = range(chunk_pos - feature_buffer_chunk[0],
@@ -282,8 +281,6 @@ def generate_slice_features(features, chunk_pos, meta, feature_generator, featur
     chunk_features_in_range = {chunk: features[chunk] for chunk in feature_buffer_range if features.get(chunk)}
 
     for x in range(chunk_pos - feature_buffer[0], chunk_pos + world_gen['chunk_size'] + feature_buffer[1]):
-
-        slice_chunk_pos = (x // world_gen['chunk_size']) * world_gen['chunk_size']
 
         if features.get(x) is None:
             # Init to empty, so 'no features' is cached.
