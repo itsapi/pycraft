@@ -153,7 +153,11 @@ def gen_tree_features(x, chunk_features_in_range, slice_features, seed):
         tree_height = air_height - (len(center_leaves) - tree_feature['trunk_depth'])
         tree_height = min(tree_height, tree_data['min_height'])
 
-        tree_feature['height'] = random.randint(tree_data['min_height'], max(tree_height, 2))
+        # Gausian tree height distrubution
+        min_, max_ = 2, air_height - (len(center_leaves) - tree_feature['trunk_depth'])
+        mean_height = (min_ + tree_data['mean_height'])
+        max_std_dev = tree_data['max_std_dev']
+        tree_feature['height'] = int(min(max(min_, random.gauss(mean_height, max_std_dev)), max_))
 
         return tree_feature
 
