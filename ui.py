@@ -1,7 +1,6 @@
 from nbinput import BlockingInput, UP, DOWN, RIGHT, LEFT
 from console import CLS, REDRAW, WIDTH, HEIGHT, SHOW_CUR, HIDE_CUR
-from colours import *
-from console import *
+from colours import colour_str, TERM_YELLOW, TERM_RED, BOLD
 from data import help_data
 
 import saves

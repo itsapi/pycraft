@@ -1,4 +1,4 @@
-from colours import *
+from colours import DARK, BOLD, DARK_GRAY, YELLOW, RED, WHITE
 from console import supported_chars
 
 

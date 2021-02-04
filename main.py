@@ -80,7 +80,6 @@ def setdown():
 
 def game(server, settings, benchmarks):
     dt = 0  # Tick
-    df = 0  # Frame
     dc = 0  # Cursor
     ds = 0  # Selector
     dpos = False
@@ -286,14 +285,14 @@ def game(server, settings, benchmarks):
             events += new_events
 
             new_blocks = {}
-            for i in range(int(dt)):
+            for _ in range(int(dt)):
                 new_blocks.update(process_events(events, server))
             if new_blocks:
                 server.set_blocks(new_blocks)
 
             # If no block below, kill player
             try:
-                block = server.map_[x][y+1]
+                _ = server.map_[x][y+1]
             except IndexError:
                 alive = False
 
