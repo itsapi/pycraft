@@ -81,7 +81,7 @@ def gen_hill_chunk_features(chunk_pos, chunk_features_in_range, seed):
 def gen_biome_slice_features(x, chunk_features_in_range, slice_features, seed):
 
     slice_biome = ('normal', None)
-    slice_biome_distance_to_centre = float("inf")
+    slice_biome_distance_to_centre = float('inf')
 
     if chunk_features_in_range.get('biomes') is not None:
         for biome in chunk_features_in_range.get('biomes'):
