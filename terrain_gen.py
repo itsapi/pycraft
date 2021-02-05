@@ -298,7 +298,7 @@ def generate_slice_features(features, chunk_pos, meta, feature_generator, featur
 
 
 def generate_chunk_features(features, chunk_n, meta, feature_generator, feature_name, feature_buffer):
-    for chunk_n_gen in range(chunk_n - feature_buffer[0], chunk_n + feature_buffer[1]):
+    for chunk_n_gen in range(chunk_n - feature_buffer[0], chunk_n + feature_buffer[1] + 1):
         chunk_pos = chunk_n_gen * world_gen['chunk_size']
 
         if features.get(chunk_pos) is None:
