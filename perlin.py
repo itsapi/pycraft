@@ -1,3 +1,5 @@
+repeat = 100
+
 # Hash lookup table as defined by Ken Perlin.  This is a randomly arranged array of all numbers from 0-255 inclusive.
 permutation = [
     151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,   7, 225,
@@ -130,8 +132,8 @@ def perlin2(x, y):
               u)
     y1 = lerp(x1, x2, v)
 
-    # For convenience we bind the result to 0 - 1 (theoretical min/max before is [-1, 1])
-    return (y1+1)/2
+    # theoretical min/max is [-1, 1])
+    return y1
 
 def OctavePerlin3(x, y, z, octaves, persistence):
     total = 0
