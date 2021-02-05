@@ -4,6 +4,7 @@ from math import ceil, cos, sin, radians, atan2
 
 from data import world_gen, blocks
 from console import log, DEBUG
+from perlin import perlin2
 
 
 MAX_HALF_TREE = int(len(max(world_gen['trees'], key=lambda tree: len(tree))) / 2)
@@ -115,6 +116,15 @@ def gen_ground_height_slice_features(x, chunk_features_in_range, slice_features,
         new_ground_height = world_gen['ground_height'] + hill_height
 
         ground_height = max(ground_height, new_ground_height)
+
+    return ground_height
+
+
+def gen_ground_height_slice_features(x, chunk_features_in_range, slice_features, seed):
+
+    ground_height = world_gen['ground_height']
+    ground_height += int(30*perlin2(x/100, 0))
+    ground_height += int(round(2.5*perlin2(x/4, 0)))
 
     return ground_height
 
