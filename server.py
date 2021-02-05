@@ -322,7 +322,7 @@ class Game:
 
                 render_interface.create_lighting_buffer(width, height, x_start, y_start, self._map, self._slice_heights, bk_objects, sky_colour, day, lights)
 
-                for i in range(n_mob_spawn_cycles):
+                for _ in range(n_mob_spawn_cycles):
                     mobs.spawn(self._meta['mobs'], self._meta['players'], self._map, x_start, y_start, x_end, y_end)
 
     def update_items(self):

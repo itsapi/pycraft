@@ -337,15 +337,13 @@ class LocalInterface:
         self.game = False
 
     def _event_error(self, error):
-        self.error = 'Error from server: ' + error['event'] + ': ' + event['message']
+        self.error = 'Error from server: ' + error['event'] + ': ' + error['message']
         log(self.error)
         self.game = False
 
     # Main loop methods:
 
     def get_chunks(self, chunk_list):
-        slices_its_loading = ((chunk_num + chunk * chunk_size) for chunk in chunk_list for chunk_num in range(chunk_size))
-
         self.handle(self._send('get_chunks', [chunk_list]))
         self.view_change = True
 

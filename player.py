@@ -44,7 +44,7 @@ def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
     return dx, dy, jump
 
 
-def get_pos_delta(dx, x, y, map_, flight):
+def get_pos_delta(dx, x, y, map_, flight=False):
 
     player_slice = map_[x]
 
