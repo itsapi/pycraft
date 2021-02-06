@@ -120,7 +120,7 @@ def gen_ground_height_slice_features(x, chunk_features_in_range, slice_features,
     return ground_height
 
 
-def gen_ground_height_slice_features(x, chunk_features_in_range, slice_features, seed):
+def gen_ground_height_slice_features_perlin(x, chunk_features_in_range, slice_features, seed):
 
     ground_height = world_gen['ground_height']
     ground_height += int(30*perlin2(x/100, 0))
