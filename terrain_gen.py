@@ -126,7 +126,7 @@ def gen_ground_height_slice_features_perlin(x, chunk_features_in_range, slice_fe
     ground_height += int(30*perlin2(x/100, 0))
     ground_height += int(round(2.5*perlin2(x/4, 0)))
 
-    return ground_height
+    return min(max(1, ground_height), world_gen['height'])
 
 
 def gen_tree_features(x, chunk_features_in_range, slice_features, seed):
