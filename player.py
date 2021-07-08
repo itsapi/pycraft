@@ -1,4 +1,4 @@
-from colours import *
+from colours import WHITE, RED
 from render import blocks
 from terrain import is_solid, world_gen
 from events import boom
@@ -26,7 +26,7 @@ def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
 
     dx = -1 * ('a' in inp) + 1 * ('d' in inp)
 
-    dx, dy = get_pos_delta(dx, x, y, map_)
+    dx, dy = get_pos_delta(dx, x, y, map_, flight)
 
     # Jumps if up pressed, block below, no block above
     if ( 'w' in inp and y > 1
@@ -38,26 +38,28 @@ def get_pos_delta_on_input(inp, map_, x, y, jump, flight):
         dy = -1
         jump = 6
 
-    if (flight and 's' in inp and head_y < world_gen['height']
-         and (not is_solid(player_slice[below_y]))):
+    if (flight and 's' in inp and head_y < world_gen['height']):
         dy = 1
 
     return dx, dy, jump
 
 
-def get_pos_delta(dx, x, y, map_):
+def get_pos_delta(dx, x, y, map_, flight=False):
 
     player_slice = map_[x]
 
     feet_y = y
     head_y = y - 1
-    below_y = y + 1
     above_y = y - 2
 
     dy = 0
 
     next_slice = map_[x + dx]
     checked_dx = 0
+
+    if flight:
+        return dx, dy
+
     if not is_solid(next_slice[head_y]):
         if is_solid( next_slice[feet_y] ):
             if ( not is_solid( next_slice[above_y] )
@@ -196,8 +198,6 @@ def create_render_object_health_colour_effect(health, render_object):
     dead_colour = render_object.get('dead_colour')
 
     if dead_colour is not None:
-        live_colour = render_object.get('colour', render_object['model'][0][0])
-
         render_object['effect_colour'] = dead_colour
         render_object['effect_strength'] = 1 - (health / MAX_PLAYER_HEALTH)
 

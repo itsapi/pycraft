@@ -2,7 +2,7 @@ from time import time
 from math import radians, floor, ceil
 from threading import Thread
 
-import terrain, saves, network, mobs, items, render_interface
+import build_terrain, saves, network, mobs, items, render_interface
 
 from colours import colour_str, TERM_YELLOW
 from console import log
@@ -246,7 +246,7 @@ class Game:
 
             chunk, chunk_slice_heights = saves.load_chunk(self._save, chunk_n)
             if not chunk:
-                chunk, chunk_slice_heights = terrain.gen_chunk(chunk_n, self._meta)
+                chunk, chunk_slice_heights = build_terrain.build_chunk(chunk_n, self._meta)
                 saves.save_chunk(self._save, chunk_n, chunk, chunk_slice_heights)
 
             new_slices.update(chunk)
@@ -322,7 +322,7 @@ class Game:
 
                 render_interface.create_lighting_buffer(width, height, x_start, y_start, self._map, self._slice_heights, bk_objects, sky_colour, day, lights)
 
-                for i in range(n_mob_spawn_cycles):
+                for _ in range(n_mob_spawn_cycles):
                     mobs.spawn(self._meta['mobs'], self._meta['players'], self._map, x_start, y_start, x_end, y_end)
 
     def update_items(self):

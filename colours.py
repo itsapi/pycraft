@@ -80,7 +80,7 @@ def round_to_palette(*colour):
 
 
 def lightness(colour):
-    return 0.2126 * colour[0] + 0.7152 * colour[1] + 0.0722 * colour[2];
+    return 0.2126 * colour[0] + 0.7152 * colour[1] + 0.0722 * colour[2]
 
 
 def grey(value):
