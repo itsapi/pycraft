@@ -7,11 +7,12 @@ def _get_terminal_size():
     def ioctl_GWINSZ(fd):
         try:
             import fcntl, termios, struct
-            return struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            s = struct.pack('HHHH', 0, 0, 0, 0)
+            return struct.unpack('HHHH', fcntl.ioctl(fd, termios.TIOCGWINSZ, s))
         except:
             pass
 
-    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    cr = ioctl_GWINSZ(sys.stdout.fileno()) or ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
 
     if not cr:
         try:
