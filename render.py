@@ -1,7 +1,7 @@
 from math import pi, cos, sin, sqrt, modf, radians
 
-from colours import *
-from console import *
+from colours import colour_str, uncolour_str, rgb, round_to_palette, lightness, bold, RED, CYAN, BLUE
+from console import supported_chars, DEBUG, POS_STR, CLS_END_LN
 from data import lighting, world_gen, blocks, timings
 from terrain import is_solid
 
@@ -68,6 +68,9 @@ def render_map(map_, slice_heights, edges, edges_y, objects, bk_objects, sky_col
                     fg, bg, char, style = calc_pixel(x, y, world_x, world_y, edges[0], map_, slice_heights, pixel, objects,
                         bk_objects, sky_colour, day, lights, settings.get('fancy_lights'))
 
+                    if DEBUG and world_x % world_gen['chunk_size'] == 0:
+                        bg = RED
+
                     if settings.get('terminal_output'):
                         pixel = colour_str(
                             char,
@@ -101,7 +104,6 @@ def obj_pixel(x, y, objects):
 
     if object_:
         model = object_['model']
-        width = len(model)
         height = len(model[0])
 
         dx = x - object_['x']
@@ -237,7 +239,7 @@ def get_light_colour(x, y, world_x, map_, slice_heights, lights, colour_behind, 
 
         else:
 
-            light = CYAN if any(map(lambda l: lit(world_x, x, y, l) < 1, lights)) else hsv_to_rgb(colour_behind)
+            light = CYAN if any(map(lambda l: lit(world_x + x, y, l) < 1, lights)) else hsv_to_rgb(colour_behind)
 
     return light
 

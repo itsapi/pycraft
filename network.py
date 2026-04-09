@@ -53,7 +53,7 @@ def receive(sock):
         d = bytes()
 
         try:
-            for i in range(length // bufsize):
+            for _ in range(length // bufsize):
                 d += sock.recv(bufsize)
                 time.sleep(0.001)
             d += sock.recv(length % bufsize)
@@ -107,7 +107,7 @@ def start(data_handler, port):
     HOST, PORT = '0.0.0.0', int(port)
 
     server = ThreadedTCPServer((HOST, PORT), requestHandlerFactory(data_handler))
-    ip, port = server.server_address
+    _, port = server.server_address
 
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
